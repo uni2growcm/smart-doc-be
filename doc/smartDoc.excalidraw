@@ -10531,8 +10531,8 @@
     {
       "id": "fvazSlon4c7euJS9Yh754",
       "type": "rectangle",
-      "x": 2467.411493847269,
-      "y": 4857.764825154873,
+      "x": 1623.9829311380058,
+      "y": 5284.050574317819,
       "width": 148.7452078784445,
       "height": 85.31423203554732,
       "angle": 0,
@@ -10550,8 +10550,8 @@
         "type": 3
       },
       "seed": 1857095302,
-      "version": 136,
-      "versionNonce": 1407329946,
+      "version": 191,
+      "versionNonce": 971815349,
       "isDeleted": false,
       "boundElements": [
         {
@@ -10559,15 +10559,15 @@
           "type": "text"
         }
       ],
-      "updated": 1765357777228,
+      "updated": 1765895714399,
       "link": null,
       "locked": false
     },
     {
       "id": "NPlUPNxSR3hsoBPS6teCQ",
       "type": "text",
-      "x": 2487.484117622917,
-      "y": 4887.921941172646,
+      "x": 1644.0555549136539,
+      "y": 5314.207690335593,
       "width": 108.59996032714844,
       "height": 25,
       "angle": 0,
@@ -10583,11 +10583,11 @@
       "index": "b4R",
       "roundness": null,
       "seed": 1897547206,
-      "version": 114,
-      "versionNonce": 752239450,
+      "version": 169,
+      "versionNonce": 1609939733,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1765357777228,
+      "updated": 1765895714399,
       "link": null,
       "locked": false,
       "text": "OH UI KIT",
@@ -11142,7 +11142,7 @@
       "version": 109,
       "versionNonce": 2026715224,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1765364095269,
       "link": null,
       "locked": false,
