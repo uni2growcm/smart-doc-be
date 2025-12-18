@@ -69,6 +69,14 @@ done in separate PRs.
 - Code related to business rules should always be tested
 - Use the `*Test.java` suffix for unit tests, `*IT.java` for integration tests
 
+## Mock API
+
+To start the OH API mocks (WireMock), move into the `wiremock` folder and run:
+
+```sh
+docker compose up -d
+```
+
 ## Tools
 
 - Error Handling
