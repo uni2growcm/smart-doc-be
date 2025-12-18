@@ -1,0 +1,29 @@
+{
+    "request": {
+        "method": "POST",
+        "urlPath": "/documents",
+        "queryParameters": {
+            "personId": {
+                "matches": ".*"
+            },
+            "type": {
+                "matches": ".*"
+            },
+            "documentDate": {
+                "matches": ".*"
+            }
+        }
+    },
+    "response": {
+        "status": 201,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "jsonBody": {
+            "id": "123e4567-e89b-12d3-a456-426614174000",
+            "personId": "P000123",
+            "type": "RX",
+            "documentDate": "2024-06-10"
+        }
+    }
+}

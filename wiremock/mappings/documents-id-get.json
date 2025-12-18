@@ -1,0 +1,14 @@
+{
+    "request": {
+        "method": "GET",
+        "urlPathPattern": "/documents/([^/]+)"
+    },
+    "response": {
+        "status": 200,
+        "headers": {
+            "Content-Type": "image/jpeg",
+            "Content-Disposition": "attachment; filename=\"doc_001.jpeg\""
+        },
+        "bodyFileName": "doc_001.jpeg"
+    }
+}

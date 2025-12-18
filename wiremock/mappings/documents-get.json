@@ -1,0 +1,30 @@
+{
+    "request": {
+        "method": "GET",
+        "urlPath": "/documents",
+        "queryParameters": {
+            "personId": { "matches": ".*" },
+            "type": { "matches": ".*" }
+        }
+    },
+    "response": {
+        "status": 200,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "jsonBody": {
+            "page": 1,
+            "pageSize": 10,
+            "totalElements": 1,
+            "documents": [
+                {
+                    "id": "123e4567-e89b-12d3-a456-426614174000",
+                    "fileName": "20240610_153000_RX_P000123.jpeg",
+                    "documentDate": "2024-06-10",
+                    "uploadedAt": "2024-06-10T15:30:00Z",
+                    "type": "RX"
+                }
+            ]
+        }
+    }
+}
