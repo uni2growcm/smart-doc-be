@@ -1,0 +1,13 @@
+{
+    "request": {
+        "method": "GET",
+        "urlPathPattern": "/plugins/([^/]+)"
+    },
+    "response": {
+        "status": 200,
+        "headers": {
+            "Content-Type": "application/javascript; charset=utf-8"
+        },
+        "bodyFileName": "plugin-001.js"
+    }
+}

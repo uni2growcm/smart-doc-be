@@ -24,5 +24,5 @@ The system consists of 4 main components:
 
 1. **OH-UI** (modifications): Existing OpenHospital Frontend
 2. **OH-API** (modifications): Existing Backend serving as proxy/BFF
-3. **SmartDoc Server**: New headless application for document management
-4. **SmartDoc UI**: New React application for document acquisition
+3. **Smart-doc BE** (backend): New headless application for document management. It contains also documentation and api spec
+4. **Smart-doc UI** (frontend): New React application for document acquisition

@@ -1,0 +1,13 @@
+services:
+  wiremock:
+    image: wiremock/wiremock:3.5.4
+    container_name: oh-wiremock
+    ports:
+      - "8089:8080"
+    volumes:
+      - ./mappings:/home/wiremock/mappings
+      - ./__files:/home/wiremock/__files
+    command:
+      - "--port"
+      - "8080"
+      - "--verbose"

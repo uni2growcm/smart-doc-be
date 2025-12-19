@@ -1,0 +1,21 @@
+{
+    "request": {
+        "method": "GET",
+        "url": "/plugins"
+    },
+    "response": {
+        "status": 200,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "jsonBody": {
+            "plugins": [
+                {
+                    "id": "plugin-001",
+                    "name": "Sample Plugin",
+                    "version": "1.0.0"
+                }
+            ]
+        }
+    }
+}
