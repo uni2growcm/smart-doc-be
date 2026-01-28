@@ -1,0 +1,5 @@
+routes:
+  routes:
+    - id: customer
+      from: /api/customers
+      to: http://localhost:8081/customers
