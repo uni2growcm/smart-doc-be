@@ -22,29 +22,24 @@ paths:
     get:
       tags:
         - Documents
-      summary: Retrieve a paginated and filtered list of documents for a specific person.
-      operationId: listDocuments
+      summary: Retrieve a paginated and filtered list of documents.
+      operationId: findDocuments
       parameters:
         - $ref: '#/components/parameters/PersonId'
         - $ref: '#/components/parameters/DocumentType'
         - $ref: '#/components/parameters/FilterFromDate'
         - $ref: '#/components/parameters/FilterToDate'
-        - $ref: '#/components/parameters/PaginationPage'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
       responses:
         '200':
           description: Successful retrieval of document list.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DocumentList'
+                $ref: '#/components/schemas/PaginatedDocument'
         '400':
           description: Invalid query parameters provided.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-        '404':
-          description: Person not found (No directory exists for the personId).
           content:
             application/json:
               schema:
@@ -189,6 +184,38 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Problem'
+  /persons/{id}/documents:
+    get:
+      tags:
+        - Persons
+      summary: Retrieve a paginated and filtered list of documents for a specific person.
+      operationId: findPersonDocuments
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/DocumentType'
+        - $ref: '#/components/parameters/FilterFromDate'
+        - $ref: '#/components/parameters/FilterToDate'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Successful retrieval of document list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDocument'
+        '400':
+          description: Invalid query parameters provided.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Person not found (No directory exists for the personId).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
   /document-types:
     get:
       tags:
@@ -223,7 +250,6 @@ components:
     PersonId:
       name: personId
       in: query
-      required: true
       schema:
         type: string
         pattern: ^\d{1,6}$
@@ -255,7 +281,7 @@ components:
         type: string
         format: date
       description: Filter documents up to this clinical date (YYYY-MM-DD), parsed from the filename.
-    PaginationPage:
+    Page:
       name: page
       in: query
       required: false
@@ -263,6 +289,14 @@ components:
         type: integer
         default: 1
       description: Page number for pagination.
+    Size:
+      name: size
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 1
+      description: Number of items per page for pagination.
     Id:
       name: id
       in: path
@@ -304,21 +338,42 @@ components:
           type: string
           format: date
           description: The clinical date extracted from the file name.
-    DocumentList:
+    PageInfo:
+      type: object
+      description: Pagination information.
+      required:
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        page:
+          type: integer
+          description: Current page number (0-based).
+          example: 0
+        size:
+          type: integer
+          description: Number of items per page.
+          example: 10
+        totalElements:
+          type: integer
+          description: Total number of elements across all pages.
+          example: 57
+        totalPages:
+          type: integer
+          description: Total number of pages.
+          example: 6
+    PaginatedDocument:
       type: object
       description: Structure for a paginated list of documents.
       properties:
-        totalCount:
-          type: integer
-          description: Total number of documents matching the filter.
-        pageSize:
-          type: integer
-        pageNumber:
-          type: integer
-        documents:
+        data:
           type: array
           items:
             $ref: '#/components/schemas/Document'
+          description: List of documents for the current page.
+        metadata:
+          $ref: '#/components/schemas/PageInfo'
     Problem:
       type: object
       description: Standardized error format following RFC 7807 (Problem Details for HTTP APIs).
@@ -395,12 +450,15 @@ components:
         name:
           type: string
           description: Person's name (available when integrated with OH).
+    DocumentType:
+      type: string
+      enum:
+        - DOC
+        - MED
+        - REF
+      description: Type of the document.
     DocumentTypeArray:
       type: array
       items:
-        type: string
-        enum:
-          - DOC
-          - MED
-          - REF
+        $ref: '#/components/schemas/DocumentType'
       description: List of supported document types.

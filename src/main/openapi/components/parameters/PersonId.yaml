@@ -1,6 +1,5 @@
 name: personId
 in: query
-required: true
 schema:
   type: string
   pattern: ^\d{1,6}$

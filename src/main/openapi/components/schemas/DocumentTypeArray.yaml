@@ -1,8 +1,4 @@
 type: array
 items:
-  type: string
-  enum:
-    - DOC
-    - MED
-    - REF
+  $ref: ./DocumentType.yaml
 description: List of supported document types.

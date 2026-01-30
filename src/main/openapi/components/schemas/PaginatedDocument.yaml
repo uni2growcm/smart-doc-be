@@ -1,0 +1,10 @@
+type: object
+description: Structure for a paginated list of documents.
+properties:
+  data:
+    type: array
+    items:
+      $ref: ./Document.yaml
+    description: List of documents for the current page.
+  metadata:
+    $ref: ./PageInfo.yaml

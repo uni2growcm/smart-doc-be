@@ -25,6 +25,8 @@ paths:
     $ref: paths/documents_{id}.yaml
   /persons:
     $ref: paths/persons.yaml
+  /persons/{id}/documents:
+    $ref: paths/persons_{id}_documents.yaml
   /document-types:
     $ref: paths/document-types.yaml
 components:

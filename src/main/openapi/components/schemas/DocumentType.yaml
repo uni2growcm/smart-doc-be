@@ -1,0 +1,6 @@
+type: string
+enum:
+  - DOC
+  - MED
+  - REF
+description: Type of the document.
