@@ -1,0 +1,25 @@
+type: object
+description: Detailed information about a single document.
+properties:
+  documentId:
+    type: string
+    description: A system-generated unique ID or path alias for retrieval.
+  fileName:
+    type: string
+    description: The full file name in the storage (YYYYMMDD_HHmmss_...).
+  personId:
+    type: string
+  type:
+    type: string
+    enum:
+      - DOC
+      - MED
+      - REF
+  creationDate:
+    type: string
+    format: date-time
+    description: Timestamp when the document was uploaded/stored.
+  documentDate:
+    type: string
+    format: date
+    description: The clinical date extracted from the file name.

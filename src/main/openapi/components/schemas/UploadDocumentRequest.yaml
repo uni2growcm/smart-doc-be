@@ -1,0 +1,31 @@
+type: object
+description: Fields required for document upload via multipart/form-data.
+properties:
+  document:
+    allOf:
+      - $ref: ./BinaryFile.yaml
+    description: The file to upload (JPG).
+  personId:
+    type: string
+    pattern: ^\d{1,6}$
+    description: Numeric identifier of the person.
+  type:
+    type: string
+    enum:
+      - DOC
+      - MED
+      - REF
+    description: Document category type.
+  documentDate:
+    type: string
+    format: date
+    description: >-
+      The clinical date associated with the document (YYYY-MM-DD). Used for the
+      file naming timestamp.
+  description:
+    type: string
+    description: Optional description to be included in the filename.
+required:
+  - document
+  - personId
+  - type

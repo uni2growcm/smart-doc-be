@@ -38,7 +38,7 @@ dependencies {
 openApiGenerate {
     generatorName = "spring"
     packageName.set("org.openhospital.smartdoc.openapi")
-    inputSpec = "${projectDir}/src/main/resources/static/openapi.yaml"
+    inputSpec = "${projectDir}/src/main/openapi/api-docs.yaml"
     globalProperties.set(mapOf("models" to ""))
 
     configOptions.putAll(
@@ -66,4 +66,24 @@ tasks.compileJava {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+tasks.register("lint") {
+    group = "redocly"
+    providers.exec {
+        commandLine("redocly lint src/main/openapi/openapi.yaml")
+    }
+}
+
+tasks.register<Exec>("buildSpec") {
+    group = "redocly"
+    workingDir(rootProject.projectDir)
+    commandLine("redocly bundle src/main/openapi/openapi.yaml", "-o src/main/openapi/api-docs.yaml")
+}
+
+tasks.register("preview") {
+    group = "redocly"
+    providers.exec {
+        commandLine("redocly preview src/main/openapi/openapi.yaml", "-p", "8086")
+    }
 }

@@ -1,10 +1,15 @@
-openapi: 3.0.0
+openapi: 3.1.0
 info:
   title: SmartDoc Document Management API
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
   description: API for managing person-related documents stored in a file system, and for serving SmartDoc UI plugin resources. Designed to be accessed via the OH-API proxy in integrated mode.
   version: 1.1.0
 servers:
-  - url: https://example.com/api
+  - url: http://localhost:8080/api
+security:
+  - Bearer: []
 tags:
   - name: Documents
     description: Operations related to document upload, retrieval, and deletion.
@@ -12,7 +17,6 @@ tags:
     description: Operations related to person identification.
   - name: System
     description: General system information and metadata.
-
 paths:
   /documents:
     get:
@@ -45,7 +49,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Problem'
-
     post:
       tags:
         - Documents
@@ -76,15 +79,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Problem'
-
-  /documents/{documentId}:
+  /documents/{id}:
     get:
       tags:
         - Documents
       summary: Retrieve a document file (download/preview).
       operationId: downloadDocument
       parameters:
-        - $ref: '#/components/parameters/DocumentId'
+        - $ref: '#/components/parameters/Id'
       responses:
         '200':
           description: Document file stream.
@@ -92,26 +94,25 @@ paths:
             image/jpeg:
               schema:
                 $ref: '#/components/schemas/BinaryFile'
-        '404':
-          description: Document not found at the specified path.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Problem'
         '400':
           description: Invalid documentId format.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Problem'
-
+        '404':
+          description: Document not found at the specified path.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
     put:
       tags:
         - Documents
       summary: Update document metadata or replace the file.
       operationId: updateDocument
       parameters:
-        - $ref: '#/components/parameters/DocumentId'
+        - $ref: '#/components/parameters/Id'
       requestBody:
         required: true
         content:
@@ -137,14 +138,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Problem'
-
     delete:
       tags:
         - Documents
       summary: Permanently delete a document file from the file system.
       operationId: deleteDocument
       parameters:
-        - $ref: '#/components/parameters/DocumentId'
+        - $ref: '#/components/parameters/Id'
       responses:
         '204':
           description: Document successfully deleted.
@@ -160,7 +160,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Problem'
-
   /persons:
     get:
       tags:
@@ -178,13 +177,18 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Person'
+        '400':
+          description: Bad request (invalid parameters).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
         '500':
           description: Error scanning file system.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Problem'
-
   /document-types:
     get:
       tags:
@@ -198,24 +202,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DocumentTypeArray'
-
+        '403':
+          description: Forbidden (insufficient permissions).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
 components:
-  # --- PARAMETERS ---
+  securitySchemes:
+    Basic:
+      type: http
+      scheme: basic
+      description: Basic authentication
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT bearer token
   parameters:
-    DocumentId:
-      name: documentId
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Unique identifier of the document (alias pointing to the physical file path).
     PersonId:
       name: personId
       in: query
       required: true
       schema:
         type: string
-        pattern: '^\d{1,6}$'
+        pattern: ^\d{1,6}$
       description: Numeric identifier of the person (up to 6 digits).
     DocumentType:
       name: type
@@ -223,7 +234,10 @@ components:
       required: true
       schema:
         type: string
-        enum: [ DOC, MED, REF ]
+        enum:
+          - DOC
+          - MED
+          - REF
       description: Document category type (DOC, MED, REF). Used to target a specific subfolder.
     FilterFromDate:
       name: fromDate
@@ -249,6 +263,13 @@ components:
         type: integer
         default: 1
       description: Page number for pagination.
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Numeric identifier of the resource.
     PersonNamePartial:
       name: name
       in: query
@@ -256,59 +277,33 @@ components:
       schema:
         type: string
       description: Partial name for filtering (used when proxied by OH-API for OH data lookup).
-    PluginId:
-      name: id
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Unique identifier of the plugin resource ('smartdoc-core.js').
-
-
   schemas:
-    # --- UTILITY SCHEMAS ---
-    BinaryFile:
-      type: string
-      format: binary
-      description: Represents raw binary file content (JPEG, JavaScript bundle).
-
-    DocumentTypeArray:
-      type: array
-      items:
-        type: string
-        enum: [ DOC, MED, REF ]
-      description: List of supported document types.
-
-    # --- REQUEST SCHEMAS ---
-    UploadDocumentRequest:
+    Document:
       type: object
-      description: Fields required for document upload via multipart/form-data.
+      description: Detailed information about a single document.
       properties:
-        document:
-          allOf:
-            - $ref: '#/components/schemas/BinaryFile'
-          description: The file to upload (JPG).
+        documentId:
+          type: string
+          description: A system-generated unique ID or path alias for retrieval.
+        fileName:
+          type: string
+          description: The full file name in the storage (YYYYMMDD_HHmmss_...).
         personId:
           type: string
-          pattern: '^\d{1,6}$'
-          description: Numeric identifier of the person.
         type:
           type: string
-          enum: [ DOC, MED, REF ]
-          description: Document category type.
+          enum:
+            - DOC
+            - MED
+            - REF
+        creationDate:
+          type: string
+          format: date-time
+          description: Timestamp when the document was uploaded/stored.
         documentDate:
           type: string
           format: date
-          description: The clinical date associated with the document (YYYY-MM-DD). Used for the file naming timestamp.
-        description:
-          type: string
-          description: Optional description to be included in the filename.
-      required:
-        - document
-        - personId
-        - type
-
-    # --- RESPONSE SCHEMAS ---
+          description: The clinical date extracted from the file name.
     DocumentList:
       type: object
       description: Structure for a paginated list of documents.
@@ -324,43 +319,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Document'
-
-    Document:
-      type: object
-      description: Detailed information about a single document.
-      properties:
-        documentId:
-          type: string
-          description: A system-generated unique ID or path alias for retrieval.
-        fileName:
-          type: string
-          description: The full file name in the storage (YYYYMMDD_HHmmss_...).
-        personId:
-          type: string
-        type:
-          type: string
-          enum: [ DOC, MED, REF ]
-        creationDate:
-          type: string
-          format: date-time
-          description: Timestamp when the document was uploaded/stored.
-        documentDate:
-          type: string
-          format: date
-          description: The clinical date extracted from the file name.
-
-    Person:
-      type: object
-      description: Person identification data.
-      properties:
-        personId:
-          type: string
-          description: The person's numeric ID.
-        personName:
-          type: string
-          nullable: true
-          description: Person's name (available when integrated with OH).
-
     Problem:
       type: object
       description: Standardized error format following RFC 7807 (Problem Details for HTTP APIs).
@@ -369,11 +327,11 @@ components:
           type: string
           format: uri
           description: A URI reference that identifies the problem type.
-          example: "/problems/invalid-parameter"
+          example: https://my.domain.xd/problems/invalid-parameter
         title:
           type: string
           description: A short, human-readable summary of the problem type.
-          example: "Validation Error"
+          example: Validation Error
         status:
           type: integer
           description: The HTTP status code generated by the origin server for this occurrence of the problem.
@@ -381,7 +339,7 @@ components:
         detail:
           type: string
           description: A human-readable explanation specific to this occurrence of the problem.
-          example: "Required field 'personId' is missing or malformed."
+          example: Required field 'personId' is missing or malformed.
         instance:
           type: string
           format: uri
@@ -390,12 +348,59 @@ components:
           type: string
           format: uuid
           description: A unique identifier for the error occurrence, useful for tracing.
-          example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-
-  securitySchemes:
-    basicAuth:
-      type: http
-      scheme: basic
-
-security:
-  - basicAuth: [ ]
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+    BinaryFile:
+      type: string
+      format: binary
+      description: Represents raw binary file content (JPEG, JavaScript bundle).
+    UploadDocumentRequest:
+      type: object
+      description: Fields required for document upload via multipart/form-data.
+      properties:
+        document:
+          allOf:
+            - $ref: '#/components/schemas/BinaryFile'
+          description: The file to upload (JPG).
+        personId:
+          type: string
+          pattern: ^\d{1,6}$
+          description: Numeric identifier of the person.
+        type:
+          type: string
+          enum:
+            - DOC
+            - MED
+            - REF
+          description: Document category type.
+        documentDate:
+          type: string
+          format: date
+          description: The clinical date associated with the document (YYYY-MM-DD). Used for the file naming timestamp.
+        description:
+          type: string
+          description: Optional description to be included in the filename.
+      required:
+        - document
+        - personId
+        - type
+    Person:
+      type: object
+      description: Person identification data.
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: The person's numeric ID.
+        name:
+          type: string
+          description: Person's name (available when integrated with OH).
+    DocumentTypeArray:
+      type: array
+      items:
+        type: string
+        enum:
+          - DOC
+          - MED
+          - REF
+      description: List of supported document types.

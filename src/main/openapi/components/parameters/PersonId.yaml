@@ -1,0 +1,7 @@
+name: personId
+in: query
+required: true
+schema:
+  type: string
+  pattern: ^\d{1,6}$
+description: Numeric identifier of the person (up to 6 digits).

@@ -1,0 +1,28 @@
+get:
+  tags:
+    - Persons
+  summary: List persons (used for stand-alone mode or autocomplete lookup).
+  operationId: listPersons
+  parameters:
+    - $ref: ../components/parameters/PersonNamePartial.yaml
+  responses:
+    '200':
+      description: List of persons.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: ../components/schemas/Person.yaml
+    '400':
+      description: Bad request (invalid parameters).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '500':
+      description: Error scanning file system.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml

@@ -1,0 +1,18 @@
+get:
+  tags:
+    - System
+  summary: Get supported document types.
+  operationId: getDocumentTypes
+  responses:
+    '200':
+      description: List of supported types.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/DocumentTypeArray.yaml
+    '403':
+      description: Forbidden (insufficient permissions).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml

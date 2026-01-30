@@ -1,0 +1,9 @@
+name: fromDate
+in: query
+required: false
+schema:
+  type: string
+  format: date
+description: >-
+  Filter documents starting from this clinical date (YYYY-MM-DD), parsed from
+  the filename.

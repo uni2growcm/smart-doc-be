@@ -1,0 +1,14 @@
+type: object
+description: Structure for a paginated list of documents.
+properties:
+  totalCount:
+    type: integer
+    description: Total number of documents matching the filter.
+  pageSize:
+    type: integer
+  pageNumber:
+    type: integer
+  documents:
+    type: array
+    items:
+      $ref: ./Document.yaml
