@@ -223,7 +223,7 @@ components:
       required: true
       schema:
         type: string
-        enum: [DOC, MED, REF]
+        enum: [ DOC, MED, REF ]
       description: Document category type (DOC, MED, REF). Used to target a specific subfolder.
     FilterFromDate:
       name: fromDate
@@ -276,7 +276,7 @@ components:
       type: array
       items:
         type: string
-        enum: [DOC, MED, REF]
+        enum: [ DOC, MED, REF ]
       description: List of supported document types.
 
     # --- REQUEST SCHEMAS ---
@@ -294,7 +294,7 @@ components:
           description: Numeric identifier of the person.
         type:
           type: string
-          enum: [DOC, MED, REF]
+          enum: [ DOC, MED, REF ]
           description: Document category type.
         documentDate:
           type: string
@@ -339,7 +339,7 @@ components:
           type: string
         type:
           type: string
-          enum: [DOC, MED, REF]
+          enum: [ DOC, MED, REF ]
         creationDate:
           type: string
           format: date-time

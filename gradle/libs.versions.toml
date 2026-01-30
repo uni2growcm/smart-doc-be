@@ -1,0 +1,42 @@
+[versions]
+spring-boot = "4.0.2"
+spring-dependency = "1.1.7"
+
+jackson-nullable = "0.2.8"
+mapstruct = "1.6.3"
+wiremock = "3.9.0"
+openapi-generator = "7.17.0"
+
+java = "25"
+
+[libraries]
+spring-boot-starter-webmvc = { module = "org.springframework.boot:spring-boot-starter-webmvc" }
+spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
+spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
+spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+
+jackson-databind-nullable = { module = "org.openapitools:jackson-databind-nullable", version.ref = "jackson-nullable" }
+mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
+lombok = { module = "org.projectlombok:lombok" }
+
+# Test
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-boot-starter-data-jpa-test = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+wiremock-spring-boot = { module = "org.wiremock.integrations:wiremock-spring-boot", version.ref = "wiremock" }
+
+openapi-generator = { module = "org.openapitools:openapi-generator-maven-plugin", version.ref = "openapi-generator" }
+
+[bundles]
+spring-boot = ["spring-boot-starter-webmvc", "spring-boot-starter-actuator", "spring-boot-starter-security", "spring-boot-starter-validation", "spring-boot-starter-data-jpa"]
+extra-libs = ["jackson-databind-nullable"]
+annotation-processors = ["mapstruct", "lombok"]
+compile = ["lombok"]
+test-runtime = ["junit-platform-launcher"]
+test = ["spring-boot-starter-test", "spring-boot-starter-data-jpa-test", "wiremock-spring-boot"]
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency" }
+openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
