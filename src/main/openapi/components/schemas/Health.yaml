@@ -1,0 +1,10 @@
+type: object
+description: Health status of the application.
+properties:
+  status:
+    $ref: ./HealthStatus.yaml
+  components:
+    type: object
+    additionalProperties:
+      $ref: ./HealthComponent.yaml
+    description: Health details for individual components.

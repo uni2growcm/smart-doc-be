@@ -202,6 +202,7 @@ smart-doc-api/
 - **Security:** OH-API/BE handles authentication; SD-BE validates tokens
 - **Storage:** File system-based document storage (organized by personId)
 - **Domain:** Follows Open Hospital domain models and conventions
+- **Entities:** DocumentType provides full CRUD operations, inheriting Base schema (id, code, name, description). Person provides full CRUD operations, inheriting Base schema (id, name)
 
 ## Important Reminders
 

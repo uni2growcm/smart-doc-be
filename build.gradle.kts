@@ -37,6 +37,7 @@ dependencies {
 
 openApiGenerate {
     generatorName = "spring"
+    modelNameSuffix = "DTO"
     packageName.set("org.openhospital.smartdoc.openapi")
     inputSpec = "${projectDir}/src/main/openapi/api-docs.yaml"
     globalProperties.set(mapOf("models" to ""))

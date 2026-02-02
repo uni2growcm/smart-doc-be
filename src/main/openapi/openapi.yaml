@@ -25,10 +25,16 @@ paths:
     $ref: paths/documents_{id}.yaml
   /persons:
     $ref: paths/persons.yaml
+  /persons/{id}:
+    $ref: paths/persons_{id}.yaml
   /persons/{id}/documents:
     $ref: paths/persons_{id}_documents.yaml
   /document-types:
     $ref: paths/document-types.yaml
+  /document-types/{id}:
+    $ref: paths/document-types_{id}.yaml
+  /actuator/health:
+    $ref: paths/health.yaml
 components:
   securitySchemes:
     Basic:

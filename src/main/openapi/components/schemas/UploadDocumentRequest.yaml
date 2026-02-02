@@ -11,12 +11,8 @@ properties:
     description: Numeric identifier of the person.
   type:
     type: string
-    enum:
-      - DOC
-      - MED
-      - REF
-    description: Document category type.
-  documentDate:
+    description: Document category type id.
+  date:
     type: string
     format: date
     description: >-

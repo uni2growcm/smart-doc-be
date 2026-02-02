@@ -1,10 +1,8 @@
-type: object
-description: Person identification data.
-required: [id]
-properties:
-  id:
-    type: string
-    description: The person's numeric ID.
-  name:
-    type: string
-    description: Person's name (available when integrated with OH).
+allOf:
+  - $ref: ./Base.yaml
+  - type: object
+    description: Person identification data.
+    properties:
+      name:
+        type: string
+        description: Person's name (available when integrated with OH).
