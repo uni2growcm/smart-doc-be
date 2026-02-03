@@ -1,276 +1,342 @@
+# OH API – Core + Plugin Architecture
 
-# Runtime Plugin Architecture with Spring Boot (Core + Plugin)
+## 1. Analysis and Problem Statement
 
-This document explains how to build a **Spring Boot application (Core)** that can **load plugins at runtime**.  
-Plugins are delivered as **JAR files**, can expose **REST endpoints**, and are **isolated** from the Core while still being able to reuse Core services.
+The goal of this solution is to design a **modular backend architecture** where:
 
-The solution is based on:
+* A **single Core application (oh-api)** acts as the main entry point
+* Multiple **Plugin applications** can be added, removed, or extended independently
+* All components run on the **same server**, but on **different ports**
+* External clients interact **only with the Core**, never directly with plugins
 
-- Spring Boot 3.x
-- PF4J (Plugin Framework for Java)
-- Spring Boot Plugin (SBP – Laxture)
+Key challenges addressed:
+
+* How to expose many APIs without coupling Core to plugin implementations
+* How to support **multiple plugins**, each with **multiple endpoints**
+* How to avoid starting and configuring routing logic multiple times
+* How to keep the system simple, observable, and production-ready
 
 ---
 
-## 1. Architecture Overview
+## 2. General Idea
+
+The architecture is based on a **configuration-driven reverse proxy** implemented inside the Core application.
+
+### Core Responsibilities
+
+* Expose public APIs to external clients
+* Load routing rules from a configuration file
+* Forward incoming HTTP requests to the correct plugin
+* Return plugin responses transparently to the client
+
+### Plugin Responsibilities
+
+* Expose domain-specific APIs
+* Contain business logic
+* Remain completely unaware of the Core
+
+> The Core does **not** know plugin controllers, DTOs, or services.
+> It only knows **routes**.
+
+---
+
+## 3. High-Level Architecture
 
 ```
-
 Client
-|
-v
-Core Application (Spring Boot)
-
-* Plugin Manager
-* Security / Permissions
-* Shared Services
-  |
-  v
-  Plugin JAR 
-* REST Controllers
-* Plugin-specific Services
-
-````
-
-### Key principles
-
-- The **Core**:
-  - does NOT know which plugins exist
-  - manages plugin lifecycle (load, start, stop)
-- The **Plugin**:
-  - attaches itself to the Core at runtime
-  - can expose REST endpoints
-  - runs in its own Spring context
-
----
-
-## 2. Core Application
-
-The Core is a **standard Spring Boot application** with plugin support enabled.
-
----
-
-### 2.1 Core Maven Configuration
-
-Relevant dependencies only:
-
-```xml
-<dependency>
-    <groupId>org.laxture</groupId>
-    <artifactId>sbp-spring-boot-starter</artifactId>
-    <version>3.5.27</version>
-</dependency>
-
-<dependency>
-    <groupId>org.laxture</groupId>
-    <artifactId>sbp-adapter-3</artifactId>
-    <version>3.5.27</version>
-</dependency>
-````
-
-#### Why these dependencies matter
-
-* `sbp-spring-boot-starter` integrates PF4J into Spring Boot
-* `sbp-adapter-3` enables compatibility with Spring Boot 3.x
-
----
-
-### 2.2 Core Configuration (`application.properties`)
-
-```properties
-spring.sbp.enabled=true
-spring.sbp.plugins-root=plugins
-spring.sbp.web-mvc.enabled=true
-
-spring.web.resources.add-mappings=false
-spring.sbp.web-mvc.resource-resolver-enabled=false
+   |
+   v
++--------------------+
+|  OH API (Core)     |
+|  Reverse Proxy     |
+|  Port 8080         |
++--------------------+
+   |        |
+   v        v
+Plugin A   Plugin B
+8081       8082
 ```
 
-#### Explanation
-
-* `spring.sbp.enabled=true`
-  Enables the plugin system
-
-* `spring.sbp.plugins-root=plugins`
-  Directory where plugin JARs are placed
-
-* `spring.sbp.web-mvc.enabled=true`
-  Allows plugins to register REST controllers dynamically
+* Clients call `http://server:8080/api/plugin/plugin-a...`
+* Core decides where to forward the request
+* Plugins respond
+* Core returns the response
 
 ---
 
-### 2.3 Plugin Administration API (Core)
+## 4. Routing Strategy
 
-The Core exposes an endpoint to **inspect loaded plugins**.
+Routing is derived from **plugin manifests** and exposed centrally by the Core.
+
+Routing is **prefix-based** and defined in a single configuration file.
+
+### Routes generation from manifests
+
+Routing is **not hard-coded** and is **not managed via a separate routes configuration file**. Instead, the Core derives routing rules **directly from plugin manifests** (`manifest.yml`).
+
+The manifest now represents the **single source of truth** for:
+
+* Plugin identity
+* Network configuration
+* Security requirements
+
+> Authorization is evaluated once at the Core level.
+> If access is denied, the request is rejected before any network call is made.
+
+### Manifest-driven routing model
+
+Each plugin declares:
+
+* its logical name
+* the local port it listens on
+* the permissions required to access its APIs
+
+The Core derives the public API prefix using a deterministic convention:
+
+```
+/api/{plugin-name}/**
+```
+
+The **plugin manifest** is the single source of truth for plugin discovery, routing, and authorization.
+
+### Manifest structure
+
+```yaml
+- name: "smart-doc"
+  port: 4001
+  permissions:
+    - role: "admin"
+      privileges:
+        - "document.read"
+        - "document.write"
+        - "document.delete"
+        - "document.update"
+```
+
+### Fields description
+
+* **name**: Logical identifier of the plugin. It also defines the public API prefix.
+* **port**: Local port where the plugin HTTP server is exposed.
+* **permissions**: Access control rules evaluated by the Core.
+
+    * **role**: Required user role.
+    * **privileges**: Fine-grained permissions required to access the plugin APIs.
+
+### Core responsibilities based on the manifest
+
+Using the manifest, the Core:
+
+* Discovers which plugins are available
+* Builds routing rules dynamically
+* Exposes public APIs under `/api/{plugin-name}/**`
+* Enforces authorization *before* forwarding requests
+* Centralizes governance and security policies
+
+> Plugins do not implement authorization logic themselves. The Core acts as the policy enforcement point.
+
+### Derived route (implicit)
+
+From the manifest above, the Core automatically derives the following routing rule:
+
+```
+/api/smart-doc/**  →  http://localhost:4001/**
+```
+
+### How routing works at runtime
+
+1. Core loads all plugin manifests at startup
+2. For each plugin, Core:
+
+    * registers `/api/{plugin-name}` as public base path
+    * maps it to `http://localhost:{port}`
+3. Incoming requests are matched on the base path
+4. The base path is stripped and the remaining path is appended to the plugin URL
+5. The request is forwarded preserving:
+
+    * HTTP method
+    * Headers
+    * Body
+    * Query parameters
+
+Example:
+
+```
+Incoming request:
+GET /api/smart-doc/documents/123
+
+Resolved target:
+http://localhost:4001/documents/123
+```
+
+This allows **one manifest entry to expose multiple APIs** inside a plugin.
+
+---
+
+## 5. Implementation Details
+
+### 5.1 Manifest Loading and Plugin Registry
+
+Routes are **not configured explicitly**. The Core loads plugin definitions from a `manifest.yml` file and builds routing information dynamically.
+
+```java
+@ConfigurationProperties(prefix = "plugins")
+public class PluginRegistry {
+
+    private List<PluginDefinition> plugins = new ArrayList<>();
+
+    public List<PluginDefinition> getPlugins() {
+        return plugins;
+    }
+
+    public void setPlugins(List<PluginDefinition> plugins) {
+        this.plugins = plugins;
+    }
+}
+```
+
+Each `PluginDefinition` contains:
+
+* `name`: plugin identifier
+* `port`: local HTTP port exposed by the plugin
+* `permissions`: authorization rules (roles and privileges)
+
+From this information, the Core checks the permissions and implicitly derives:
+
+```
+/api/{plugin-name}/**  →  http://localhost:{port}/**
+```
+
+---
+
+### 5.2 Proxy Controller (Manifest-driven)
+
+The Core exposes a **single catch-all controller** that resolves plugins using the manifest registry:
 
 ```java
 @RestController
-@RequestMapping("/api/admin/plugins")
-public class PluginAdminController {
+public class ProxyController {
 
-    @Autowired
-    private PluginManager pluginManager;
+    @Value("${proxy.api-prefix:/api/}")
+    private String apiPrefix;
 
-    @GetMapping("/status")
-    public List<Map<String, String>> getPluginsStatus() {
-        return pluginManager.getPlugins().stream().map(wrapper -> {
-            Map<String, String> info = new HashMap<>();
-            info.put("id", wrapper.getPluginId());
-            info.put("status", wrapper.getPluginState().toString());
-            info.put("version", wrapper.getDescriptor().getVersion());
-            return info;
-        }).toList();
-    }
-}
-```
+    @Value("${proxy.target-host:http://localhost:}")
+    private String targetHost;
 
-#### What this does
+    private final PluginRegistry pluginRegistry;
+    private final RestTemplate restTemplate;
 
-* Uses PF4J’s `PluginManager`
-* Lists:
-
-    * plugin id
-    * plugin version
-    * runtime state (CREATED, STARTED, STOPPED)
-
-This confirms that plugins are **loaded and running at runtime**.
-
----
-
-## 3. Plugin Project
-
-A plugin is **not** a Spring Boot application.
-It is a **plain JAR** loaded by the Core.
-
----
-
-### 3.1 Plugin Maven Configuration
-
-Relevant dependencies only:
-
-```xml
-<dependency>
-    <groupId>org.laxture</groupId>
-    <artifactId>sbp-core</artifactId>
-    <version>3.5.27</version>
-    <scope>provided</scope>
-</dependency>
-
-<dependency>
-    <groupId>org.pf4j</groupId>
-    <artifactId>pf4j</artifactId>
-    <version>3.6.0</version>
-    <scope>provided</scope>
-</dependency>
-```
-
-#### Why `provided` scope is mandatory
-
-* These libraries are already present in the Core
-* Prevents classloader duplication and conflicts
-
----
-
-### 3.2 Plugin JAR Manifest Metadata
-
-```xml
-<plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-jar-plugin</artifactId>
-    <configuration>
-        <archive>
-            <manifestEntries>
-                <Plugin-Id>example-plugin</Plugin-Id>
-                <Plugin-Version>1.0.0</Plugin-Version>
-                <Plugin-Class>com.example.plugin.ExamplePlugin</Plugin-Class>
-            </manifestEntries>
-        </archive>
-    </configuration>
-</plugin>
-```
-
-#### Mandatory fields
-
-* `Plugin-Id` → unique identifier
-* `Plugin-Version` → plugin version
-* `Plugin-Class` → entry point class
-
-Without this metadata, the plugin **will not load**.
-
----
-
-## 4. Plugin Entry Point
-
-Each plugin must extend `SpringBootPlugin`.
-
-```java
-public class ExamplePlugin extends SpringBootPlugin {
-
-    public ExamplePlugin(PluginWrapper wrapper) {
-        super(wrapper);
+    public ProxyController(PluginRegistry pluginRegistry, RestTemplate restTemplate) {
+        this.pluginRegistry = pluginRegistry;
+        this.restTemplate = restTemplate;
     }
 
-    @Override
-    protected SpringBootstrap createSpringBootstrap() {
-        return new SpringBootstrap(this, ExamplePluginConfig.class);
-    }
-}
-```
+    @RequestMapping("${proxy.api-prefix:/api/}**")
+    public ResponseEntity<?> proxy(HttpServletRequest request,
+                                   @RequestBody(required = false) byte[] body) {
 
-#### What this does
+        String path = request.getRequestURI();
+        // es: /api/smart-doc/documents/123
 
-* Creates a **dedicated Spring ApplicationContext**
-* Keeps plugin beans isolated from the Core
-* Still allows dependency injection from Core beans
+        // Removes /api/
+        String relativePath = path.substring(apiPrefix.length());
+        // es: smart-doc/documents/123
 
----
+        // Extracts plugin name
+        String pluginName = relativePath.split("/", 2)[0];
+        // es: smart-doc
 
-## 5. Plugin Spring Configuration
+        // Resolves plugin 
+        PluginDefinition plugin = pluginRegistry.getPlugins().stream()
+                .filter(p -> p.getName().equals(pluginName))
+                .findFirst()
+                .orElseThrow(() ->
+                        new RuntimeException("No plugin registered for: " + pluginName)
+                );
 
-```java
-@Configuration
-@ComponentScan(basePackages = "com.example.plugin")
-public class ExamplePluginConfig {
-    // Entry point for scanning plugin beans
-}
-```
-
-This tells SBP where to find:
-
-* `@RestController`
-* `@Service`
-* `@Component`
-
----
-
-## 6. Plugin REST Controller
-
-```java
-@RestController
-@RequestMapping("/api/plugin")
-public class ExampleController {
-
-    @GetMapping("/test")
-    public Map<String, String> test() {
-        return Map.of(
-            "status", "success",
-            "message", "Hello from Plugin!"
+        // Builds target URL
+        String targetUrl = path.replace(
+                apiPrefix + plugin.getName(),
+                targetHost + plugin.getPort()
         );
+        // es: http://localhost:4001/documents/123
+
+        HttpMethod method = HttpMethod.valueOf(request.getMethod());
+        HttpEntity<byte[]> entity = new HttpEntity<>(body);
+
+        return restTemplate.exchange(targetUrl, method, entity, byte[].class);
     }
 }
 ```
 
-Once the plugin JAR is placed in the `plugins/` directory and started:
+This controller:
 
-* The endpoint is **immediately available**
-* No Core restart is required
+* Matches all `/api/**` requests
+* Resolves the target plugin using the manifest
+* Builds the target URL dynamically
+* Forwards the request transparently
 
-### Runtime Structure
+> In a production-ready implementation, the Core must also forward:
+> - HTTP headers (Authorization, Correlation-Id, etc.)
+> - Query parameters
+> - Response headers and status codes
 
-Before starting the Core application, the file system looks like this:
+---
 
-root/
-├── core-app.jar
-└── plugins/
-├── example-plugin.jar
-├── another-plugin.jar
+## 6. Deployment on a Server
+
+### Suggested directory layout
+
+```
+/opt/oh-system/
+├── core/
+│   └── oh-api.jar
+├── plugins/
+│   ├── customer.jar
+│   └── test.jar
+```
+
+---
+
+### Startup options
+
+#### Option A – Shell script
+
+```bash
+java -jar plugins/customer.jar &
+java -jar plugins/test.jar &
+java -jar core/oh-api.jar
+```
+
+#### Option B – systemd (production)
+
+* One service for Core
+* One service per plugin
+* Automatic restart and startup at boot
+
+#### Option C – Docker Compose
+
+* One container for Core
+* One container per plugin
+* Single command startup
+* Clear isolation and scalability
+
+---
+
+## 7. Benefits of This Approach
+
+* Loose coupling between Core and plugins
+* Easy to add or remove plugins
+* Single entry point for clients
+* No API duplication
+* Clear ownership of responsibilities
+* Minimal runtime complexity
+
+---
+
+## 8. Future Improvements
+
+* Health checks for plugins
+* Route validation at startup
+* Authentication and authorization at Core level
+* Rate limiting
+* Metrics and tracing
