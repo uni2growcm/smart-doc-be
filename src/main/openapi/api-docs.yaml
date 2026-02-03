@@ -159,27 +159,138 @@ paths:
     get:
       tags:
         - Persons
-      summary: List persons (used for stand-alone mode or autocomplete lookup).
+      summary: List persons with pagination (used for stand-alone mode or autocomplete lookup).
       operationId: listPersons
       parameters:
         - $ref: '#/components/parameters/PersonNamePartial'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
       responses:
         '200':
-          description: List of persons.
+          description: Paginated list of persons.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Person'
+                $ref: '#/components/schemas/PaginatedPerson'
         '400':
           description: Bad request (invalid parameters).
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Problem'
-        '500':
-          description: Error scanning file system.
+    post:
+      tags:
+        - Persons
+      summary: Create a new person.
+      operationId: createPerson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Person'
+      responses:
+        '201':
+          description: Person created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '400':
+          description: Bad request (invalid data).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden (insufficient permissions).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /persons/{id}:
+    get:
+      tags:
+        - Persons
+      summary: Retrieve a person by ID.
+      operationId: getPerson
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Person found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '403':
+          description: Forbidden (insufficient permissions).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Person not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    put:
+      tags:
+        - Persons
+      summary: Update a person.
+      operationId: updatePerson
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Person'
+      responses:
+        '200':
+          description: Person updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '400':
+          description: Bad request (invalid data).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden (insufficient permissions).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Person not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    delete:
+      tags:
+        - Persons
+      summary: Delete a person.
+      operationId: deletePerson
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204':
+          description: Person deleted.
+        '403':
+          description: Forbidden (insufficient permissions).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Person not found.
           content:
             application/json:
               schema:
@@ -229,12 +340,136 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DocumentTypeArray'
+    post:
+      tags:
+        - System
+      summary: Create a new document type.
+      operationId: createDocumentType
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentType'
+      responses:
+        '201':
+          description: Document type created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentType'
+        '400':
+          description: Bad request (invalid data).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
         '403':
           description: Forbidden (insufficient permissions).
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Problem'
+  /document-types/{id}:
+    get:
+      tags:
+        - System
+      summary: Retrieve a document type by ID.
+      operationId: getDocumentType
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Document type found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentType'
+        '403':
+          description: Forbidden (insufficient permissions).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Document type not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    put:
+      tags:
+        - System
+      summary: Update a document type.
+      operationId: updateDocumentType
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentType'
+      responses:
+        '200':
+          description: Document type updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentType'
+        '400':
+          description: Bad request (invalid data).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden (insufficient permissions).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Document type not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    delete:
+      tags:
+        - System
+      summary: Delete a document type.
+      operationId: deleteDocumentType
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204':
+          description: Document type deleted.
+        '403':
+          description: Forbidden (insufficient permissions).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Document type not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /actuator/health:
+    get:
+      tags:
+        - System
+      summary: Get application health status.
+      operationId: getHealth
+      responses:
+        '200':
+          description: Application is healthy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
 components:
   securitySchemes:
     Basic:
@@ -312,32 +547,73 @@ components:
         type: string
       description: Partial name for filtering (used when proxied by OH-API for OH data lookup).
   schemas:
-    Document:
+    Base:
       type: object
-      description: Detailed information about a single document.
       properties:
-        documentId:
+        id:
           type: string
-          description: A system-generated unique ID or path alias for retrieval.
-        fileName:
+          description: The unique identifier of the object.
+        createdBy:
           type: string
-          description: The full file name in the storage (YYYYMMDD_HHmmss_...).
-        personId:
-          type: string
-        type:
-          type: string
-          enum:
-            - DOC
-            - MED
-            - REF
-        creationDate:
+          description: The user who created the object.
+        createdDate:
           type: string
           format: date-time
-          description: Timestamp when the document was uploaded/stored.
-        documentDate:
+          description: The date and time when the object was created.
+        lastModifiedBy:
           type: string
-          format: date
-          description: The clinical date extracted from the file name.
+          description: The user who last updated the object.
+        lastModifiedDate:
+          type: string
+          format: date-time
+          description: The date and time when the object was last updated.
+        version:
+          type: integer
+          description: The lock field for the object.
+      required:
+        - id
+        - createdDate
+        - lastModifiedDate
+    DocumentStatus:
+      type: string
+      enum:
+        - active
+        - archived
+        - deleted
+      description: Document lifecycle status values.
+    Document:
+      allOf:
+        - $ref: '#/components/schemas/Base'
+        - type: object
+          description: Detailed information about a single document.
+          properties:
+            fileName:
+              type: string
+              description: The full file name in the storage.
+            personId:
+              type: string
+            type:
+              type: string
+              description: The document type code.
+            date:
+              type: string
+              format: date
+              description: The clinical date extracted from the file name.
+            description:
+              type: string
+              description: Human-readable description of the document content.
+            fileSize:
+              type: integer
+              description: File size in bytes.
+            mimeType:
+              type: string
+              description: MIME type of the file.
+            status:
+              $ref: '#/components/schemas/DocumentStatus'
+            uploadDate:
+              type: string
+              format: date-time
+              description: Timestamp of document upload.
     PageInfo:
       type: object
       description: Pagination information.
@@ -422,12 +698,8 @@ components:
           description: Numeric identifier of the person.
         type:
           type: string
-          enum:
-            - DOC
-            - MED
-            - REF
-          description: Document category type.
-        documentDate:
+          description: Document category type id.
+        date:
           type: string
           format: date
           description: The clinical date associated with the document (YYYY-MM-DD). Used for the file naming timestamp.
@@ -438,27 +710,90 @@ components:
         - document
         - personId
         - type
-    Person:
-      type: object
-      description: Person identification data.
-      required:
-        - id
-      properties:
-        id:
-          type: string
-          description: The person's numeric ID.
-        name:
-          type: string
-          description: Person's name (available when integrated with OH).
-    DocumentType:
+    Gender:
       type: string
       enum:
-        - DOC
-        - MED
-        - REF
-      description: Type of the document.
+        - male
+        - female
+      description: Administrative gender values.
+    Person:
+      allOf:
+        - $ref: '#/components/schemas/Base'
+        - type: object
+          description: Person identification data.
+          properties:
+            name:
+              type: string
+              description: Person's name (available when integrated with OH).
+            email:
+              type: string
+              format: email
+              description: Contact email.
+            phoneNumber:
+              type: string
+              description: Primary phone number.
+            gender:
+              $ref: '#/components/schemas/Gender'
+    PaginatedPerson:
+      type: object
+      description: Structure for a paginated list of persons.
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Person'
+          description: List of persons for the current page.
+        metadata:
+          $ref: '#/components/schemas/PageInfo'
+    DocumentType:
+      allOf:
+        - $ref: '#/components/schemas/Base'
+        - type: object
+          description: Document type definition.
+          properties:
+            code:
+              type: string
+              description: The unique code for the document type.
+            name:
+              type: string
+              description: The display name for the document type.
+            description:
+              type: string
+              description: A description of the document type.
+          required:
+            - code
+            - name
     DocumentTypeArray:
       type: array
       items:
         $ref: '#/components/schemas/DocumentType'
       description: List of supported document types.
+    HealthStatus:
+      type: string
+      enum:
+        - UP
+        - DOWN
+        - OUT_OF_SERVICE
+        - UNKNOWN
+      description: Health status values.
+    HealthComponent:
+      type: object
+      description: Health details for a specific component.
+      properties:
+        status:
+          $ref: '#/components/schemas/HealthStatus'
+        details:
+          type: object
+          additionalProperties: true
+          description: Additional details about the component health.
+    Health:
+      type: object
+      description: Health status of the application.
+      properties:
+        status:
+          $ref: '#/components/schemas/HealthStatus'
+        components:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/HealthComponent'
+          description: Health details for individual components.

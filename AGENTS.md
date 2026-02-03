@@ -50,6 +50,9 @@ This file provides essential information for AI coding agents working in the Sma
 # Bundle OpenAPI spec
 ./gradlew buildSpec
 
+# Build final API spec (using redocly)
+redocly bundle src/main/openapi/openapi.yaml -o src/main/openapi/api-docs.yaml
+
 # Preview OpenAPI docs (on port 8086)
 ./gradlew preview
 

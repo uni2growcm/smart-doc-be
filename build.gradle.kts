@@ -37,10 +37,11 @@ dependencies {
 
 openApiGenerate {
     generatorName = "spring"
-    modelNameSuffix = "DTO"
     packageName.set("org.openhospital.smartdoc.openapi")
     inputSpec = "${projectDir}/src/main/openapi/api-docs.yaml"
     globalProperties.set(mapOf("models" to ""))
+    modelNameSuffix = "DTO"
+    modelNameMappings.set(listOf("Gender", "DocumentStatus", "HealthStatus").associateWith { it })
 
     configOptions.putAll(
         mapOf(
@@ -49,7 +50,7 @@ openApiGenerate {
             "dateLibrary"           to "java8",
             "useTags"               to "true",
             "interfaceOnly"          to "true",
-            "sourceFolder" to "src/main/kotlin"
+            "modelPackage" to "org.openhospital.smartdoc.openapi"
         )
     )
 }

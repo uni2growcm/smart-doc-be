@@ -6,3 +6,12 @@ allOf:
       name:
         type: string
         description: Person's name (available when integrated with OH).
+      email:
+        type: string
+        format: email
+        description: Contact email.
+      phoneNumber:
+        type: string
+        description: Primary phone number.
+      gender:
+        $ref: ./Gender.yaml

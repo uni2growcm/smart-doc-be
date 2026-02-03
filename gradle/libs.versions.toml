@@ -6,6 +6,7 @@ jackson-nullable = "0.2.8"
 mapstruct = "1.6.3"
 wiremock = "3.9.0"
 openapi-generator = "7.17.0"
+swagger-annotations = "2.2.22"
 
 java = "25"
 
@@ -19,6 +20,7 @@ spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-
 jackson-databind-nullable = { module = "org.openapitools:jackson-databind-nullable", version.ref = "jackson-nullable" }
 mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
 lombok = { module = "org.projectlombok:lombok" }
+swagger-annotations = { module = "io.swagger.core.v3:swagger-annotations", version.ref = "swagger-annotations" }
 
 # Test
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
@@ -30,7 +32,7 @@ openapi-generator = { module = "org.openapitools:openapi-generator-maven-plugin"
 
 [bundles]
 spring-boot = ["spring-boot-starter-webmvc", "spring-boot-starter-actuator", "spring-boot-starter-security", "spring-boot-starter-validation", "spring-boot-starter-data-jpa"]
-extra-libs = ["jackson-databind-nullable"]
+extra-libs = ["jackson-databind-nullable", "swagger-annotations"]
 annotation-processors = ["mapstruct", "lombok"]
 compile = ["lombok"]
 test-runtime = ["junit-platform-launcher"]

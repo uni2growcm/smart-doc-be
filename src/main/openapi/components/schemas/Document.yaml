@@ -5,7 +5,7 @@ allOf:
     properties:
       fileName:
         type: string
-        description: The full file name in the storage (YYYYMMDD_HHmmss_...).
+        description: The full file name in the storage.
       personId:
         type: string
       type:
@@ -15,3 +15,18 @@ allOf:
         type: string
         format: date
         description: The clinical date extracted from the file name.
+      description:
+        type: string
+        description: Human-readable description of the document content.
+      fileSize:
+        type: integer
+        description: File size in bytes.
+      mimeType:
+        type: string
+        description: MIME type of the file.
+      status:
+        $ref: ./DocumentStatus.yaml
+      uploadDate:
+        type: string
+        format: date-time
+        description: Timestamp of document upload.
