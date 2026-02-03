@@ -41,7 +41,7 @@ public interface IPersonService {
     void deletePerson(@PathVariable UUID id);
 
     @GetExchange("/{id}/documents")
-    PaginatedDocumentDTO findPersonDocuments(@PathVariable UUID id, @RequestParam(required = false) UUID documentType,
+    PaginatedDocumentDTO findPersonDocuments(@PathVariable UUID id, @RequestParam(required = false) UUID type,
         @RequestParam(required = false) LocalDate fromDate, @RequestParam(required = false) LocalDate toDate,
         @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
 }

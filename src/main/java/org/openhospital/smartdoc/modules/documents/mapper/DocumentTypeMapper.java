@@ -12,9 +12,9 @@ import org.openhospital.smartdoc.openapi.UpdateDocumentTypeRequestDTO;
 @Mapper(config = MapperConfig.class)
 public interface DocumentTypeMapper {
 
-    DocumentTypeDTO toDto(DocumentType documentType);
+    DocumentTypeDTO toDto(DocumentType type);
 
-    DocumentType toModel(DocumentTypeDTO documentTypeDTO);
+    DocumentType toModel(DocumentTypeDTO typeDTO);
 
     DocumentType toModel(CreateDocumentTypeRequestDTO req);
 

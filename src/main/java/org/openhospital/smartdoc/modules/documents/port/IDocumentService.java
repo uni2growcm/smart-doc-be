@@ -20,7 +20,7 @@ public interface IDocumentService {
 
     @GetExchange
     PaginatedDocumentDTO findDocuments(@RequestParam(required = false) UUID personId,
-        @RequestParam(required = false) UUID documentType, @RequestParam(required = false) LocalDate fromDate,
+        @RequestParam(required = false) UUID type, @RequestParam(required = false) LocalDate fromDate,
         @RequestParam(required = false) LocalDate toDate, @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size);
 
