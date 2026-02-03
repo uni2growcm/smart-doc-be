@@ -188,7 +188,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Person'
+              $ref: '#/components/schemas/CreatePersonRequest'
       responses:
         '201':
           description: Person created.
@@ -247,7 +247,45 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Person'
+              $ref: '#/components/schemas/UpdatePersonRequest'
+      responses:
+        '200':
+          description: Person updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '400':
+          description: Bad request (invalid data).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden (insufficient permissions).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Person not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    patch:
+      tags:
+        - Persons
+      summary: Partially update a person.
+      operationId: patchPerson
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchPersonRequest'
       responses:
         '200':
           description: Person updated.
@@ -350,7 +388,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DocumentType'
+              $ref: '#/components/schemas/CreateDocumentTypeRequest'
       responses:
         '201':
           description: Document type created.
@@ -409,7 +447,45 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DocumentType'
+              $ref: '#/components/schemas/UpdateDocumentTypeRequest'
+      responses:
+        '200':
+          description: Document type updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentType'
+        '400':
+          description: Bad request (invalid data).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden (insufficient permissions).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Document type not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    patch:
+      tags:
+        - System
+      summary: Partially update a document type.
+      operationId: patchDocumentType
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchDocumentTypeRequest'
       responses:
         '200':
           description: Document type updated.
@@ -690,7 +766,10 @@ components:
       description: Represents raw binary file content (JPEG, JavaScript bundle).
     UploadDocumentRequest:
       type: object
-      description: Fields required for document upload via multipart/form-data.
+      required:
+        - document
+        - personId
+        - type
       properties:
         document:
           allOf:
@@ -698,10 +777,11 @@ components:
           description: The file to upload (JPG).
         personId:
           type: string
-          pattern: ^\d{1,6}$
+          format: uuid
           description: Numeric identifier of the person.
         type:
           type: string
+          format: uuid
           description: Document category type id.
         date:
           type: string
@@ -710,10 +790,7 @@ components:
         description:
           type: string
           description: Optional description to be included in the filename.
-      required:
-        - document
-        - personId
-        - type
+      description: Fields required for document upload via multipart/form-data.
     Gender:
       type: string
       enum:
@@ -752,6 +829,73 @@ components:
           description: List of persons for the current page.
         metadata:
           $ref: '#/components/schemas/PageInfo'
+    CreatePersonRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Person's name (available when integrated with OH).
+        pid:
+          type: string
+          description: The patient external identifier.
+        email:
+          type: string
+          format: email
+          description: Contact email.
+        phoneNumber:
+          type: string
+          description: Primary phone number.
+        gender:
+          $ref: '#/components/schemas/Gender'
+      required:
+        - name
+        - pid
+    UpdatePersonRequest:
+      type: object
+      properties:
+        version:
+          type: integer
+          description: The lock field for the object.
+        name:
+          type: string
+          description: Person's name (available when integrated with OH).
+        pid:
+          type: string
+          description: The patient external identifier.
+        email:
+          type: string
+          format: email
+          description: Contact email.
+        phoneNumber:
+          type: string
+          description: Primary phone number.
+        gender:
+          $ref: '#/components/schemas/Gender'
+      required:
+        - version
+        - name
+        - pid
+    PatchPersonRequest:
+      type: object
+      properties:
+        version:
+          type: integer
+          description: The lock field for the object.
+        name:
+          type: string
+          description: Person's name (available when integrated with OH).
+        pid:
+          type: string
+          description: The patient external identifier.
+        email:
+          type: string
+          format: email
+          description: Contact email.
+        phoneNumber:
+          type: string
+          description: Primary phone number.
+        gender:
+          $ref: '#/components/schemas/Gender'
     DocumentType:
       allOf:
         - $ref: '#/components/schemas/Base'
@@ -775,6 +919,57 @@ components:
       items:
         $ref: '#/components/schemas/DocumentType'
       description: List of supported document types.
+    CreateDocumentTypeRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          description: The unique code for the document type.
+        name:
+          type: string
+          description: The display name for the document type.
+        description:
+          type: string
+          description: A description of the document type.
+      required:
+        - code
+        - name
+        - description
+    UpdateDocumentTypeRequest:
+      type: object
+      properties:
+        version:
+          type: integer
+          description: The lock field for the object.
+        code:
+          type: string
+          description: The unique code for the document type.
+        name:
+          type: string
+          description: The display name for the document type.
+        description:
+          type: string
+          description: A description of the document type.
+      required:
+        - version
+        - code
+        - name
+        - description
+    PatchDocumentTypeRequest:
+      type: object
+      properties:
+        version:
+          type: integer
+          description: The lock field for the object.
+        code:
+          type: string
+          description: The unique code for the document type.
+        name:
+          type: string
+          description: The display name for the document type.
+        description:
+          type: string
+          description: A description of the document type.
     HealthStatus:
       type: string
       enum:

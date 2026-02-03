@@ -29,8 +29,11 @@ dependencies {
     implementation(libs.bundles.spring.boot)
     implementation(libs.bundles.extra.libs)
 
+    runtimeOnly(libs.bundles.runtime)
     compileOnly(libs.bundles.compile)
+
     annotationProcessor(libs.bundles.annotation.processors)
+
     testImplementation(libs.bundles.test)
     testRuntimeOnly(libs.bundles.test.runtime)
 }

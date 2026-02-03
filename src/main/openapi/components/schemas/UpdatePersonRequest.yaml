@@ -1,0 +1,21 @@
+type: object
+properties:
+  version:
+    type: integer
+    description: "The lock field for the object."
+  name:
+    type: string
+    description: Person's name (available when integrated with OH).
+  pid:
+    type: string
+    description: The patient external identifier.
+  email:
+    type: string
+    format: email
+    description: Contact email.
+  phoneNumber:
+    type: string
+    description: Primary phone number.
+  gender:
+    $ref: ./Gender.yaml
+required: [version, name, pid]

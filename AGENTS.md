@@ -206,6 +206,7 @@ smart-doc-api/
 - **Storage:** File system-based document storage (organized by personId)
 - **Domain:** Follows Open Hospital domain models and conventions
 - **Entities:** DocumentType provides full CRUD operations, inheriting Base schema (id [UUID], code, name, description). Person provides full CRUD operations, inheriting Base schema (id [UUID], name, pid). Document provides full CRUD operations, inheriting Base schema (id [UUID]) with additional path field.
+- **Request Schemas:** APIs use Create*Request (POST), Update*Request (PUT with version), Patch*Request (PATCH with optional fields). Audit fields excluded; id in path for updates/patches.
 
 ## Important Reminders
 

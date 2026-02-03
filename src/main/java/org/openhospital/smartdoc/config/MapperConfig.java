@@ -1,5 +1,8 @@
 package org.openhospital.smartdoc.config;
 
-public class MapperConfig {
+import org.mapstruct.NullValuePropertyMappingStrategy;
+
+@org.mapstruct.MapperConfig(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+public interface MapperConfig {
 
 }

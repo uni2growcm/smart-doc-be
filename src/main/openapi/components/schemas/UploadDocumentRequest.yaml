@@ -1,5 +1,5 @@
 type: object
-description: Fields required for document upload via multipart/form-data.
+required: [document, personId, type]
 properties:
   document:
     allOf:
@@ -7,10 +7,11 @@ properties:
     description: The file to upload (JPG).
   personId:
     type: string
-    pattern: ^\d{1,6}$
+    format: uuid
     description: Numeric identifier of the person.
   type:
     type: string
+    format: uuid
     description: Document category type id.
   date:
     type: string
@@ -21,7 +22,4 @@ properties:
   description:
     type: string
     description: Optional description to be included in the filename.
-required:
-  - document
-  - personId
-  - type
+description: Fields required for document upload via multipart/form-data.
