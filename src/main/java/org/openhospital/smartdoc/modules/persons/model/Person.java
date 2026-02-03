@@ -1,14 +1,20 @@
 package org.openhospital.smartdoc.modules.persons.model;
 
-import jakarta.persistence.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.openhospital.smartdoc.modules.documents.model.Document;
-import org.openhospital.smartdoc.models.BaseEntity;
-import org.openhospital.smartdoc.openapi.Gender;
-
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.openhospital.smartdoc.models.BaseEntity;
+import org.openhospital.smartdoc.modules.documents.model.Document;
+import org.openhospital.smartdoc.openapi.Gender;
 
 @Data
 @EqualsAndHashCode(callSuper = true)

@@ -2,7 +2,7 @@ get:
   tags:
     - Persons
   summary: Retrieve a person by ID.
-  operationId: getPerson
+  operationId: findPersonById
   parameters:
     - $ref: ../components/parameters/Id.yaml
   responses:

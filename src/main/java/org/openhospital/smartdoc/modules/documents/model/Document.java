@@ -1,15 +1,18 @@
 package org.openhospital.smartdoc.modules.documents.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import java.time.Instant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.openhospital.smartdoc.models.BaseEntity;
 import org.openhospital.smartdoc.modules.persons.model.Person;
 import org.openhospital.smartdoc.openapi.DocumentStatus;
-
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
 
 @Data
 @EqualsAndHashCode(callSuper = true)

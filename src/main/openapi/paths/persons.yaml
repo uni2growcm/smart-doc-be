@@ -2,7 +2,7 @@ get:
   tags:
     - Persons
   summary: List persons with pagination (used for stand-alone mode or autocomplete lookup).
-  operationId: listPersons
+  operationId: findPersons
   parameters:
     - $ref: ../components/parameters/PersonNamePartial.yaml
     - $ref: ../components/parameters/Page.yaml

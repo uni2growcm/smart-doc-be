@@ -2,7 +2,7 @@ get:
   tags:
     - Documents
   summary: Retrieve a document file (download/preview).
-  operationId: downloadDocument
+  operationId: findDocumentById
   parameters:
     - $ref: ../components/parameters/Id.yaml
   responses:

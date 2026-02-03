@@ -2,7 +2,7 @@ get:
   tags:
     - System
   summary: Retrieve a document type by ID.
-  operationId: getDocumentType
+  operationId: findDocumentTypeById
   parameters:
     - $ref: ../components/parameters/Id.yaml
   responses:

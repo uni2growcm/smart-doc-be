@@ -1,10 +1,9 @@
 package org.openhospital.smartdoc.modules.persons.repository;
 
+import java.util.Optional;
 import org.openhospital.smartdoc.modules.persons.model.Person;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
-
-import java.util.Optional;
 
 public interface PersonRepository extends CrudRepository<Person, String> {
 

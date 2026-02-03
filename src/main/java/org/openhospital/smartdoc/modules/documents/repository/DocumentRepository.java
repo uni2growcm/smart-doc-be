@@ -1,10 +1,9 @@
 package org.openhospital.smartdoc.modules.documents.repository;
 
+import java.util.List;
 import org.openhospital.smartdoc.modules.documents.model.Document;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
-
-import java.util.List;
 
 public interface DocumentRepository extends CrudRepository<Document, String> {
 

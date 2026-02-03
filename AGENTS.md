@@ -102,6 +102,14 @@ Note: While Gradle is the primary build tool, Maven commands are used in CI for 
 - **Test classes:** `{ClassName}Test` or `{ClassName}Tests`
 - **Packages:** lowercase, dot-separated (e.g., `org.openhospital.smartdoc`)
 
+#### API Method Naming Conventions
+- **Single entity retrieval:** `find<Entity>ById(UUID id)` (e.g., `findPersonById`, `findDocumentById`)
+- **Paginated lists and searches:** `find<Entities>(...)` (e.g., `findPersons`, `findDocuments`)
+- **Creation:** `create<Entity>(...)`
+- **Full updates:** `update<Entity>(...)`
+- **Partial updates:** `patch<Entity>(...)`
+- **Deletion:** `delete<Entity>(...)`
+
 #### Type Usage
 - Always declare explicit types (avoid `var` for clarity)
 - Use Java 8+ types (LocalDate, LocalDateTime, Optional, etc.)
@@ -185,7 +193,12 @@ smart-doc-api/
 ├── src/main/
 │   ├── java/org/openhospital/smartdoc/
 │   │   ├── SmartdocApplication.java    # Main Spring Boot app
-│   │   └── config/                      # Configuration classes
+│   │   ├── config/                      # Configuration classes
+│   │   ├── modules/documents/port/      # HTTP client interface contracts for documents and document types
+│   │   │   ├── IDocumentTypeService.java
+│   │   │   └── IDocumentService.java
+│   │   └── modules/persons/port/        # HTTP client interface contracts for persons
+│   │       └── IPersonService.java
 │   ├── openapi/                         # OpenAPI specs (API-first)
 │   │   ├── openapi.yaml                 # Main spec
 │   │   ├── paths/                       # Endpoint definitions
@@ -209,6 +222,20 @@ smart-doc-api/
 - **Database Schema:** Managed by Flyway migrations (`src/main/resources/db/migration/`). Migrations ensure schema is always aligned with JPA models; `hibernate.ddl-auto` disabled to prevent drift.
 - **Database Constraints:** Primary keys inline on id; FKs named `fk_{table}_{column}`; unique keys named `uk_{table}_{column}`; indexes named `idx_{table}_{column}`.
 - **Request Schemas:** APIs use Create*Request (POST), Update*Request (PUT with version), Patch*Request (PATCH with optional fields). Audit fields excluded; id in path for updates/patches.
+
+## Port Interfaces
+
+Port interfaces in `modules/documents/port/` and `modules/persons/port/` define HTTP client contracts using Spring's `@HttpExchange` annotations. These interfaces serve as type-safe contracts that are implemented by:
+
+- **Controllers:** REST controllers implement these interfaces to define API endpoints
+- **Services:** Business logic services use these interfaces for inter-service communication
+- **Tests:** Integration and unit tests use these contracts to ensure type safety and mock HTTP interactions
+
+Key benefits:
+- Type-safe HTTP client definitions
+- Consistent API contracts across layers
+- Automatic validation through OpenAPI-generated DTOs
+- Support for both JSON and multipart operations
 
 ## Important Reminders
 
