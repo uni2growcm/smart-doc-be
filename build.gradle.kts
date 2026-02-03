@@ -43,11 +43,18 @@ openApiGenerate {
     modelNameSuffix = "DTO"
     modelNameMappings.set(listOf("Gender", "DocumentStatus", "HealthStatus").associateWith { it })
 
+    schemaMappings.set(
+        mapOf(
+            "upload" to "org.springframework.web.multipart.MultipartFile",
+            "instant" to "java.time.Instant"
+        )
+    )
+    typeMappings.set(mapOf("sting+binary" to "upload", "string+date-time" to "instant"))
+
     configOptions.putAll(
         mapOf(
             "useSpringBoot3"        to "true",
             "useJakartaEe"          to "true",
-            "dateLibrary"           to "java8",
             "useTags"               to "true",
             "interfaceOnly"          to "true",
             "modelPackage" to "org.openhospital.smartdoc.openapi"

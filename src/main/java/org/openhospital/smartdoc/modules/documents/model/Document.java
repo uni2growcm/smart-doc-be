@@ -7,6 +7,7 @@ import org.openhospital.smartdoc.models.BaseEntity;
 import org.openhospital.smartdoc.modules.persons.model.Person;
 import org.openhospital.smartdoc.openapi.DocumentStatus;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
@@ -19,15 +20,15 @@ public class Document extends BaseEntity {
     @Column(name = "file_name")
     private String fileName;
 
+    private String path;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "person_id")
     private Person person;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "type_id", referencedColumnName = "code")
-    private DocumentType documentType;
+    private DocumentType type;
 
-    private LocalDate date;
+    private Instant date;
 
     private String description;
 
@@ -41,5 +42,5 @@ public class Document extends BaseEntity {
     private DocumentStatus status;
 
     @Column(name = "upload_date")
-    private OffsetDateTime uploadDate;
+    private Instant uploadDate;
 }

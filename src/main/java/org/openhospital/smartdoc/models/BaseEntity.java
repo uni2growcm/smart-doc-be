@@ -9,6 +9,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 @Data
 @MappedSuperclass
@@ -16,7 +17,8 @@ import java.time.OffsetDateTime;
 public abstract class BaseEntity {
 
     @Id
-    private String id;
+    @GeneratedValue
+    private UUID id;
 
     @CreatedBy
     @Column(name = "created_by")

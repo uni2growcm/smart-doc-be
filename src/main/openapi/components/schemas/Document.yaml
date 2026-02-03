@@ -6,6 +6,9 @@ allOf:
       fileName:
         type: string
         description: The full file name in the storage.
+      path:
+        type: string
+        description: The path of the document in the system.
       personId:
         type: string
       type:
@@ -13,7 +16,7 @@ allOf:
         description: The document type code.
       date:
         type: string
-        format: date
+        format: date-time
         description: The clinical date extracted from the file name.
       description:
         type: string

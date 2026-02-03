@@ -18,6 +18,8 @@ public class Person extends BaseEntity {
 
     private String name;
 
+    private String pid;
+
     private String email;
 
     @Column(name = "phone_number")

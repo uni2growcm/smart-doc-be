@@ -552,6 +552,7 @@ components:
       properties:
         id:
           type: string
+          format: uuid
           description: The unique identifier of the object.
         createdBy:
           type: string
@@ -590,6 +591,9 @@ components:
             fileName:
               type: string
               description: The full file name in the storage.
+            path:
+              type: string
+              description: The path of the document in the system.
             personId:
               type: string
             type:
@@ -597,7 +601,7 @@ components:
               description: The document type code.
             date:
               type: string
-              format: date
+              format: date-time
               description: The clinical date extracted from the file name.
             description:
               type: string
@@ -725,6 +729,9 @@ components:
             name:
               type: string
               description: Person's name (available when integrated with OH).
+            pid:
+              type: string
+              description: The patient external identifier.
             email:
               type: string
               format: email
