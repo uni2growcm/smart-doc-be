@@ -18,6 +18,7 @@ public class Person extends BaseEntity {
 
     private String name;
 
+    @Column(unique = true, nullable = false)
     private String pid;
 
     private String email;

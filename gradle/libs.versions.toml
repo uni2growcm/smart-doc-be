@@ -16,6 +16,7 @@ spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-
 spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+spring-boot-starter-flyway = { module = "org.springframework.boot:spring-boot-starter-flyway" }
 
 h2 = { module = "com.h2database:h2" }
 mysql-connector = { module = "com.mysql:mysql-connector-j" }
@@ -33,7 +34,8 @@ wiremock-spring-boot = { module = "org.wiremock.integrations:wiremock-spring-boo
 openapi-generator = { module = "org.openapitools:openapi-generator-maven-plugin", version.ref = "openapi-generator" }
 
 [bundles]
-spring-boot = ["spring-boot-starter-webmvc", "spring-boot-starter-actuator", "spring-boot-starter-security", "spring-boot-starter-validation", "spring-boot-starter-data-jpa"]
+spring-boot = ["spring-boot-starter-webmvc", "spring-boot-starter-actuator", "spring-boot-starter-security",
+    "spring-boot-starter-validation", "spring-boot-starter-data-jpa", "spring-boot-starter-flyway"]
 extra-libs = ["jackson-databind-nullable", "swagger-annotations"]
 runtime = ["h2", "mysql-connector"]
 annotation-processors = ["mapstruct", "lombok"]
