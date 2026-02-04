@@ -15,4 +15,4 @@ properties:
     description: Primary phone number.
   gender:
     $ref: ./Gender.yaml
-required: [name, pid]
+required: [ name, pid ]

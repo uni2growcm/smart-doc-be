@@ -29,8 +29,8 @@ post:
     required: true
     content:
       application/json:
-         schema:
-           $ref: ../components/schemas/CreatePersonRequest.yaml
+        schema:
+          $ref: ../components/schemas/CreatePersonRequest.yaml
   responses:
     '201':
       description: Person created.

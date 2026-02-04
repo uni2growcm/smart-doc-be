@@ -9,4 +9,4 @@ properties:
   description:
     type: string
     description: "A description of the document type."
-required: [code, name, description]
+required: [ code, name, description ]

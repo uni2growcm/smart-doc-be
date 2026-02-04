@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.dependency.management)
     alias(libs.plugins.openapi.generator)
-	  java
+    java
 }
 
 group = "org.openhospital"
@@ -10,19 +10,19 @@ version = "0.0.1-SNAPSHOT"
 description = "SmartDoc Document Management API"
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(libs.versions.java.get())
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(libs.versions.java.get())
+    }
 }
 
 configurations {
-	compileOnly {
-		extendsFrom(configurations.annotationProcessor.get())
-	}
+    compileOnly {
+        extendsFrom(configurations.annotationProcessor.get())
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
@@ -41,7 +41,7 @@ dependencies {
 openApiGenerate {
     generatorName = "spring"
     packageName.set("org.openhospital.smartdoc.openapi")
-    inputSpec = "${projectDir}/src/main/openapi/api-docs.yaml"
+    inputSpec = "$projectDir/src/main/openapi/api-docs.yaml"
     globalProperties.set(mapOf("models" to ""))
     modelNameSuffix = "DTO"
     modelNameMappings.set(listOf("Gender", "DocumentStatus", "HealthStatus").associateWith { it })
@@ -49,19 +49,19 @@ openApiGenerate {
     schemaMappings.set(
         mapOf(
             "upload" to "org.springframework.web.multipart.MultipartFile",
-            "instant" to "java.time.Instant"
-        )
+            "instant" to "java.time.Instant",
+        ),
     )
     typeMappings.set(mapOf("sting+binary" to "upload", "string+date-time" to "instant"))
 
     configOptions.putAll(
         mapOf(
-            "useSpringBoot3"        to "true",
-            "useJakartaEe"          to "true",
-            "useTags"               to "true",
-            "interfaceOnly"          to "true",
-            "modelPackage" to "org.openhospital.smartdoc.openapi"
-        )
+            "useSpringBoot3" to "true",
+            "useJakartaEe" to "true",
+            "useTags" to "true",
+            "interfaceOnly" to "true",
+            "modelPackage" to "org.openhospital.smartdoc.openapi",
+        ),
     )
 }
 
@@ -77,7 +77,7 @@ tasks.compileJava {
 }
 
 tasks.withType<Test> {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
 
 tasks.register("lint") {

@@ -12,17 +12,17 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll()
-            );
+	@Bean
+	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		http
+			.csrf(AbstractHttpConfigurer::disable)
+			.sessionManagement(session ->
+					session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+			                  )
+			.authorizeHttpRequests(auth -> auth
+					.anyRequest().permitAll()
+			                      );
 
-        return http.build();
-    }
+		return http.build();
+	}
 }

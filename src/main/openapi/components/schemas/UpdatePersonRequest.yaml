@@ -18,4 +18,4 @@ properties:
     description: Primary phone number.
   gender:
     $ref: ./Gender.yaml
-required: [version, name, pid]
+required: [ version, name, pid ]

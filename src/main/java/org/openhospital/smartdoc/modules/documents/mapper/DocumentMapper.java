@@ -8,9 +8,9 @@ import org.openhospital.smartdoc.openapi.DocumentDTO;
 @Mapper
 public interface DocumentMapper {
 
-    @Mapping(target = "personId", source = "person.id")
-    @Mapping(target = "type", source = "type.id")
-    DocumentDTO toDto(Document document);
+	@Mapping(target = "personId", source = "person.id")
+	@Mapping(target = "type", source = "type.id")
+	DocumentDTO toDto(Document document);
 
-    Document toModel(DocumentDTO documentDTO);
+	Document toModel(DocumentDTO documentDTO);
 }

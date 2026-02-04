@@ -19,8 +19,8 @@ post:
     required: true
     content:
       application/json:
-         schema:
-           $ref: ../components/schemas/CreateDocumentTypeRequest.yaml
+        schema:
+          $ref: ../components/schemas/CreateDocumentTypeRequest.yaml
   responses:
     '201':
       description: Document type created.

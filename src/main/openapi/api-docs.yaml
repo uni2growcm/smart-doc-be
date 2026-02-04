@@ -9,7 +9,7 @@ info:
 servers:
   - url: http://localhost:8080/api
 security:
-  - Bearer: []
+  - Bearer: [ ]
 tags:
   - name: Documents
     description: Operations related to document upload, retrieval, and deletion.

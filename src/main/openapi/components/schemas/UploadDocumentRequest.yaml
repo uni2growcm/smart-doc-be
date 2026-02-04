@@ -1,5 +1,5 @@
 type: object
-required: [document, personId, type]
+required: [ document, personId, type ]
 properties:
   document:
     allOf:

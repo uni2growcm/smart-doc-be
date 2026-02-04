@@ -34,9 +34,9 @@ put:
   requestBody:
     required: true
     content:
-       application/json:
-         schema:
-           $ref: ../components/schemas/UpdateDocumentTypeRequest.yaml
+      application/json:
+        schema:
+          $ref: ../components/schemas/UpdateDocumentTypeRequest.yaml
   responses:
     '200':
       description: Document type updated.
