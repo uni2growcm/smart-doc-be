@@ -29,10 +29,14 @@ paths:
     $ref: paths/persons_{id}.yaml
   /persons/{id}/documents:
     $ref: paths/persons_{id}_documents.yaml
+  /persons/{id}/restore:
+    $ref: paths/persons_{id}_restore.yaml
   /document-types:
     $ref: paths/document-types.yaml
   /document-types/{id}:
     $ref: paths/document-types_{id}.yaml
+  /document-types/{id}/restore:
+    $ref: paths/document-types_{id}_restore.yaml
   /actuator/health:
     $ref: paths/health.yaml
 components:

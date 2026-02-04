@@ -38,8 +38,8 @@ public interface IPersonService {
 	@PutExchange("/{id}/deactivate")
 	PersonDTO deactivatePerson(@PathVariable UUID id);
 
-	@PostExchange("/{id}/undelete")
-	PersonDTO undeletePerson(@PathVariable UUID id);
+	@PostExchange("/{id}/restore")
+	PersonDTO restorePerson(@PathVariable UUID id);
 
 	@GetExchange("/{id}/documents")
 	PaginatedDocumentDTO findPersonDocuments(@PathVariable UUID id, @RequestParam(required = false) UUID type, @RequestParam(required = false) LocalDate fromDate, @RequestParam(required = false) LocalDate toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);

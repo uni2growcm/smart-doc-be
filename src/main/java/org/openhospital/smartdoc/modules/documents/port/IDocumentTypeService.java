@@ -37,6 +37,6 @@ public interface IDocumentTypeService {
 	@PutExchange("/{id}/deactivate")
 	DocumentTypeDTO deactivateDocumentType(@PathVariable UUID id);
 
-	@PostExchange("/{id}/undelete")
-	DocumentTypeDTO undeleteDocumentType(@PathVariable UUID id);
+	@PostExchange("/{id}/restore")
+	DocumentTypeDTO restoreDocumentType(@PathVariable UUID id);
 }

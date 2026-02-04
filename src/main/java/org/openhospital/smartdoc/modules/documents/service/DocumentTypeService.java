@@ -216,8 +216,8 @@ public class DocumentTypeService implements IDocumentTypeService {
 
 	@Override
 	@Transactional
-	public DocumentTypeDTO undeleteDocumentType(UUID id) {
-		log.info("Undeleting document type with ID: {}", id);
+	public DocumentTypeDTO restoreDocumentType(UUID id) {
+		log.info("Restoring document type with ID: {}", id);
 
 		DocumentType documentType = repository.findById(id).orElseThrow(
 			() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{id})
@@ -229,7 +229,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 
 		documentType.setStatus(Status.ACTIVE);
 		DocumentType saved = repository.save(documentType);
-		log.info("Document type {} undeleted and reactivated successfully", id);
+		log.info("Document type {} restored and reactivated successfully", id);
 		return mapper.toDto(saved);
 	}
 

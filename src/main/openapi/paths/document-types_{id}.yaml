@@ -116,9 +116,10 @@ delete:
         application/json:
           schema:
             $ref: ../components/schemas/Problem.yaml
-    '403':
-      description: Forbidden (insufficient permissions).
-      content:
-        application/json:
-          schema:
-            $ref: ../components/schemas/Problem.yaml
+      '403':
+        description: Forbidden (insufficient permissions).
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+

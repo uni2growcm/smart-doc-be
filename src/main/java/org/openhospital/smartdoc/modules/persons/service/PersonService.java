@@ -73,7 +73,7 @@ public class PersonService implements IPersonService {
 
 		try {
 			Person entity = mapper.toModel(payload);
-			validatePerson(entity);  // Entity validation with business rules
+			validatePerson(entity);
 			Person saved = repository.save(entity);
 			PersonDTO result = mapper.toDto(saved);
 
@@ -215,8 +215,8 @@ public class PersonService implements IPersonService {
 
 	@Override
 	@Transactional
-	public PersonDTO undeletePerson(UUID id) {
-		log.info("Undeleting person with ID: {}", id);
+	public PersonDTO restorePerson(UUID id) {
+		log.info("Restoring person with ID: {}", id);
 
 		Person person = repository.findById(id).orElseThrow(() -> CustomException.notFound("persons.errors.not-found", new Object[]{id}));
 
@@ -226,7 +226,7 @@ public class PersonService implements IPersonService {
 
 		person.setStatus(Status.ACTIVE);
 		Person saved = repository.save(person);
-		log.info("Person {} unDELETED and reactivated successfully", id);
+		log.info("Person {} restored and reactivated successfully", id);
 		return mapper.toDto(saved);
 	}
 
