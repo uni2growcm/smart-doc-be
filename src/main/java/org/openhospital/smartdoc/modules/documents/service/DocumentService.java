@@ -41,11 +41,8 @@ public class DocumentService implements IDocumentService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Page<DocumentDTO> findDocuments(
-		UUID personId, UUID type, LocalDate fromDate, LocalDate toDate, int page, int size
-	                                      ) {
-		log.debug("Finding documents with filters - personId: {}, type: {}, date range: {} to {}, page: {}, size: {}",
-			personId, type, fromDate, toDate, page, size);
+	public Page<DocumentDTO> findDocuments(UUID personId, UUID type, LocalDate fromDate, LocalDate toDate, int page, int size) {
+		log.debug("Finding documents with filters - personId: {}, type: {}, date range: {} to {}, page: {}, size: {}", personId, type, fromDate, toDate, page, size);
 
 		try {
 			Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
@@ -54,28 +51,25 @@ public class DocumentService implements IDocumentService {
 			Instant fromInstant = fromDate != null ? fromDate.atStartOfDay().toInstant(java.time.ZoneOffset.UTC) : null;
 			Instant toInstant = toDate != null ? toDate.atTime(23, 59, 59).toInstant(java.time.ZoneOffset.UTC) : null;
 
-			var documentPage = repository.findWithFilters(
-				personId, type, fromInstant, toInstant, pageable);
+			var documentPage = repository.findWithFilters(personId, type, fromInstant, toInstant, pageable);
 
-			Page<DocumentDTO> result = Page.from(documentPage, documents ->
-				documents.stream().map(doc -> {
-					DocumentDTO dto = new DocumentDTO();
-					dto.setId(doc.getId());
-					dto.setFileName(doc.getFileName());
-					dto.setPath(doc.getPath());
-					dto.setPersonId(doc.getPerson().getId().toString());
-					dto.setType(doc.getType().getId().toString());
-					dto.setDate(doc.getDate());
-					dto.setDescription(doc.getDescription());
-					dto.setFileSize(doc.getFileSize() != null ? doc.getFileSize().intValue() : null);
-					dto.setMimeType(doc.getMimeType());
-					dto.setStatus(doc.getStatus());
-					dto.setUploadDate(doc.getUploadDate());
-					return dto;
-				}).toList());
+			Page<DocumentDTO> result = Page.from(documentPage, documents -> documents.stream().map(doc -> {
+				DocumentDTO dto = new DocumentDTO();
+				dto.setId(doc.getId());
+				dto.setFileName(doc.getFileName());
+				dto.setPath(doc.getPath());
+				dto.setPersonId(doc.getPerson().getId().toString());
+				dto.setType(doc.getType().getId().toString());
+				dto.setDate(doc.getDate());
+				dto.setDescription(doc.getDescription());
+				dto.setFileSize(doc.getFileSize() != null ? doc.getFileSize().intValue() : null);
+				dto.setMimeType(doc.getMimeType());
+				dto.setStatus(doc.getStatus());
+				dto.setUploadDate(doc.getUploadDate());
+				return dto;
+			}).toList());
 
-			log.info("Found {} documents (page {}/{}, total: {})",
-				result.getData().size(), page, documentPage.getTotalPages(), documentPage.getTotalElements());
+			log.info("Found {} documents (page {}/{}, total: {})", result.getData().size(), page, documentPage.getTotalPages(), documentPage.getTotalElements());
 			return result;
 		} catch (Exception e) {
 			log.error("Failed to find documents", e);
@@ -85,9 +79,7 @@ public class DocumentService implements IDocumentService {
 
 	@Override
 	@Transactional
-	public DocumentDTO uploadDocument(
-		MultipartFile document, UUID personId, UUID typeId, LocalDate date, String description
-	                                 ) {
+	public DocumentDTO uploadDocument(MultipartFile document, UUID personId, UUID typeId, LocalDate date, String description) {
 		log.info("Uploading document for person: {}, type: {}", personId, typeId);
 
 		// Validate references exist
@@ -100,7 +92,7 @@ public class DocumentService implements IDocumentService {
 
 			// Store file
 			String subDir = getSubDirForDocumentType(documentType.getCode());
-			String storedPath = uploadService.storeFile(document, personId, subDir);
+			String storedPath = uploadService.uploadFile(document, personId, subDir);
 
 			// Create document entity
 			Document entity = new Document();
@@ -145,11 +137,10 @@ public class DocumentService implements IDocumentService {
 	public ResponseEntity<byte[]> findDocumentById(UUID id) {
 		log.debug("Retrieving document by ID: {}", id);
 
-		Document document = repository.findById(id)
-		                              .orElseThrow(() -> {
-			                              log.warn("Document not found with ID: {}", id);
-			                              return CustomException.notFound("documents.errors.not-found", new Object[]{id});
-			                              });
+		Document document = repository.findById(id).orElseThrow(() -> {
+			log.warn("Document not found with ID: {}", id);
+			return CustomException.notFound("documents.errors.not-found", new Object[]{id});
+		});
 
 		try {
 			Resource resource = uploadService.retrieveFile(document.getPath());
@@ -162,19 +153,12 @@ public class DocumentService implements IDocumentService {
 			byte[] content = resource.getInputStream().readAllBytes();
 
 			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.parseMediaType(document.getMimeType() != null ?
-				document.getMimeType() : "application/octet-stream"));
-			headers.setContentDisposition(
-				org.springframework.http.ContentDisposition.attachment()
-				                                           .filename(document.getFileName())
-				                                           .build()
-			                             );
+			headers.setContentType(MediaType.parseMediaType(document.getMimeType() != null ? document.getMimeType() : "application/octet-stream"));
+			headers.setContentDisposition(org.springframework.http.ContentDisposition.attachment().filename(document.getFileName()).build());
 			headers.setContentLength(content.length);
 
 			log.debug("Document retrieved successfully: {}", document.getFileName());
-			return ResponseEntity.ok()
-			                     .headers(headers)
-			                     .body(content);
+			return ResponseEntity.ok().headers(headers).body(content);
 		} catch (IOException e) {
 			log.error("Failed to read document file: {}", document.getPath(), e);
 			throw CustomException.internal("documents.errors.read-failed");
@@ -183,16 +167,13 @@ public class DocumentService implements IDocumentService {
 
 	@Override
 	@Transactional
-	public DocumentDTO updateDocument(
-		UUID id, MultipartFile document, UUID personId, UUID typeId, LocalDate date, String description
-	                                 ) {
+	public DocumentDTO updateDocument(UUID id, MultipartFile document, UUID personId, UUID typeId, LocalDate date, String description) {
 		log.info("Updating document with ID: {}", id);
 
-		Document existing = repository.findById(id)
-		                              .orElseThrow(() -> {
-			                              log.warn("Document not found for update with ID: {}", id);
-			                              return CustomException.notFound("documents.errors.not-found", new Object[]{id});
-			                              });
+		Document existing = repository.findById(id).orElseThrow(() -> {
+			log.warn("Document not found for update with ID: {}", id);
+			return CustomException.notFound("documents.errors.not-found", new Object[]{id});
+		});
 
 		try {
 			boolean fileChanged = document != null && !document.isEmpty();
@@ -210,7 +191,7 @@ public class DocumentService implements IDocumentService {
 					documentType = validateDocumentTypeExists(typeId);
 				}
 				String subDir = getSubDirForDocumentType(documentType.getCode());
-				String newPath = uploadService.storeFile(document, existing.getPerson().getId(), subDir);
+				String newPath = uploadService.uploadFile(document, existing.getPerson().getId(), subDir);
 
 				existing.setFileName(document.getOriginalFilename());
 				existing.setPath(newPath);
@@ -263,11 +244,10 @@ public class DocumentService implements IDocumentService {
 	public void deleteDocument(UUID id) {
 		log.info("Deleting document with ID: {}", id);
 
-		Document existing = repository.findById(id)
-		                              .orElseThrow(() -> {
-			                              log.warn("Document not found for deletion with ID: {}", id);
-			                              return CustomException.notFound("documents.errors.not-found", new Object[]{id});
-			                              });
+		Document existing = repository.findById(id).orElseThrow(() -> {
+			log.warn("Document not found for deletion with ID: {}", id);
+			return CustomException.notFound("documents.errors.not-found", new Object[]{id});
+		});
 
 		try {
 			// Delete file from storage
@@ -299,8 +279,7 @@ public class DocumentService implements IDocumentService {
 	 * Validates that a document type exists and returns it.
 	 */
 	private DocumentType validateDocumentTypeExists(UUID typeId) {
-		return documentTypeRepository.findById(typeId)
-		                             .orElseThrow(() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{typeId}));
+		return documentTypeRepository.findById(typeId).orElseThrow(() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{typeId}));
 	}
 
 	/**

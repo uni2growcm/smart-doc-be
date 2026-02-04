@@ -3,10 +3,11 @@ package org.openhospital.smartdoc.modules.shared.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openhospital.smartdoc.exceptions.CustomException;
+import org.openhospital.smartdoc.modules.shared.port.IStorageService;
 import org.openhospital.smartdoc.modules.shared.port.IUploadService;
 import org.openhospital.smartdoc.modules.shared.properties.UploadProperties;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.*;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,72 +30,72 @@ public class UploadService implements IUploadService {
 	// Maximum file size (200MB as configured)
 	private static final long MAX_FILE_SIZE = 200 * 1024 * 1024; // 200MB
 	private final UploadProperties properties;
+	private final IStorageService storageService;
 
 	@Override
-	public String storeFile(MultipartFile file, UUID personId, String subDir) throws IOException {
+	public String uploadFile(MultipartFile file, UUID personId, String subDir) throws IOException {
 		validateFile(file);
 
-		// Generate unique filename to prevent conflicts
+		// Extract file content as bytes
+		byte[] content = file.getBytes();
+
+		// Get original filename
 		String originalFilename = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
-		String fileExtension = getFileExtension(originalFilename);
-		String uniqueFilename = UUID.randomUUID() + "." + fileExtension;
 
-		// Resolve the target path
-		Path targetPath = resolvePath(personId, uniqueFilename, subDir);
-
-		// Ensure parent directories exist
-		Files.createDirectories(targetPath.getParent());
-
-		// Copy file to target location
-		try (var inputStream = file.getInputStream()) {
-			Files.copy(inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING);
-		}
-
-		// Return relative path for storage in database
-		Path basePath = Paths.get(properties.paths().baseDir());
-		String relativePath = basePath.relativize(targetPath).toString();
-
-		log.info("File stored successfully: {} -> {}", originalFilename, relativePath);
-		return relativePath;
+		// Delegate to storage service for actual storage
+		return storageService.storeFile(content, originalFilename, personId, subDir);
 	}
 
 	@Override
 	public Resource retrieveFile(String filePath) {
-		Path fullPath = Paths.get(properties.paths().baseDir(), filePath);
+		return storageService.retrieveFile(filePath);
+	}
 
-		// Security check: ensure path is within allowed directory
-		Path basePath = Paths.get(properties.paths().baseDir());
-		if (!fullPath.startsWith(basePath)) {
-			throw CustomException.forbidden("uploads.errors.path-traversal-detected");
+	@Override
+	public ResponseEntity<ByteArrayResource> downloadFile(String filePath, boolean attachment) {
+		try {
+			Resource resource = storageService.retrieveFile(filePath);
+			FileSystemResource fileResource = (FileSystemResource) resource;
+			Path filePathObj = Paths.get(fileResource.getPath());
+
+			// Read file content
+			byte[] content = Files.readAllBytes(filePathObj);
+			ByteArrayResource byteArrayResource = new ByteArrayResource(content);
+
+			// Get file metadata for caching
+			long fileSize = content.length;
+			long lastModifiedTimestamp = Files.getLastModifiedTime(filePathObj).toMillis();
+
+			// Generate ETag: "fileSize-lastModifiedTimestamp"
+			String eTag = "\"" + fileSize + "-" + lastModifiedTimestamp + "\"";
+
+			// Extract filename from path for Content-Disposition
+			String filename = filePathObj.getFileName().toString();
+
+			// Build response headers
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+			headers.setContentLength(fileSize);
+			headers.setETag(eTag);
+			headers.setLastModified(lastModifiedTimestamp);
+
+			if (attachment) {
+				headers.setContentDispositionFormData("attachment", filename);
+			} else {
+				headers.setContentDispositionFormData("inline", filename);
+			}
+
+			return ResponseEntity.ok().headers(headers).body(byteArrayResource);
+
+		} catch (IOException e) {
+			log.error("Failed to download file: {}", filePath, e);
+			throw CustomException.internal("uploads.errors.file-download-failed");
 		}
-
-		if (!Files.exists(fullPath)) {
-			throw CustomException.notFound("uploads.errors.file-not-found");
-		}
-
-		return new FileSystemResource(fullPath);
 	}
 
 	@Override
 	public boolean deleteFile(String filePath) {
-		Path fullPath = Paths.get(properties.paths().baseDir(), filePath);
-
-		// Security check
-		Path basePath = Paths.get(properties.paths().baseDir());
-		if (!fullPath.startsWith(basePath)) {
-			throw CustomException.forbidden("uploads.errors.path-traversal-detected");
-		}
-
-		try {
-			boolean deleted = Files.deleteIfExists(fullPath);
-			if (deleted) {
-				log.info("File deleted successfully: {}", filePath);
-			}
-			return deleted;
-		} catch (IOException e) {
-			log.error("Failed to delete file: {}", filePath, e);
-			throw CustomException.internal("uploads.errors.file-deletion-failed");
-		}
+		return storageService.deleteFile(filePath);
 	}
 
 	@Override
@@ -112,7 +113,7 @@ public class UploadService implements IUploadService {
 			throw CustomException.badRequest("uploads.errors.file-too-large");
 		}
 
-		String extension = getFileExtension(filename).toLowerCase();
+		String extension = storageService.getFileExtension(filename).toLowerCase();
 		if (!ALLOWED_EXTENSIONS.contains(extension)) {
 			throw CustomException.badRequest("uploads.errors.file-type-not-allowed", new Object[]{extension});
 		}
@@ -120,47 +121,16 @@ public class UploadService implements IUploadService {
 
 	@Override
 	public Path resolvePath(UUID personId, String fileName, String subDir) {
-		return Paths.get(properties.paths().baseDir(), personId.toString(), subDir, fileName);
+		return storageService.resolvePath(personId, fileName, subDir);
 	}
 
 	@Override
 	public boolean fileExists(String filePath) {
-		Path fullPath = Paths.get(properties.paths().baseDir(), filePath);
-		Path basePath = Paths.get(properties.paths().baseDir());
-
-		// Security check
-		if (!fullPath.startsWith(basePath)) {
-			return false;
-		}
-
-		return Files.exists(fullPath);
+		return storageService.fileExists(filePath);
 	}
 
 	@Override
 	public long getFileSize(String filePath) {
-		Path fullPath = Paths.get(properties.paths().baseDir(), filePath);
-		Path basePath = Paths.get(properties.paths().baseDir());
-
-		// Security check
-		if (!fullPath.startsWith(basePath)) {
-			return -1;
-		}
-
-		try {
-			return Files.size(fullPath);
-		} catch (IOException e) {
-			return -1;
-		}
-	}
-
-	/**
-	 * Extracts file extension from filename.
-	 */
-	private String getFileExtension(String filename) {
-		int lastDotIndex = filename.lastIndexOf('.');
-		if (lastDotIndex == -1 || lastDotIndex == filename.length() - 1) {
-			return "";
-		}
-		return filename.substring(lastDotIndex + 1);
+		return storageService.getFileSize(filePath);
 	}
 }
