@@ -1,0 +1,6 @@
+name: name
+in: query
+required: false
+schema:
+  type: string
+description: Partial name for filtering (used when proxied by OH-API for OH data lookup).

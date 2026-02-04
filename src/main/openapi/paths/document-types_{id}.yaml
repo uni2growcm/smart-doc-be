@@ -1,0 +1,124 @@
+get:
+  tags:
+    - System
+  summary: Retrieve a document type by ID.
+  operationId: findDocumentTypeById
+  parameters:
+    - $ref: ../components/parameters/Id.yaml
+  responses:
+    '200':
+      description: Document type found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/DocumentType.yaml
+    '404':
+      description: Document type not found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '403':
+      description: Forbidden (insufficient permissions).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+put:
+  tags:
+    - System
+  summary: Update a document type.
+  operationId: updateDocumentType
+  parameters:
+    - $ref: ../components/parameters/Id.yaml
+  requestBody:
+    required: true
+    content:
+       application/json:
+         schema:
+           $ref: ../components/schemas/UpdateDocumentTypeRequest.yaml
+  responses:
+    '200':
+      description: Document type updated.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/DocumentType.yaml
+    '400':
+      description: Bad request (invalid data).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '404':
+      description: Document type not found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '403':
+      description: Forbidden (insufficient permissions).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+patch:
+  tags:
+    - System
+  summary: Partially update a document type.
+  operationId: patchDocumentType
+  parameters:
+    - $ref: ../components/parameters/Id.yaml
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../components/schemas/PatchDocumentTypeRequest.yaml
+  responses:
+    '200':
+      description: Document type updated.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/DocumentType.yaml
+    '400':
+      description: Bad request (invalid data).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '404':
+      description: Document type not found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '403':
+      description: Forbidden (insufficient permissions).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+delete:
+  tags:
+    - System
+  summary: Delete a document type.
+  operationId: deleteDocumentType
+  parameters:
+    - $ref: ../components/parameters/Id.yaml
+  responses:
+    '204':
+      description: Document type deleted.
+    '404':
+      description: Document type not found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '403':
+      description: Forbidden (insufficient permissions).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml

@@ -1,0 +1,55 @@
+get:
+  tags:
+    - Documents
+  summary: Retrieve a paginated and filtered list of documents.
+  operationId: findDocuments
+  parameters:
+    - $ref: ../components/parameters/PersonId.yaml
+    - $ref: ../components/parameters/DocumentType.yaml
+    - $ref: ../components/parameters/FilterFromDate.yaml
+    - $ref: ../components/parameters/FilterToDate.yaml
+    - $ref: ../components/parameters/Page.yaml
+    - $ref: ../components/parameters/Size.yaml
+  responses:
+    '200':
+      description: Successful retrieval of document list.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/PaginatedDocument.yaml
+    '400':
+      description: Invalid query parameters provided.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+post:
+  tags:
+    - Documents
+  summary: Upload a new document file for a person.
+  operationId: uploadDocument
+  requestBody:
+    required: true
+    content:
+      multipart/form-data:
+        schema:
+          $ref: ../components/schemas/UploadDocumentRequest.yaml
+  responses:
+    '201':
+      description: Document successfully uploaded and stored.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Document.yaml
+    '400':
+      description: Invalid request, file format/size, or missing required fields.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '500':
+      description: Internal server error (file system write error).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml

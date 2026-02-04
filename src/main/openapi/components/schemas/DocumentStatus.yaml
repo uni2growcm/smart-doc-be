@@ -1,0 +1,3 @@
+type: string
+enum: [active, archived, deleted]
+description: Document lifecycle status values.

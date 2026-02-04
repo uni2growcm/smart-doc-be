@@ -1,0 +1,124 @@
+get:
+  tags:
+    - Persons
+  summary: Retrieve a person by ID.
+  operationId: findPersonById
+  parameters:
+    - $ref: ../components/parameters/Id.yaml
+  responses:
+    '200':
+      description: Person found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Person.yaml
+    '404':
+      description: Person not found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '403':
+      description: Forbidden (insufficient permissions).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+put:
+  tags:
+    - Persons
+  summary: Update a person.
+  operationId: updatePerson
+  parameters:
+    - $ref: ../components/parameters/Id.yaml
+  requestBody:
+    required: true
+    content:
+       application/json:
+         schema:
+           $ref: ../components/schemas/UpdatePersonRequest.yaml
+  responses:
+    '200':
+      description: Person updated.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Person.yaml
+    '400':
+      description: Bad request (invalid data).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '404':
+      description: Person not found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '403':
+      description: Forbidden (insufficient permissions).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+patch:
+  tags:
+    - Persons
+  summary: Partially update a person.
+  operationId: patchPerson
+  parameters:
+    - $ref: ../components/parameters/Id.yaml
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../components/schemas/PatchPersonRequest.yaml
+  responses:
+    '200':
+      description: Person updated.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Person.yaml
+    '400':
+      description: Bad request (invalid data).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '404':
+      description: Person not found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '403':
+      description: Forbidden (insufficient permissions).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+delete:
+  tags:
+    - Persons
+  summary: Delete a person.
+  operationId: deletePerson
+  parameters:
+    - $ref: ../components/parameters/Id.yaml
+  responses:
+    '204':
+      description: Person deleted.
+    '404':
+      description: Person not found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '403':
+      description: Forbidden (insufficient permissions).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml

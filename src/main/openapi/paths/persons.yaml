@@ -1,0 +1,52 @@
+get:
+  tags:
+    - Persons
+  summary: List persons with pagination (used for stand-alone mode or autocomplete lookup).
+  operationId: findPersons
+  parameters:
+    - $ref: ../components/parameters/PersonNamePartial.yaml
+    - $ref: ../components/parameters/Page.yaml
+    - $ref: ../components/parameters/Size.yaml
+  responses:
+    '200':
+      description: Paginated list of persons.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/PaginatedPerson.yaml
+    '400':
+      description: Bad request (invalid parameters).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+post:
+  tags:
+    - Persons
+  summary: Create a new person.
+  operationId: createPerson
+  requestBody:
+    required: true
+    content:
+      application/json:
+         schema:
+           $ref: ../components/schemas/CreatePersonRequest.yaml
+  responses:
+    '201':
+      description: Person created.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Person.yaml
+    '400':
+      description: Bad request (invalid data).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '403':
+      description: Forbidden (insufficient permissions).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml

@@ -1,0 +1,42 @@
+get:
+  tags:
+    - System
+  summary: Get supported document types.
+  operationId: getDocumentTypes
+  responses:
+    '200':
+      description: List of supported types.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/DocumentTypeArray.yaml
+post:
+  tags:
+    - System
+  summary: Create a new document type.
+  operationId: createDocumentType
+  requestBody:
+    required: true
+    content:
+      application/json:
+         schema:
+           $ref: ../components/schemas/CreateDocumentTypeRequest.yaml
+  responses:
+    '201':
+      description: Document type created.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/DocumentType.yaml
+    '400':
+      description: Bad request (invalid data).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '403':
+      description: Forbidden (insufficient permissions).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml

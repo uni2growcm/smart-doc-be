@@ -1,0 +1,4 @@
+type: array
+items:
+  $ref: ./DocumentType.yaml
+description: List of supported document types.

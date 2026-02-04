@@ -1,0 +1,6 @@
+name: documentId
+in: path
+required: true
+schema:
+  type: string
+description: Unique identifier of the document (alias pointing to the physical file path).

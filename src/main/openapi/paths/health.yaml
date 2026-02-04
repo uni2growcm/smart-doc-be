@@ -1,0 +1,12 @@
+get:
+  tags:
+    - System
+  summary: Get application health status.
+  operationId: getHealth
+  responses:
+    '200':
+      description: Application is healthy.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Health.yaml

@@ -1,0 +1,31 @@
+get:
+  tags:
+    - Persons
+  summary: Retrieve a paginated and filtered list of documents for a specific person.
+  operationId: findPersonDocuments
+  parameters:
+    - $ref: ../components/parameters/Id.yaml
+    - $ref: ../components/parameters/DocumentType.yaml
+    - $ref: ../components/parameters/FilterFromDate.yaml
+    - $ref: ../components/parameters/FilterToDate.yaml
+    - $ref: ../components/parameters/Page.yaml
+    - $ref: ../components/parameters/Size.yaml
+  responses:
+    '200':
+      description: Successful retrieval of document list.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/PaginatedDocument.yaml
+    '400':
+      description: Invalid query parameters provided.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '404':
+      description: Person not found (No directory exists for the personId).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
