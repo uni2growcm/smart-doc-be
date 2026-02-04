@@ -132,6 +132,16 @@ mvn test                          # Run tests
 - Use specific exception types (avoid generic `Exception`)
 - Document exceptions in JavaDoc with `@throws`
 
+#### i18n Error Key Conventions
+- Follow the pattern `[domain].errors.[specific-description]` for all exception messages
+- **Domains:** `uploads`, `documents`, `persons`
+- **Examples:**
+  - `uploads.errors.file-too-large` - File size exceeds limit
+  - `documents.errors.type-not-found` - Document type doesn't exist
+  - `persons.errors.pid-already-exists` - Person PID duplicate
+- **Message Style:** User-friendly, actionable error messages in both English and French
+- **Location:** `src/main/resources/locales/messages_{en|fr}.properties`
+
 #### Comments and Documentation
 - Use JavaDoc for public APIs and complex logic
 - Align JavaDoc parameter and exception comments
@@ -220,6 +230,15 @@ smart-doc-api/
 - **Database Schema:** Managed by Flyway migrations; `hibernate.ddl-auto` disabled to prevent drift
 - **Database Constraints:** Primary keys inline on id; FKs named `fk_{table}_{column}`; unique keys named `uk_{table}_{column}`; indexes named `idx_{table}_{column}`
 - **Request Schemas:** APIs use Create*Request (POST), Update*Request (PUT with version), Patch*Request (PATCH with optional fields)
+
+## Pagination Response Conventions
+
+Services use a custom `Page<T>` class for paginated responses:
+- **Location:** `org.openhospital.smartdoc.types.Page`
+- **Structure:** Contains `data` (List<T>) and `metadata` (PageInfoDTO)
+- **Usage:** `Page.from(springPage, mapper::toDtos)` for conversion from Spring Data Page
+- **Benefits:** Consistent internal pagination handling across services
+- **Note:** This differs from OpenAPI DTOs like `PaginatedDocumentDTO` which are used for external API contracts
 
 ## Port Interfaces
 

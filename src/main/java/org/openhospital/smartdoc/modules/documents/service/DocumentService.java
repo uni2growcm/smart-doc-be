@@ -3,14 +3,13 @@ package org.openhospital.smartdoc.modules.documents.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openhospital.smartdoc.exceptions.CustomException;
-import org.openhospital.smartdoc.modules.documents.mapper.DocumentMapper;
 import org.openhospital.smartdoc.modules.documents.model.Document;
 import org.openhospital.smartdoc.modules.documents.model.DocumentType;
 import org.openhospital.smartdoc.modules.documents.port.IDocumentService;
 import org.openhospital.smartdoc.modules.documents.repository.DocumentRepository;
 import org.openhospital.smartdoc.modules.documents.repository.DocumentTypeRepository;
 import org.openhospital.smartdoc.modules.persons.repository.PersonRepository;
-import org.openhospital.smartdoc.modules.shared.IUploadService;
+import org.openhospital.smartdoc.modules.shared.port.IUploadService;
 import org.openhospital.smartdoc.openapi.DocumentDTO;
 import org.openhospital.smartdoc.openapi.DocumentStatus;
 import org.openhospital.smartdoc.types.Page;
@@ -39,7 +38,6 @@ public class DocumentService implements IDocumentService {
 	private final DocumentTypeRepository documentTypeRepository;
 	private final PersonRepository personRepository;
 	private final IUploadService uploadService;
-	private final DocumentMapper mapper;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -59,14 +57,29 @@ public class DocumentService implements IDocumentService {
 			var documentPage = repository.findWithFilters(
 				personId, type, fromInstant, toInstant, pageable);
 
-			Page<DocumentDTO> result = Page.from(documentPage, mapper::toDtos);
+			Page<DocumentDTO> result = Page.from(documentPage, documents ->
+				documents.stream().map(doc -> {
+					DocumentDTO dto = new DocumentDTO();
+					dto.setId(doc.getId());
+					dto.setFileName(doc.getFileName());
+					dto.setPath(doc.getPath());
+					dto.setPersonId(doc.getPerson().getId().toString());
+					dto.setType(doc.getType().getId().toString());
+					dto.setDate(doc.getDate());
+					dto.setDescription(doc.getDescription());
+					dto.setFileSize(doc.getFileSize() != null ? doc.getFileSize().intValue() : null);
+					dto.setMimeType(doc.getMimeType());
+					dto.setStatus(doc.getStatus());
+					dto.setUploadDate(doc.getUploadDate());
+					return dto;
+				}).toList());
 
 			log.info("Found {} documents (page {}/{}, total: {})",
 				result.getData().size(), page, documentPage.getTotalPages(), documentPage.getTotalElements());
 			return result;
 		} catch (Exception e) {
 			log.error("Failed to find documents", e);
-			throw CustomException.internal("documents.search.failed");
+			throw CustomException.internal("documents.errors.search-failed");
 		}
 	}
 
@@ -103,16 +116,27 @@ public class DocumentService implements IDocumentService {
 			entity.setUploadDate(Instant.now());
 
 			Document saved = repository.save(entity);
-			DocumentDTO result = mapper.toDto(saved);
+			DocumentDTO result = new DocumentDTO();
+			result.setId(saved.getId());
+			result.setFileName(saved.getFileName());
+			result.setPath(saved.getPath());
+			result.setPersonId(saved.getPerson().getId().toString());
+			result.setType(saved.getType().getId().toString());
+			result.setDate(saved.getDate());
+			result.setDescription(saved.getDescription());
+			result.setFileSize(saved.getFileSize() != null ? saved.getFileSize().intValue() : null);
+			result.setMimeType(saved.getMimeType());
+			result.setStatus(saved.getStatus());
+			result.setUploadDate(saved.getUploadDate());
 
 			log.info("Document uploaded successfully with ID: {} for person: {}", saved.getId(), personId);
 			return result;
 		} catch (IOException e) {
 			log.error("File upload failed for person: {}", personId, e);
-			throw CustomException.internal("document.upload.failed");
+			throw CustomException.internal("documents.errors.upload-failed");
 		} catch (Exception e) {
 			log.error("Document upload failed", e);
-			throw CustomException.internal("document.upload.failed");
+			throw CustomException.internal("documents.errors.upload-failed");
 		}
 	}
 
@@ -124,15 +148,15 @@ public class DocumentService implements IDocumentService {
 		Document document = repository.findById(id)
 		                              .orElseThrow(() -> {
 			                              log.warn("Document not found with ID: {}", id);
-			                              return CustomException.notFound("document.not.found", new Object[]{id});
-		                              });
+			                              return CustomException.notFound("documents.errors.not-found", new Object[]{id});
+			                              });
 
 		try {
 			Resource resource = uploadService.retrieveFile(document.getPath());
 
 			if (!resource.exists()) {
 				log.warn("Document file not found on disk: {}", document.getPath());
-				throw CustomException.notFound("document.file.not.found");
+				throw CustomException.notFound("documents.errors.file-not-found");
 			}
 
 			byte[] content = resource.getInputStream().readAllBytes();
@@ -153,7 +177,7 @@ public class DocumentService implements IDocumentService {
 			                     .body(content);
 		} catch (IOException e) {
 			log.error("Failed to read document file: {}", document.getPath(), e);
-			throw CustomException.internal("document.read.failed");
+			throw CustomException.internal("documents.errors.read-failed");
 		}
 	}
 
@@ -167,8 +191,8 @@ public class DocumentService implements IDocumentService {
 		Document existing = repository.findById(id)
 		                              .orElseThrow(() -> {
 			                              log.warn("Document not found for update with ID: {}", id);
-			                              return CustomException.notFound("document.not.found", new Object[]{id});
-		                              });
+			                              return CustomException.notFound("documents.errors.not-found", new Object[]{id});
+			                              });
 
 		try {
 			boolean fileChanged = document != null && !document.isEmpty();
@@ -210,16 +234,27 @@ public class DocumentService implements IDocumentService {
 			}
 
 			Document saved = repository.save(existing);
-			DocumentDTO result = mapper.toDto(saved);
+			DocumentDTO result = new DocumentDTO();
+			result.setId(saved.getId());
+			result.setFileName(saved.getFileName());
+			result.setPath(saved.getPath());
+			result.setPersonId(saved.getPerson().getId().toString());
+			result.setType(saved.getType().getId().toString());
+			result.setDate(saved.getDate());
+			result.setDescription(saved.getDescription());
+			result.setFileSize(saved.getFileSize() != null ? saved.getFileSize().intValue() : null);
+			result.setMimeType(saved.getMimeType());
+			result.setStatus(saved.getStatus());
+			result.setUploadDate(saved.getUploadDate());
 
 			log.info("Document updated successfully: {}", saved.getId());
 			return result;
 		} catch (IOException e) {
 			log.error("File update failed for document: {}", id, e);
-			throw CustomException.internal("document.update.failed");
+			throw CustomException.internal("documents.errors.update-failed");
 		} catch (Exception e) {
 			log.error("Failed to update document", e);
-			throw CustomException.internal("document.update.failed");
+			throw CustomException.internal("documents.errors.update-failed");
 		}
 	}
 
@@ -231,8 +266,8 @@ public class DocumentService implements IDocumentService {
 		Document existing = repository.findById(id)
 		                              .orElseThrow(() -> {
 			                              log.warn("Document not found for deletion with ID: {}", id);
-			                              return CustomException.notFound("document.not.found", new Object[]{id});
-		                              });
+			                              return CustomException.notFound("documents.errors.not-found", new Object[]{id});
+			                              });
 
 		try {
 			// Delete file from storage
@@ -247,7 +282,7 @@ public class DocumentService implements IDocumentService {
 			log.info("Document deleted successfully: {}", existing.getFileName());
 		} catch (Exception e) {
 			log.error("Failed to delete document", e);
-			throw CustomException.internal("document.deletion.failed");
+			throw CustomException.internal("documents.errors.deletion-failed");
 		}
 	}
 
@@ -256,7 +291,7 @@ public class DocumentService implements IDocumentService {
 	 */
 	private void validatePersonExists(UUID personId) {
 		if (!personRepository.existsById(personId)) {
-			throw CustomException.notFound("person.not.found", new Object[]{personId});
+			throw CustomException.notFound("persons.errors.not-found", new Object[]{personId});
 		}
 	}
 
@@ -265,7 +300,7 @@ public class DocumentService implements IDocumentService {
 	 */
 	private DocumentType validateDocumentTypeExists(UUID typeId) {
 		return documentTypeRepository.findById(typeId)
-		                             .orElseThrow(() -> CustomException.notFound("document.type.not.found", new Object[]{typeId}));
+		                             .orElseThrow(() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{typeId}));
 	}
 
 	/**

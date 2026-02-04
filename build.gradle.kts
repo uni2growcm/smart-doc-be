@@ -73,7 +73,6 @@ sourceSets {
 
 tasks.compileJava {
     dependsOn("openApiGenerate")
-    options.compilerArgs.addAll(listOf("-Amapstruct.defaultComponentModel=spring"))
 }
 
 tasks.withType<Test> {

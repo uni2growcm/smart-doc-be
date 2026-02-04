@@ -54,7 +54,7 @@ public class PersonService implements IPersonService {
 			return result;
 		} catch (Exception e) {
 			log.error("Failed to find persons", e);
-			throw CustomException.internal("persons.search.failed");
+			throw CustomException.internal("persons.errors.search-failed");
 		}
 	}
 
@@ -75,12 +75,12 @@ public class PersonService implements IPersonService {
 		} catch (DataIntegrityViolationException e) {
 			log.warn("Person creation failed due to data integrity violation: {}", e.getMessage());
 			if (e.getMessage().contains("uk_persons_pid")) {
-				throw CustomException.badRequest("person.pid.already.exists", new Object[]{payload.getPid()});
+				throw CustomException.badRequest("persons.errors.pid-already-exists", new Object[]{payload.getPid()});
 			}
-			throw CustomException.badRequest("person.creation.constraint.violation");
+			throw CustomException.badRequest("persons.errors.creation-constraint-violation");
 		} catch (Exception e) {
 			log.error("Failed to create person", e);
-			throw CustomException.internal("person.creation.failed");
+			throw CustomException.internal("persons.errors.creation-failed");
 		}
 	}
 
@@ -92,8 +92,8 @@ public class PersonService implements IPersonService {
 		Person entity = repository.findById(id)
 		                          .orElseThrow(() -> {
 			                          log.warn("Person not found with ID: {}", id);
-			                          return CustomException.notFound("person.not.found", new Object[]{id});
-		                          });
+			                          return CustomException.notFound("persons.errors.not-found", new Object[]{id});
+			                          });
 
 		PersonDTO result = mapper.toDto(entity);
 		log.debug("Person found: {} ({})", entity.getName(), entity.getPid());
@@ -108,8 +108,8 @@ public class PersonService implements IPersonService {
 		Person existing = repository.findById(id)
 		                            .orElseThrow(() -> {
 			                            log.warn("Person not found for update with ID: {}", id);
-			                            return CustomException.notFound("person.not.found", new Object[]{id});
-		                            });
+			                            return CustomException.notFound("persons.errors.not-found", new Object[]{id});
+			                            });
 
 		try {
 			mapper.updateModel(payload, existing);
@@ -120,10 +120,10 @@ public class PersonService implements IPersonService {
 			return result;
 		} catch (DataIntegrityViolationException e) {
 			log.warn("Person update failed due to data integrity violation");
-			throw CustomException.badRequest("person.update.constraint.violation");
+			throw CustomException.badRequest("persons.errors.update-constraint-violation");
 		} catch (Exception e) {
 			log.error("Failed to update person", e);
-			throw CustomException.internal("person.update.failed");
+			throw CustomException.internal("persons.errors.update-failed");
 		}
 	}
 
@@ -135,8 +135,8 @@ public class PersonService implements IPersonService {
 		Person existing = repository.findById(id)
 		                            .orElseThrow(() -> {
 			                            log.warn("Person not found for patch with ID: {}", id);
-			                            return CustomException.notFound("person.not.found", new Object[]{id});
-		                            });
+			                            return CustomException.notFound("persons.errors.not-found", new Object[]{id});
+			                            });
 
 		try {
 			mapper.patchModel(payload, existing);
@@ -147,10 +147,10 @@ public class PersonService implements IPersonService {
 			return result;
 		} catch (DataIntegrityViolationException e) {
 			log.warn("Person patch failed due to data integrity violation");
-			throw CustomException.badRequest("person.patch.constraint.violation");
+			throw CustomException.badRequest("persons.errors.patch-constraint-violation");
 		} catch (Exception e) {
 			log.error("Failed to patch person", e);
-			throw CustomException.internal("person.patch.failed");
+			throw CustomException.internal("persons.errors.patch-failed");
 		}
 	}
 
@@ -162,15 +162,15 @@ public class PersonService implements IPersonService {
 		Person existing = repository.findById(id)
 		                            .orElseThrow(() -> {
 			                            log.warn("Person not found for deletion with ID: {}", id);
-			                            return CustomException.notFound("person.not.found", new Object[]{id});
-		                            });
+			                            return CustomException.notFound("persons.errors.not-found", new Object[]{id});
+			                            });
 
 		try {
 			repository.deleteById(id);
 			log.info("Person deleted successfully: {} ({})", existing.getName(), existing.getPid());
 		} catch (Exception e) {
 			log.error("Failed to delete person", e);
-			throw CustomException.internal("person.deletion.failed");
+			throw CustomException.internal("persons.errors.deletion-failed");
 		}
 	}
 
@@ -184,7 +184,7 @@ public class PersonService implements IPersonService {
 
 		// Verify person exists
 		if (!repository.existsById(id)) {
-			throw CustomException.notFound("person.not.found", new Object[]{id});
+			throw CustomException.notFound("persons.errors.not-found", new Object[]{id});
 		}
 
 		try {
@@ -234,7 +234,7 @@ public class PersonService implements IPersonService {
 			throw e; // Re-throw custom exceptions
 		} catch (Exception e) {
 			log.error("Failed to find person documents", e);
-			throw CustomException.internal("person.documents.search.failed");
+			throw CustomException.internal("persons.errors.documents-search-failed");
 		}
 	}
 
@@ -243,16 +243,16 @@ public class PersonService implements IPersonService {
 	 */
 	private void validateCreateRequest(CreatePersonRequestDTO payload) {
 		if (payload.getPid() == null || payload.getPid().trim().isEmpty()) {
-			throw CustomException.badRequest("person.pid.required");
+			throw CustomException.badRequest("persons.errors.pid-required");
 		}
 
 		if (payload.getName() == null || payload.getName().trim().isEmpty()) {
-			throw CustomException.badRequest("person.name.required");
+			throw CustomException.badRequest("persons.errors.name-required");
 		}
 
 		// Additional validation can be added here
 		if (payload.getEmail() != null && !payload.getEmail().contains("@")) {
-			throw CustomException.badRequest("person.email.invalid");
+			throw CustomException.badRequest("persons.errors.email-invalid");
 		}
 	}
 }
