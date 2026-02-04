@@ -70,6 +70,26 @@ Routing is derived from **plugin manifests** and exposed centrally by the Core.
 
 Routing is **prefix-based** and defined in a single configuration file.
 
+### Two-level routing model
+
+The system implements **two distinct routing layers**, each with a clearly defined responsibility:
+
+1. **Core-level routing**
+    - Implemented inside the OH API Core
+    - Based on plugin manifests (`manifest.yml`)
+    - Resolves *which plugin* must handle an incoming request
+    - Forwards the request to the correct plugin instance
+
+2. **Plugin-level routing**
+    - Implemented inside each plugin application
+    - Uses standard Spring MVC / WebFlux controllers
+    - Resolves *which controller and endpoint* inside the plugin must handle the request
+
+> The routing logic described in this document refers **only to the Core-level routing**.
+> Plugin-level routing is entirely owned by the plugin and follows standard Spring conventions.
+
+---
+
 ### Routes generation from manifests
 
 Routing is **not hard-coded** and is **not managed via a separate routes configuration file**. Instead, the Core derives routing rules **directly from plugin manifests** (`manifest.yml`).
@@ -94,7 +114,7 @@ Each plugin declares:
 The Core derives the public API prefix using a deterministic convention:
 
 ```
-/api/{plugin-name}/**
+/api/plugin/{plugin-name}/**
 ```
 
 The **plugin manifest** is the single source of truth for plugin discovery, routing, and authorization.
@@ -128,7 +148,7 @@ Using the manifest, the Core:
 
 * Discovers which plugins are available
 * Builds routing rules dynamically
-* Exposes public APIs under `/api/{plugin-name}/**`
+* Exposes public APIs under `/api/plugin/{plugin-name}/**`
 * Enforces authorization *before* forwarding requests
 * Centralizes governance and security policies
 
@@ -139,7 +159,7 @@ Using the manifest, the Core:
 From the manifest above, the Core automatically derives the following routing rule:
 
 ```
-/api/smart-doc/**  →  http://localhost:4001/**
+/api/plugin/smart-doc/**  →  http://localhost:4001/**
 ```
 
 ### How routing works at runtime
@@ -147,7 +167,7 @@ From the manifest above, the Core automatically derives the following routing ru
 1. Core loads all plugin manifests at startup
 2. For each plugin, Core:
 
-    * registers `/api/{plugin-name}` as public base path
+    * registers `/api/plugin/{plugin-name}` as public base path
     * maps it to `http://localhost:{port}`
 3. Incoming requests are matched on the base path
 4. The base path is stripped and the remaining path is appended to the plugin URL
@@ -162,7 +182,7 @@ Example:
 
 ```
 Incoming request:
-GET /api/smart-doc/documents/123
+GET /api/plugin/smart-doc/documents/123
 
 Resolved target:
 http://localhost:4001/documents/123
@@ -203,7 +223,7 @@ Each `PluginDefinition` contains:
 From this information, the Core checks the permissions and implicitly derives:
 
 ```
-/api/{plugin-name}/**  →  http://localhost:{port}/**
+/api/plugin/{plugin-name}/**  →  http://localhost:{port}/**
 ```
 
 ---
@@ -216,7 +236,7 @@ The Core exposes a **single catch-all controller** that resolves plugins using t
 @RestController
 public class ProxyController {
 
-    @Value("${proxy.api-prefix:/api/}")
+    @Value("${proxy.api-prefix:/api/plugin/}")
     private String apiPrefix;
 
     @Value("${proxy.target-host:http://localhost:}")
@@ -230,22 +250,20 @@ public class ProxyController {
         this.restTemplate = restTemplate;
     }
 
-    @RequestMapping("${proxy.api-prefix:/api/}**")
+    @RequestMapping("${proxy.api-prefix:/api/plugin/}**")
     public ResponseEntity<?> proxy(HttpServletRequest request,
                                    @RequestBody(required = false) byte[] body) {
 
         String path = request.getRequestURI();
-        // es: /api/smart-doc/documents/123
+        // es: /api/plugin/smart-doc/documents/123
 
-        // Removes /api/
+        // Remove /api/plugin/
         String relativePath = path.substring(apiPrefix.length());
         // es: smart-doc/documents/123
 
-        // Extracts plugin name
+        // Extract plugin name
         String pluginName = relativePath.split("/", 2)[0];
-        // es: smart-doc
 
-        // Resolves plugin 
         PluginDefinition plugin = pluginRegistry.getPlugins().stream()
                 .filter(p -> p.getName().equals(pluginName))
                 .findFirst()
@@ -253,12 +271,10 @@ public class ProxyController {
                         new RuntimeException("No plugin registered for: " + pluginName)
                 );
 
-        // Builds target URL
         String targetUrl = path.replace(
                 apiPrefix + plugin.getName(),
                 targetHost + plugin.getPort()
         );
-        // es: http://localhost:4001/documents/123
 
         HttpMethod method = HttpMethod.valueOf(request.getMethod());
         HttpEntity<byte[]> entity = new HttpEntity<>(body);
@@ -270,7 +286,7 @@ public class ProxyController {
 
 This controller:
 
-* Matches all `/api/**` requests
+* Matches all `/api/plugin/**` requests
 * Resolves the target plugin using the manifest
 * Builds the target URL dynamically
 * Forwards the request transparently
