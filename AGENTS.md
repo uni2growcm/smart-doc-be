@@ -4,7 +4,7 @@ This file provides essential information for AI coding agents working in the Sma
 
 ## Project Overview
 
-**SmartDoc Backend** is a Spring Boot 3.x REST API for managing digital patient documents within the Open Hospital ecosystem. It operates as a microservice with OpenAPI-first design, proxied through OH-API/BE for authentication and authorization.
+**SmartDoc Backend** is a Spring Boot REST API for managing digital patient documents within the Open Hospital ecosystem. It operates as a microservice with OpenAPI-first design, proxied through OH-API/BE for authentication and authorization.
 
 **Technology Stack:**
 - Java 25
@@ -14,6 +14,7 @@ This file provides essential information for AI coding agents working in the Sma
 - MapStruct (DTO mapping)
 - Lombok (boilerplate reduction)
 - JUnit 5 (testing)
+- MySQL database with Flyway migrations
 
 ## Build, Test, and Lint Commands
 
@@ -50,9 +51,6 @@ This file provides essential information for AI coding agents working in the Sma
 # Bundle OpenAPI spec
 ./gradlew buildSpec
 
-# Build final API spec (using redocly)
-redocly bundle src/main/openapi/openapi.yaml -o src/main/openapi/api-docs.yaml
-
 # Preview OpenAPI docs (on port 8086)
 ./gradlew preview
 
@@ -65,19 +63,17 @@ redocly bundle src/main/openapi/openapi.yaml -o src/main/openapi/api-docs.yaml
 
 ### Running Tests in CI/CD
 
-The GitHub Actions pipeline uses:
+The GitHub Actions pipeline uses Maven for compatibility:
 ```bash
 mvn -B clean package -DskipTests  # Build
 mvn test                          # Run tests
 ```
 
-Note: While Gradle is the primary build tool, Maven commands are used in CI for compatibility reasons.
-
 ## Code Style Guidelines
 
 ### General Formatting
 
-- **Indentation:** 4 spaces (defined in `.editorconfig`)
+- **Indentation:** 4 spaces
 - **Line length:** 120 characters maximum
 - **Line endings:** LF (Unix-style)
 - **Charset:** UTF-8
@@ -90,7 +86,7 @@ Note: While Gradle is the primary build tool, Maven commands are used in CI for 
 #### Imports
 - Use single-class imports (no wildcard imports)
 - Static imports separated from regular imports
-- Import order: `$*, |, *` (all classes, separator, static)
+- Import order: all classes, separator, static imports
 - Max classes before import-on-demand: 999 (essentially never)
 - Always use fully qualified names where clarity is needed
 
@@ -114,10 +110,11 @@ Note: While Gradle is the primary build tool, Maven commands are used in CI for 
 - Always declare explicit types (avoid `var` for clarity)
 - Use Java 8+ types (LocalDate, LocalDateTime, Optional, etc.)
 - Leverage Lombok annotations to reduce boilerplate:
-  - `@Data` for POJOs
+  - `@Data` for POJOs with getters/setters/equals/hashCode
   - `@Builder` for builder pattern
   - `@Slf4j` for logging
   - `@RequiredArgsConstructor` for constructor injection
+  - `@AllArgsConstructor` when all constructor parameters needed
 
 #### Annotations
 - Place annotations on separate lines (except parameters)
@@ -159,6 +156,7 @@ Note: While Gradle is the primary build tool, Maven commands are used in CI for 
 - Mock external dependencies with `@MockBean`
 - Organize tests with nested test classes when appropriate
 - Use descriptive test method names (e.g., `shouldReturnDocumentWhenIdExists`)
+- Use `@ActiveProfiles("test")` for test-specific configuration
 
 ## OpenAPI-First Development
 
@@ -194,21 +192,21 @@ smart-doc-api/
 │   ├── java/org/openhospital/smartdoc/
 │   │   ├── SmartdocApplication.java    # Main Spring Boot app
 │   │   ├── config/                      # Configuration classes
-│   │   ├── modules/documents/port/      # HTTP client interface contracts for documents and document types
-│   │   │   ├── IDocumentTypeService.java
-│   │   │   └── IDocumentService.java
-│   │   └── modules/persons/port/        # HTTP client interface contracts for persons
-│   │       └── IPersonService.java
+│   │   ├── modules/documents/port/      # HTTP client interface contracts
+│   │   ├── modules/persons/port/        # HTTP client interface contracts
+│   │   ├── models/                      # Base entities (BaseEntity)
+│   │   ├── exceptions/                  # Global exception handling
+│   │   └── modules/*/                   # Feature modules (service, model, repository, mapper)
 │   ├── openapi/                         # OpenAPI specs (API-first)
 │   │   ├── openapi.yaml                 # Main spec
 │   │   ├── paths/                       # Endpoint definitions
 │   │   └── components/                  # Reusable schemas/params
 │   └── resources/
-│       └── application.properties       # Spring configuration
+│       ├── application.properties       # Spring configuration
+│       └── db/migration/                # Flyway migrations
 ├── src/test/                            # Test classes
 ├── build.gradle.kts                     # Gradle build config
-├── gradle/libs.versions.toml            # Dependency versions
-└── .editorconfig                        # Code style definitions
+└── gradle/libs.versions.toml            # Dependency versions
 ```
 
 ## Architecture Notes
@@ -218,24 +216,14 @@ smart-doc-api/
 - **Security:** OH-API/BE handles authentication; SD-BE validates tokens
 - **Storage:** File system-based document storage (organized by personId)
 - **Domain:** Follows Open Hospital domain models and conventions
-- **Entities:** DocumentType provides full CRUD operations, inheriting Base schema (id [UUID], code, name, description). Person provides full CRUD operations, inheriting Base schema (id [UUID], name, pid). Document provides full CRUD operations, inheriting Base schema (id [UUID]) with additional path field.
-- **Database Schema:** Managed by Flyway migrations (`src/main/resources/db/migration/`). Migrations ensure schema is always aligned with JPA models; `hibernate.ddl-auto` disabled to prevent drift.
-- **Database Constraints:** Primary keys inline on id; FKs named `fk_{table}_{column}`; unique keys named `uk_{table}_{column}`; indexes named `idx_{table}_{column}`.
-- **Request Schemas:** APIs use Create*Request (POST), Update*Request (PUT with version), Patch*Request (PATCH with optional fields). Audit fields excluded; id in path for updates/patches.
+- **Entities:** DocumentType, Person, and Document provide full CRUD operations
+- **Database Schema:** Managed by Flyway migrations; `hibernate.ddl-auto` disabled to prevent drift
+- **Database Constraints:** Primary keys inline on id; FKs named `fk_{table}_{column}`; unique keys named `uk_{table}_{column}`; indexes named `idx_{table}_{column}`
+- **Request Schemas:** APIs use Create*Request (POST), Update*Request (PUT with version), Patch*Request (PATCH with optional fields)
 
 ## Port Interfaces
 
-Port interfaces in `modules/documents/port/` and `modules/persons/port/` define HTTP client contracts using Spring's `@HttpExchange` annotations. These interfaces serve as type-safe contracts that are implemented by:
-
-- **Controllers:** REST controllers implement these interfaces to define API endpoints
-- **Services:** Business logic services use these interfaces for inter-service communication
-- **Tests:** Integration and unit tests use these contracts to ensure type safety and mock HTTP interactions
-
-Key benefits:
-- Type-safe HTTP client definitions
-- Consistent API contracts across layers
-- Automatic validation through OpenAPI-generated DTOs
-- Support for both JSON and multipart operations
+Port interfaces in `modules/*/port/` define HTTP client contracts using Spring's `@HttpExchange` annotations. These interfaces serve as type-safe contracts that are implemented by controllers, services, and tests.
 
 ## Important Reminders
 
