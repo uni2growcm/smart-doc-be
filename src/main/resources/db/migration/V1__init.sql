@@ -1,5 +1,6 @@
 -- Initial schema for SmartDoc API
 -- Based on JPA entities: BaseEntity (abstract), Document, Person, DocumentType
+-- Compatible with both MySQL and H2 for testing
 
 CREATE TABLE document_types
 (
@@ -8,10 +9,10 @@ CREATE TABLE document_types
     created_date       TIMESTAMP,
     last_modified_by   VARCHAR(255),
     last_modified_date TIMESTAMP,
-    version            INT          NOT NULL,
+    version            INTEGER      NOT NULL,
     code               VARCHAR(255) NOT NULL,
     name               VARCHAR(255) NOT NULL,
-    description        TEXT,
+    description        VARCHAR(255),
     UNIQUE KEY uk_document_types_code (code)
 );
 
@@ -22,12 +23,12 @@ CREATE TABLE persons
     created_date       TIMESTAMP,
     last_modified_by   VARCHAR(255),
     last_modified_date TIMESTAMP,
-    version            INT          NOT NULL,
+    version            INTEGER      NOT NULL,
     name               VARCHAR(255) NOT NULL,
     pid                VARCHAR(255) NOT NULL,
     email              VARCHAR(255),
     phone_number       VARCHAR(255),
-    gender             ENUM('male', 'female'),
+    gender             VARCHAR(255),
     UNIQUE KEY uk_persons_pid (pid)
 );
 
@@ -38,18 +39,19 @@ CREATE TABLE documents
     created_date       TIMESTAMP,
     last_modified_by   VARCHAR(255),
     last_modified_date TIMESTAMP,
-    version            INT         NOT NULL,
+    version            INTEGER     NOT NULL,
     file_name          VARCHAR(255),
+    path               VARCHAR(255),
     person_id          VARCHAR(36),
-    type_id            VARCHAR(255),
-    date               DATE,
-    description        TEXT,
+    type_id            VARCHAR(36),
+    date               TIMESTAMP,
+    description        VARCHAR(255),
     file_size          BIGINT,
     mime_type          VARCHAR(255),
-    status             ENUM('active', 'archived', 'deleted'),
+    status             VARCHAR(255),
     upload_date        TIMESTAMP,
     CONSTRAINT fk_documents_person_id FOREIGN KEY (person_id) REFERENCES persons (id),
-    CONSTRAINT fk_documents_type_id FOREIGN KEY (type_id) REFERENCES document_types (code)
+    CONSTRAINT fk_documents_type_id FOREIGN KEY (type_id) REFERENCES document_types (id)
 );
 
 -- Indexes for FKs

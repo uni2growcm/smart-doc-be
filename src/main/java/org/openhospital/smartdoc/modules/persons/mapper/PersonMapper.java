@@ -6,10 +6,14 @@ import org.openhospital.smartdoc.config.MapperConfig;
 import org.openhospital.smartdoc.modules.persons.model.Person;
 import org.openhospital.smartdoc.openapi.*;
 
+import java.util.List;
+
 @Mapper(config = MapperConfig.class)
 public interface PersonMapper {
 
 	PersonDTO toDto(Person person);
+
+	List<PersonDTO> toDtos(List<Person> persons);
 
 	Person toModel(PersonDTO personDTO);
 

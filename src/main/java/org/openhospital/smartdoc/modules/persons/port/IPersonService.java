@@ -1,6 +1,7 @@
 package org.openhospital.smartdoc.modules.persons.port;
 
 import org.openhospital.smartdoc.openapi.*;
+import org.openhospital.smartdoc.types.Page;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.service.annotation.*;
 
@@ -11,10 +12,7 @@ import java.util.UUID;
 public interface IPersonService {
 
 	@GetExchange
-	PaginatedPersonDTO findPersons(
-		@RequestParam(required = false) String name,
-		@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size
-	                              );
+	Page<PersonDTO> findPersons(@RequestParam(required = false) String name, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
 
 	@PostExchange
 	PersonDTO createPerson(@RequestBody CreatePersonRequestDTO payload);
@@ -32,9 +30,5 @@ public interface IPersonService {
 	void deletePerson(@PathVariable UUID id);
 
 	@GetExchange("/{id}/documents")
-	PaginatedDocumentDTO findPersonDocuments(
-		@PathVariable UUID id, @RequestParam(required = false) UUID type,
-		@RequestParam(required = false) LocalDate fromDate, @RequestParam(required = false) LocalDate toDate,
-		@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size
-	                                        );
+	PaginatedDocumentDTO findPersonDocuments(@PathVariable UUID id, @RequestParam(required = false) UUID type, @RequestParam(required = false) LocalDate fromDate, @RequestParam(required = false) LocalDate toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
 }
