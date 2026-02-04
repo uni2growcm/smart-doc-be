@@ -1,25 +1,25 @@
 post:
   tags:
-    - Documents
-  summary: Restore a deleted document type.
-  operationId: restoreDocumentType
+    - Persons
+  summary: Activate an inactive person.
+  operationId: activatePerson
   parameters:
     - $ref: ../components/parameters/Id.yaml
   responses:
     '200':
-      description: Document type restored.
+      description: Person activated.
       content:
         application/json:
           schema:
-            $ref: ../components/schemas/DocumentType.yaml
+            $ref: ../components/schemas/Person.yaml
     '400':
-      description: Document type not deleted.
+      description: Person not deleted.
       content:
         application/json:
           schema:
             $ref: ../components/schemas/Problem.yaml
     '404':
-      description: Document type not found.
+      description: Person not found.
       content:
         application/json:
           schema:

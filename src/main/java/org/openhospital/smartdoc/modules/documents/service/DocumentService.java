@@ -14,9 +14,9 @@ import org.openhospital.smartdoc.modules.shared.port.IUploadService;
 import org.openhospital.smartdoc.openapi.DocumentDTO;
 import org.openhospital.smartdoc.openapi.DocumentStatus;
 import org.openhospital.smartdoc.types.Page;
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.*;
-import org.springframework.http.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,6 +40,15 @@ public class DocumentService implements IDocumentService {
 	private final PersonRepository personRepository;
 	private final IUploadService uploadService;
 	private final DocumentMapper documentMapper;
+
+	private Document findById(UUID id) {
+		return repository.findById(id).orElseThrow(() -> CustomException.notFound("documents.errors.not-found", new Object[]{id}));
+	}
+
+
+	private Document findByIdAndStatusNot(UUID id, DocumentStatus status) {
+		return repository.findByIdAndStatusNot(id, status).orElseThrow(() -> CustomException.notFound("documents.errors.not-found", new Object[]{id}));
+	}
 
 	@Override
 	@Transactional(readOnly = true)
@@ -66,6 +75,7 @@ public class DocumentService implements IDocumentService {
 			throw CustomException.internal("documents.errors.search-failed");
 		}
 	}
+
 
 	@Override
 	@Transactional
@@ -111,48 +121,37 @@ public class DocumentService implements IDocumentService {
 		}
 	}
 
+
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntity<byte[]> findDocumentById(UUID id) {
-		log.debug("Retrieving document by ID: {}", id);
+	public DocumentDTO findDocumentById(UUID id) {
+		log.debug("Retrieving document metadata by ID: {}", id);
 
-		Document document = repository.findById(id).orElseThrow(() -> {
-			log.warn("Document not found with ID: {}", id);
-			return CustomException.notFound("documents.errors.not-found", new Object[]{id});
-		});
+		Document document = findByIdAndStatusNot(id, DocumentStatus.DELETED);
 
-		try {
-			Resource resource = uploadService.retrieveFile(document.getPath());
-
-			if (!resource.exists()) {
-				log.warn("Document file not found on disk: {}", document.getPath());
-				throw CustomException.notFound("documents.errors.file-not-found");
-			}
-
-			byte[] content = resource.getInputStream().readAllBytes();
-
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.parseMediaType(document.getMimeType() != null ? document.getMimeType() : "application/octet-stream"));
-			headers.setContentDisposition(org.springframework.http.ContentDisposition.attachment().filename(document.getFileName()).build());
-			headers.setContentLength(content.length);
-
-			log.debug("Document retrieved successfully: {}", document.getFileName());
-			return ResponseEntity.ok().headers(headers).body(content);
-		} catch (IOException e) {
-			log.error("Failed to read document file: {}", document.getPath(), e);
-			throw CustomException.internal("documents.errors.read-failed");
-		}
+		DocumentDTO result = documentMapper.toDto(document);
+		log.debug("Document metadata retrieved successfully: {}", document.getFileName());
+		return result;
 	}
+
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntity<ByteArrayResource> downloadDocument(UUID id, boolean attachment) {
+		log.debug("Downloading document by ID: {}, attachment: {}", id, attachment);
+
+		Document document = findByIdAndStatusNot(id, DocumentStatus.DELETED);
+
+		return uploadService.downloadFile(document.getPath(), attachment);
+	}
+
 
 	@Override
 	@Transactional
 	public DocumentDTO updateDocument(UUID id, MultipartFile document, UUID personId, UUID typeId, LocalDate date, String description) {
 		log.info("Updating document with ID: {}", id);
 
-		Document existing = repository.findById(id).orElseThrow(() -> {
-			log.warn("Document not found for update with ID: {}", id);
-			return CustomException.notFound("documents.errors.not-found", new Object[]{id});
-		});
+		Document existing = findById(id);
 
 		try {
 			boolean fileChanged = document != null && !document.isEmpty();
@@ -207,15 +206,13 @@ public class DocumentService implements IDocumentService {
 		}
 	}
 
+
 	@Override
 	@Transactional
 	public void deleteDocument(UUID id) {
 		log.info("Deleting document with ID: {}", id);
 
-		Document existing = repository.findById(id).orElseThrow(() -> {
-			log.warn("Document not found for deletion with ID: {}", id);
-			return CustomException.notFound("documents.errors.not-found", new Object[]{id});
-		});
+		Document existing = findById(id);
 
 		// Delete file from storage
 		boolean fileDeleted = uploadService.deleteFile(existing.getPath());

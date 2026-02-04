@@ -78,25 +78,19 @@ paths:
     get:
       tags:
         - Documents
-      summary: Retrieve a document file (download/preview).
+      summary: Retrieve document metadata.
       operationId: findDocumentById
       parameters:
         - $ref: '#/components/parameters/Id'
       responses:
         '200':
-          description: Document file stream.
-          content:
-            image/jpeg:
-              schema:
-                $ref: '#/components/schemas/BinaryFile'
-        '400':
-          description: Invalid documentId format.
+          description: Document metadata.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: '#/components/schemas/Document'
         '404':
-          description: Document not found at the specified path.
+          description: Document not found.
           content:
             application/json:
               schema:
@@ -151,6 +145,29 @@ paths:
                 $ref: '#/components/schemas/Problem'
         '500':
           description: File system deletion error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /documents/{id}/download:
+    get:
+      tags:
+        - Documents
+      summary: Download a document file
+      operationId: downloadDocument
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/Attachment'
+      responses:
+        '200':
+          description: Document file download
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Document not found
           content:
             application/json:
               schema:
@@ -366,6 +383,105 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Problem'
+  /persons/{id}/restore:
+    post:
+      tags:
+        - Persons
+      summary: Restore a deleted person.
+      operationId: restorePerson
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Person restored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '400':
+          description: Person not deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden (insufficient permissions).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Person not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /persons/{id}/activate:
+    post:
+      tags:
+        - Persons
+      summary: Activate an inactive person.
+      operationId: activatePerson
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Person activated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '400':
+          description: Person not deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden (insufficient permissions).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Person not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /persons/{id}/deactivate:
+    post:
+      tags:
+        - Persons
+      summary: Deactivate an active person.
+      operationId: deactivatePerson
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Person deactivated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '400':
+          description: Person not deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden (insufficient permissions).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Person not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
   /document-types:
     get:
       tags:
@@ -414,7 +530,7 @@ paths:
   /document-types/{id}:
     get:
       tags:
-        - System
+        - Documents
       summary: Retrieve a document type by ID.
       operationId: findDocumentTypeById
       parameters:
@@ -536,6 +652,105 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Problem'
+  /document-types/{id}/restore:
+    post:
+      tags:
+        - Documents
+      summary: Restore a deleted document type.
+      operationId: restoreDocumentType
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Document type restored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentType'
+        '400':
+          description: Document type not deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden (insufficient permissions).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Document type not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /document-types/{id}/activate:
+    post:
+      tags:
+        - Documents
+      summary: Activate an inactive document type.
+      operationId: activateDocumentType
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Document type activated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentType'
+        '400':
+          description: Document type not deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden (insufficient permissions).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Document type not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /document-types/{id}/deactivate:
+    post:
+      tags:
+        - Documents
+      summary: Activate an inactive document type.
+      operationId: deactivateDocumentType
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Document type deactivated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentType'
+        '400':
+          description: Document type not deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden (insufficient permissions).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Document type not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
   /actuator/health:
     get:
       tags:
@@ -618,6 +833,13 @@ components:
       schema:
         type: string
       description: Numeric identifier of the resource.
+    Attachment:
+      name: attachment
+      in: query
+      schema:
+        type: boolean
+        default: true
+      description: If true, sets Content-Disposition to attachment for download
     PersonNamePartial:
       name: name
       in: query

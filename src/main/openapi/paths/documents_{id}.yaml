@@ -1,25 +1,19 @@
 get:
   tags:
     - Documents
-  summary: Retrieve a document file (download/preview).
+  summary: Retrieve document metadata.
   operationId: findDocumentById
   parameters:
     - $ref: ../components/parameters/Id.yaml
   responses:
     '200':
-      description: Document file stream.
-      content:
-        image/jpeg:
-          schema:
-            $ref: ../components/schemas/BinaryFile.yaml
-    '400':
-      description: Invalid documentId format.
+      description: Document metadata.
       content:
         application/json:
           schema:
-            $ref: ../components/schemas/Problem.yaml
+            $ref: ../components/schemas/Document.yaml
     '404':
-      description: Document not found at the specified path.
+      description: Document not found.
       content:
         application/json:
           schema:

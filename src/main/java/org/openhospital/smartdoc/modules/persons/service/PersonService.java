@@ -37,6 +37,14 @@ public class PersonService implements IPersonService {
 	private final DocumentRepository documentRepository;
 	private final DocumentMapper documentMapper;
 
+	private Person findById(UUID id) {
+		return repository.findById(id).orElseThrow(() -> CustomException.notFound("persons.errors.not-found", new Object[]{id}));
+	}
+
+	private Person findByIdAndStatusNot(UUID id, Status status) {
+		return repository.findByIdAndStatusNot(id, status).orElseThrow(() -> CustomException.notFound("persons.errors.not-found", new Object[]{id}));
+	}
+
 	@Override
 	@Transactional(readOnly = true)
 	public Page<PersonDTO> findPersons(String name, int page, int size) {
@@ -87,10 +95,7 @@ public class PersonService implements IPersonService {
 	public PersonDTO findPersonById(UUID id) {
 		log.debug("Finding person by ID: {}", id);
 
-		Person entity = repository.findById(id).orElseThrow(() -> {
-			log.warn("Person not found with ID: {}", id);
-			return CustomException.notFound("persons.errors.not-found", new Object[]{id});
-		});
+		Person entity = findByIdAndStatusNot(id, Status.DELETED);
 
 		PersonDTO result = mapper.toDto(entity);
 		log.debug("Person found: {} ({})", entity.getName(), entity.getPid());
@@ -102,10 +107,7 @@ public class PersonService implements IPersonService {
 	public PersonDTO updatePerson(UUID id, UpdatePersonRequestDTO payload) {
 		log.info("Updating person with ID: {}", id);
 
-		Person existing = repository.findById(id).orElseThrow(() -> {
-			log.warn("Person not found for update with ID: {}", id);
-			return CustomException.notFound("persons.errors.not-found", new Object[]{id});
-		});
+		Person existing = findByIdAndStatusNot(id, Status.DELETED);
 
 		mapper.updateModel(payload, existing);
 		Person saved = repository.save(existing);
@@ -120,10 +122,7 @@ public class PersonService implements IPersonService {
 	public PersonDTO patchPerson(UUID id, PatchPersonRequestDTO payload) {
 		log.info("Patching person with ID: {}", id);
 
-		Person existing = repository.findById(id).orElseThrow(() -> {
-			log.warn("Person not found for patch with ID: {}", id);
-			return CustomException.notFound("persons.errors.not-found", new Object[]{id});
-		});
+		Person existing = findByIdAndStatusNot(id, Status.DELETED);
 
 		mapper.patchModel(payload, existing);
 		Person saved = repository.save(existing);
@@ -137,7 +136,7 @@ public class PersonService implements IPersonService {
 	public void deletePerson(UUID id) {
 		log.info("Deleting person with ID: {}", id);
 
-		Person person = repository.findById(id).orElseThrow(() -> CustomException.notFound("persons.errors.not-found", new Object[]{id}));
+		Person person = findByIdAndStatusNot(id, Status.DELETED);
 
 		try {
 			// Try hard delete first
@@ -156,7 +155,7 @@ public class PersonService implements IPersonService {
 	public PersonDTO activatePerson(UUID id) {
 		log.info("Activating person with ID: {}", id);
 
-		Person person = repository.findById(id).orElseThrow(() -> CustomException.notFound("persons.errors.not-found", new Object[]{id}));
+		Person person = findByIdAndStatusNot(id, Status.DELETED);
 
 		if (person.getStatus() == Status.ACTIVE) {
 			throw CustomException.badRequest("persons.errors.already-active");
@@ -173,7 +172,7 @@ public class PersonService implements IPersonService {
 	public PersonDTO deactivatePerson(UUID id) {
 		log.info("Deactivating person with ID: {}", id);
 
-		Person person = repository.findById(id).orElseThrow(() -> CustomException.notFound("persons.errors.not-found", new Object[]{id}));
+		Person person = findByIdAndStatusNot(id, Status.DELETED);
 
 		if (person.getStatus() == Status.INACTIVE) {
 			throw CustomException.badRequest("persons.errors.already-inactive");
@@ -190,7 +189,7 @@ public class PersonService implements IPersonService {
 	public PersonDTO restorePerson(UUID id) {
 		log.info("Restoring person with ID: {}", id);
 
-		Person person = repository.findById(id).orElseThrow(() -> CustomException.notFound("persons.errors.not-found", new Object[]{id}));
+		Person person = findById(id);
 
 		if (person.getStatus() != Status.DELETED) {
 			throw CustomException.badRequest("persons.errors.not-DELETED");
@@ -285,6 +284,4 @@ public class PersonService implements IPersonService {
 			throw CustomException.badRequest("persons.errors.email-invalid");
 		}
 	}
-
-
 }

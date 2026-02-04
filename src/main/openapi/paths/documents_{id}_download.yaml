@@ -1,0 +1,22 @@
+get:
+  tags:
+    - Documents
+  summary: Download a document file
+  operationId: downloadDocument
+  parameters:
+    - $ref: ../components/parameters/Id.yaml
+    - $ref: ../components/parameters/Attachment.yaml
+  responses:
+    '200':
+      description: Document file download
+      content:
+        application/octet-stream:
+          schema:
+            type: string
+            format: binary
+    '404':
+      description: Document not found
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml

@@ -1,14 +1,14 @@
 package org.openhospital.smartdoc.modules.documents.repository;
 
 import org.openhospital.smartdoc.modules.documents.model.Document;
+import org.openhospital.smartdoc.openapi.DocumentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public interface DocumentRepository extends JpaRepository<Document, UUID> {
 
@@ -27,4 +27,6 @@ public interface DocumentRepository extends JpaRepository<Document, UUID> {
 		ORDER BY d.date DESC
 		""")
 	Page<Document> findWithFilters(UUID personId, UUID typeId, Instant fromDate, Instant toDate, Pageable pageable);
+
+	Optional<Document> findByIdAndStatusNot(UUID id, DocumentStatus status);
 }

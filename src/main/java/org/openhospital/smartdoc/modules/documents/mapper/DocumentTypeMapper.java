@@ -6,9 +6,7 @@ import org.openhospital.smartdoc.config.MapperConfig;
 import org.openhospital.smartdoc.modules.documents.model.DocumentType;
 import org.openhospital.smartdoc.openapi.*;
 
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 
 @Mapper(config = MapperConfig.class)
 public interface DocumentTypeMapper {

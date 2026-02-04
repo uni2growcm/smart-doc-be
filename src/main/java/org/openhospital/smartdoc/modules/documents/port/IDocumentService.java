@@ -2,6 +2,7 @@ package org.openhospital.smartdoc.modules.documents.port;
 
 import org.openhospital.smartdoc.openapi.DocumentDTO;
 import org.openhospital.smartdoc.types.Page;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,7 +21,10 @@ public interface IDocumentService {
 	DocumentDTO uploadDocument(@RequestPart("document") MultipartFile document, @RequestParam("personId") UUID personId, @RequestParam("type") UUID type, @RequestParam(value = "date", required = false) LocalDate date, @RequestParam(value = "description", required = false) String description);
 
 	@GetExchange("/{id}")
-	ResponseEntity<byte[]> findDocumentById(@PathVariable UUID id);
+	DocumentDTO findDocumentById(@PathVariable UUID id);
+
+	@GetExchange("/{id}/download")
+	ResponseEntity<ByteArrayResource> downloadDocument(@PathVariable UUID id, @RequestParam(defaultValue = "false") boolean attachment);
 
 	@PutExchange("/{id}")
 	DocumentDTO updateDocument(@PathVariable UUID id, @RequestPart("document") MultipartFile document, @RequestParam("personId") UUID personId, @RequestParam("type") UUID type, @RequestParam(value = "date", required = false) LocalDate date, @RequestParam(value = "description", required = false) String description);

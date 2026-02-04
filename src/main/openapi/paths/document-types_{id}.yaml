@@ -1,6 +1,6 @@
 get:
   tags:
-    - System
+    - Documents
   summary: Retrieve a document type by ID.
   operationId: findDocumentTypeById
   parameters:
@@ -116,10 +116,10 @@ delete:
         application/json:
           schema:
             $ref: ../components/schemas/Problem.yaml
-      '403':
-        description: Forbidden (insufficient permissions).
-        content:
-          application/json:
-            schema:
-              $ref: ../components/schemas/Problem.yaml
+    '403':
+      description: Forbidden (insufficient permissions).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
 

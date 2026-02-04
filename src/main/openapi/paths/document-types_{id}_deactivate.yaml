@@ -1,13 +1,13 @@
 post:
   tags:
     - Documents
-  summary: Restore a deleted document type.
-  operationId: restoreDocumentType
+  summary: Activate an inactive document type.
+  operationId: deactivateDocumentType
   parameters:
     - $ref: ../components/parameters/Id.yaml
   responses:
     '200':
-      description: Document type restored.
+      description: Document type deactivated.
       content:
         application/json:
           schema:

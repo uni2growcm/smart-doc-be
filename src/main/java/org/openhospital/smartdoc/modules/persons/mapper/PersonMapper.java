@@ -6,9 +6,7 @@ import org.openhospital.smartdoc.config.MapperConfig;
 import org.openhospital.smartdoc.modules.persons.model.Person;
 import org.openhospital.smartdoc.openapi.*;
 
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.List;
 
 @Mapper(config = MapperConfig.class)
