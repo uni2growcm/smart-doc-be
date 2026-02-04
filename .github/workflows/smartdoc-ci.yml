@@ -1,7 +1,11 @@
 name: SD-BE CI
 
 # Trigger the pipeline on pull requests to develop/main and on pushes to these branches
-on: [push, pull_request]
+on:
+    pull_request:
+        branches: [develop, main]
+    push:
+        branches: [develop, main]
 
 jobs:
   build-and-test:
