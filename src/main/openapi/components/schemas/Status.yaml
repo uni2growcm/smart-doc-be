@@ -1,0 +1,4 @@
+type: string
+enum: [ active, inactive, deleted ]
+description: "Entity status enumeration supporting soft deletion"
+default: active

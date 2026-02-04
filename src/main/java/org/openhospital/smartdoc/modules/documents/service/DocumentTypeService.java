@@ -9,6 +9,8 @@ import org.openhospital.smartdoc.modules.documents.port.IDocumentTypeService;
 import org.openhospital.smartdoc.modules.documents.repository.DocumentTypeRepository;
 import org.openhospital.smartdoc.openapi.*;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,10 +32,21 @@ public class DocumentTypeService implements IDocumentTypeService {
 	@Override
 	@Transactional(readOnly = true)
 	public List<DocumentTypeDTO> getDocumentTypes() {
-		log.debug("Fetching all document types");
+		return getDocumentTypes(false);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<DocumentTypeDTO> getDocumentTypes(boolean includeInactive) {
+		log.debug("Fetching all document types, includeInactive: {}", includeInactive);
 
 		try {
-			List<DocumentType> documentTypes = repository.findAll();
+			List<Status> statuses = includeInactive
+				? List.of(Status.ACTIVE, Status.INACTIVE)
+				: List.of(Status.ACTIVE);
+
+			Page<DocumentType> documentTypePage = repository.findByStatusIn(statuses, Pageable.unpaged());
+			List<DocumentType> documentTypes = documentTypePage.getContent();
 			List<DocumentTypeDTO> dtos = documentTypes.stream()
 			                                          .map(mapper::toDto)
 			                                          .toList();
@@ -51,10 +64,11 @@ public class DocumentTypeService implements IDocumentTypeService {
 	public DocumentTypeDTO createDocumentType(CreateDocumentTypeRequestDTO payload) {
 		log.info("Creating document type with code: {}", payload.getCode());
 
-		validateCreateRequest(payload);
+		validateDocumentTypeRequest(payload);
 
 		try {
 			DocumentType entity = mapper.toModel(payload);
+			validateDocumentType(entity);  // Entity validation with business rules
 			DocumentType saved = repository.save(entity);
 			DocumentTypeDTO result = mapper.toDto(saved);
 
@@ -78,7 +92,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 		                                .orElseThrow(() -> {
 			                                log.warn("Document type not found with ID: {}", id);
 			                                return CustomException.notFound("documents.errors.type-not-found", new Object[]{id});
-			                                });
+		                                });
 
 		DocumentTypeDTO result = mapper.toDto(entity);
 		log.debug("Document type found: {}", entity.getCode());
@@ -94,7 +108,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 		                                  .orElseThrow(() -> {
 			                                  log.warn("Document type not found for update with ID: {}", id);
 			                                  return CustomException.notFound("documents.errors.type-not-found", new Object[]{id});
-			                                  });
+		                                  });
 
 		try {
 			mapper.updateModel(payload, existing);
@@ -121,7 +135,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 		                                  .orElseThrow(() -> {
 			                                  log.warn("Document type not found for patch with ID: {}", id);
 			                                  return CustomException.notFound("documents.errors.type-not-found", new Object[]{id});
-			                                  });
+		                                  });
 
 		try {
 			mapper.patchModel(payload, existing);
@@ -144,36 +158,124 @@ public class DocumentTypeService implements IDocumentTypeService {
 	public void deleteDocumentType(UUID id) {
 		log.info("Deleting document type with ID: {}", id);
 
-		DocumentType existing = repository.findById(id)
-		                                  .orElseThrow(() -> {
-			                                  log.warn("Document type not found for deletion with ID: {}", id);
-			                                  return CustomException.notFound("documents.errors.type-not-found", new Object[]{id});
-			                                  });
+		DocumentType documentType = repository.findById(id).orElseThrow(
+			() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{id})
+		                                                               );
 
 		try {
+			// Try hard delete first
 			repository.deleteById(id);
-			log.info("Document type deleted successfully: {}", existing.getCode());
-		} catch (Exception e) {
-			log.error("Failed to delete document type", e);
-			throw CustomException.internal("documents.errors.type-deletion-failed");
+			log.info("Document type {} hard deleted successfully", id);
+		} catch (DataIntegrityViolationException e) {
+			// Foreign key constraint violation - document type has associated documents
+			log.warn("Hard delete failed for document type {} due to existing documents, falling back to soft delete", id, e);
+			documentType.setStatus(Status.DELETED);
+			repository.save(documentType);
+			log.info("Document type {} soft deleted due to dependencies", id);
+			throw CustomException.badRequest("documents.errors.type-has-dependencies");
+		}
+	}
+
+	@Override
+	@Transactional
+	public DocumentTypeDTO activateDocumentType(UUID id) {
+		log.info("Activating document type with ID: {}", id);
+
+		DocumentType documentType = repository.findById(id).orElseThrow(
+			() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{id})
+		                                                               );
+
+		if (documentType.getStatus() == Status.ACTIVE) {
+			throw CustomException.badRequest("documents.errors.type-already-active");
+		}
+
+		documentType.setStatus(Status.ACTIVE);
+		DocumentType saved = repository.save(documentType);
+		log.info("Document type {} activated successfully", id);
+		return mapper.toDto(saved);
+	}
+
+	@Override
+	@Transactional
+	public DocumentTypeDTO deactivateDocumentType(UUID id) {
+		log.info("Deactivating document type with ID: {}", id);
+
+		DocumentType documentType = repository.findById(id).orElseThrow(
+			() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{id})
+		                                                               );
+
+		if (documentType.getStatus() == Status.INACTIVE) {
+			throw CustomException.badRequest("documents.errors.type-already-inactive");
+		}
+
+		documentType.setStatus(Status.INACTIVE);
+		DocumentType saved = repository.save(documentType);
+		log.info("Document type {} deactivated successfully", id);
+		return mapper.toDto(saved);
+	}
+
+	@Override
+	@Transactional
+	public DocumentTypeDTO undeleteDocumentType(UUID id) {
+		log.info("Undeleting document type with ID: {}", id);
+
+		DocumentType documentType = repository.findById(id).orElseThrow(
+			() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{id})
+		                                                               );
+
+		if (documentType.getStatus() != Status.DELETED) {
+			throw CustomException.badRequest("documents.errors.type-not-deleted");
+		}
+
+		documentType.setStatus(Status.ACTIVE);
+		DocumentType saved = repository.save(documentType);
+		log.info("Document type {} undeleted and reactivated successfully", id);
+		return mapper.toDto(saved);
+	}
+
+	/**
+	 * Validates document type entity with business rules.
+	 */
+	public void validateDocumentType(DocumentType documentType) {
+		// Code uniqueness check (excluding DELETED)
+		if (documentType.getId() == null && documentType.getCode() != null) {
+			if (repository.existsByCodeAndStatusNot(documentType.getCode(), Status.DELETED)) {
+				throw CustomException.badRequest("documents.errors.type-code-already-exists", new Object[]{documentType.getCode()});
+			}
+		}
+
+		// Business rules
+		if (documentType.getCode() == null || documentType.getCode().trim().length() < 2) {
+			throw CustomException.badRequest("documents.errors.type-code-too-short");
+		}
+
+		if (documentType.getName() == null || documentType.getName().trim().length() < 2) {
+			throw CustomException.badRequest("documents.errors.type-name-too-short");
+		}
+	}
+
+	/**
+	 * Validates document type reference for operations.
+	 */
+	public void validateDocumentTypeReference(UUID typeId) {
+		DocumentType documentType = repository.findByIdAndStatusNot(typeId, Status.DELETED)
+		                                      .orElseThrow(() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{typeId}));
+
+		if (documentType.getStatus() != Status.ACTIVE) {
+			throw CustomException.badRequest("documents.errors.type-not-active");
 		}
 	}
 
 	/**
 	 * Validates the create request payload.
 	 */
-	private void validateCreateRequest(CreateDocumentTypeRequestDTO payload) {
+	public void validateDocumentTypeRequest(CreateDocumentTypeRequestDTO payload) {
 		if (payload.getCode() == null || payload.getCode().trim().isEmpty()) {
 			throw CustomException.badRequest("documents.errors.type-code-required");
 		}
 
 		if (payload.getName() == null || payload.getName().trim().isEmpty()) {
 			throw CustomException.badRequest("documents.errors.type-name-required");
-		}
-
-		// Check if code already exists
-		if (repository.findByCode(payload.getCode()).isPresent()) {
-			throw CustomException.badRequest("documents.errors.type-code-already-exists", new Object[]{payload.getCode()});
 		}
 	}
 }

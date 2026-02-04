@@ -1,0 +1,7 @@
+name: includeInactive
+in: query
+description: Include inactive entities in the results.
+required: false
+schema:
+  type: boolean
+  default: false

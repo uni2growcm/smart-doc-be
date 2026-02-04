@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.openhospital.smartdoc.models.BaseEntity;
 import org.openhospital.smartdoc.modules.documents.model.Document;
-import org.openhospital.smartdoc.openapi.Gender;
+import org.openhospital.smartdoc.openapi.Status;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,8 @@ public class Person extends BaseEntity {
 	private String phoneNumber;
 
 	@Enumerated(EnumType.STRING)
-	private Gender gender;
+	@Column(nullable = false)
+	private Status status = Status.ACTIVE;
 
 	@OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Document> documents = new ArrayList<>();

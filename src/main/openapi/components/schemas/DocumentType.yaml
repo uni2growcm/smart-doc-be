@@ -12,4 +12,6 @@ allOf:
       description:
         type: string
         description: "A description of the document type."
-    required: [ code, name ]
+      status:
+        $ref: ./Status.yaml
+    required: [ code, name, status ]

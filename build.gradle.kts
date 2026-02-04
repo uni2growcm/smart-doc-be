@@ -44,7 +44,7 @@ openApiGenerate {
     inputSpec = "$projectDir/src/main/openapi/api-docs.yaml"
     globalProperties.set(mapOf("models" to ""))
     modelNameSuffix = "DTO"
-    modelNameMappings.set(listOf("Gender", "DocumentStatus", "HealthStatus").associateWith { it })
+    modelNameMappings.set(listOf("Gender", "DocumentStatus", "HealthStatus", "Status").associateWith { it })
 
     schemaMappings.set(
         mapOf(

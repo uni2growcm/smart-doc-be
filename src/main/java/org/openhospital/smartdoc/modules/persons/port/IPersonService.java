@@ -14,6 +14,9 @@ public interface IPersonService {
 	@GetExchange
 	Page<PersonDTO> findPersons(@RequestParam(required = false) String name, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
 
+	@GetExchange
+	Page<PersonDTO> findPersons(@RequestParam(required = false) String name, @RequestParam(defaultValue = "false") boolean includeInactive, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
+
 	@PostExchange
 	PersonDTO createPerson(@RequestBody CreatePersonRequestDTO payload);
 
@@ -28,6 +31,15 @@ public interface IPersonService {
 
 	@DeleteExchange("/{id}")
 	void deletePerson(@PathVariable UUID id);
+
+	@PutExchange("/{id}/activate")
+	PersonDTO activatePerson(@PathVariable UUID id);
+
+	@PutExchange("/{id}/deactivate")
+	PersonDTO deactivatePerson(@PathVariable UUID id);
+
+	@PostExchange("/{id}/undelete")
+	PersonDTO undeletePerson(@PathVariable UUID id);
 
 	@GetExchange("/{id}/documents")
 	PaginatedDocumentDTO findPersonDocuments(@PathVariable UUID id, @RequestParam(required = false) UUID type, @RequestParam(required = false) LocalDate fromDate, @RequestParam(required = false) LocalDate toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);

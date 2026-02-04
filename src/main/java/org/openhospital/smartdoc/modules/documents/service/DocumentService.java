@@ -3,6 +3,7 @@ package org.openhospital.smartdoc.modules.documents.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openhospital.smartdoc.exceptions.CustomException;
+import org.openhospital.smartdoc.modules.documents.mapper.DocumentMapper;
 import org.openhospital.smartdoc.modules.documents.model.Document;
 import org.openhospital.smartdoc.modules.documents.model.DocumentType;
 import org.openhospital.smartdoc.modules.documents.port.IDocumentService;
@@ -38,6 +39,7 @@ public class DocumentService implements IDocumentService {
 	private final DocumentTypeRepository documentTypeRepository;
 	private final PersonRepository personRepository;
 	private final IUploadService uploadService;
+	private final DocumentMapper documentMapper;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -53,21 +55,9 @@ public class DocumentService implements IDocumentService {
 
 			var documentPage = repository.findWithFilters(personId, type, fromInstant, toInstant, pageable);
 
-			Page<DocumentDTO> result = Page.from(documentPage, documents -> documents.stream().map(doc -> {
-				DocumentDTO dto = new DocumentDTO();
-				dto.setId(doc.getId());
-				dto.setFileName(doc.getFileName());
-				dto.setPath(doc.getPath());
-				dto.setPersonId(doc.getPerson().getId().toString());
-				dto.setType(doc.getType().getId().toString());
-				dto.setDate(doc.getDate());
-				dto.setDescription(doc.getDescription());
-				dto.setFileSize(doc.getFileSize() != null ? doc.getFileSize().intValue() : null);
-				dto.setMimeType(doc.getMimeType());
-				dto.setStatus(doc.getStatus());
-				dto.setUploadDate(doc.getUploadDate());
-				return dto;
-			}).toList());
+			Page<DocumentDTO> result = Page.from(documentPage, documents -> documents.stream()
+			                                                                         .map(documentMapper::toDto)
+			                                                                         .toList());
 
 			log.info("Found {} documents (page {}/{}, total: {})", result.getData().size(), page, documentPage.getTotalPages(), documentPage.getTotalElements());
 			return result;
@@ -83,8 +73,8 @@ public class DocumentService implements IDocumentService {
 		log.info("Uploading document for person: {}, type: {}", personId, typeId);
 
 		// Validate references exist
-		validatePersonExists(personId);
-		DocumentType documentType = validateDocumentTypeExists(typeId);
+		validatePersonReference(personId);
+		DocumentType documentType = validateDocumentTypeReference(typeId);
 
 		try {
 			// Validate file
@@ -108,18 +98,7 @@ public class DocumentService implements IDocumentService {
 			entity.setUploadDate(Instant.now());
 
 			Document saved = repository.save(entity);
-			DocumentDTO result = new DocumentDTO();
-			result.setId(saved.getId());
-			result.setFileName(saved.getFileName());
-			result.setPath(saved.getPath());
-			result.setPersonId(saved.getPerson().getId().toString());
-			result.setType(saved.getType().getId().toString());
-			result.setDate(saved.getDate());
-			result.setDescription(saved.getDescription());
-			result.setFileSize(saved.getFileSize() != null ? saved.getFileSize().intValue() : null);
-			result.setMimeType(saved.getMimeType());
-			result.setStatus(saved.getStatus());
-			result.setUploadDate(saved.getUploadDate());
+			DocumentDTO result = documentMapper.toDto(saved);
 
 			log.info("Document uploaded successfully with ID: {} for person: {}", saved.getId(), personId);
 			return result;
@@ -188,7 +167,7 @@ public class DocumentService implements IDocumentService {
 				// Store new file
 				DocumentType documentType = existing.getType();
 				if (typeId != null) {
-					documentType = validateDocumentTypeExists(typeId);
+					documentType = validateDocumentTypeReference(typeId);
 				}
 				String subDir = getSubDirForDocumentType(documentType.getCode());
 				String newPath = uploadService.uploadFile(document, existing.getPerson().getId(), subDir);
@@ -201,11 +180,11 @@ public class DocumentService implements IDocumentService {
 
 			// Update metadata
 			if (personId != null) {
-				validatePersonExists(personId);
+				validatePersonReference(personId);
 				existing.setPerson(personRepository.findById(personId).orElseThrow());
 			}
 			if (typeId != null) {
-				existing.setType(validateDocumentTypeExists(typeId));
+				existing.setType(validateDocumentTypeReference(typeId));
 			}
 			if (date != null) {
 				existing.setDate(date.atStartOfDay().toInstant(java.time.ZoneOffset.UTC));
@@ -215,18 +194,7 @@ public class DocumentService implements IDocumentService {
 			}
 
 			Document saved = repository.save(existing);
-			DocumentDTO result = new DocumentDTO();
-			result.setId(saved.getId());
-			result.setFileName(saved.getFileName());
-			result.setPath(saved.getPath());
-			result.setPersonId(saved.getPerson().getId().toString());
-			result.setType(saved.getType().getId().toString());
-			result.setDate(saved.getDate());
-			result.setDescription(saved.getDescription());
-			result.setFileSize(saved.getFileSize() != null ? saved.getFileSize().intValue() : null);
-			result.setMimeType(saved.getMimeType());
-			result.setStatus(saved.getStatus());
-			result.setUploadDate(saved.getUploadDate());
+			DocumentDTO result = documentMapper.toDto(saved);
 
 			log.info("Document updated successfully: {}", saved.getId());
 			return result;
@@ -267,18 +235,18 @@ public class DocumentService implements IDocumentService {
 	}
 
 	/**
-	 * Validates that a person exists.
+	 * Validates person reference for operations.
 	 */
-	private void validatePersonExists(UUID personId) {
+	private void validatePersonReference(UUID personId) {
 		if (!personRepository.existsById(personId)) {
 			throw CustomException.notFound("persons.errors.not-found", new Object[]{personId});
 		}
 	}
 
 	/**
-	 * Validates that a document type exists and returns it.
+	 * Validates document type reference for operations.
 	 */
-	private DocumentType validateDocumentTypeExists(UUID typeId) {
+	private DocumentType validateDocumentTypeReference(UUID typeId) {
 		return documentTypeRepository.findById(typeId).orElseThrow(() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{typeId}));
 	}
 

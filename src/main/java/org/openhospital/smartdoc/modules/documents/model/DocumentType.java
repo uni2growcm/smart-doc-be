@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.openhospital.smartdoc.models.BaseEntity;
+import org.openhospital.smartdoc.openapi.Status;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -18,4 +19,8 @@ public class DocumentType extends BaseEntity {
 	private String name;
 
 	private String description;
+
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private Status status = Status.ACTIVE;
 }

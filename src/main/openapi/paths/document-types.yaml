@@ -3,6 +3,8 @@ get:
     - System
   summary: Get supported document types.
   operationId: getDocumentTypes
+  parameters:
+    - $ref: ../components/parameters/IncludeInactive.yaml
   responses:
     '200':
       description: List of supported types.

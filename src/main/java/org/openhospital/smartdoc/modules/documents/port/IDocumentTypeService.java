@@ -1,8 +1,7 @@
 package org.openhospital.smartdoc.modules.documents.port;
 
 import org.openhospital.smartdoc.openapi.*;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.service.annotation.*;
 
 import java.util.List;
@@ -13,6 +12,9 @@ public interface IDocumentTypeService {
 
 	@GetExchange
 	List<DocumentTypeDTO> getDocumentTypes();
+
+	@GetExchange
+	List<DocumentTypeDTO> getDocumentTypes(@RequestParam(defaultValue = "false") boolean includeInactive);
 
 	@PostExchange
 	DocumentTypeDTO createDocumentType(@RequestBody CreateDocumentTypeRequestDTO payload);
@@ -28,4 +30,13 @@ public interface IDocumentTypeService {
 
 	@DeleteExchange("/{id}")
 	void deleteDocumentType(@PathVariable UUID id);
+
+	@PutExchange("/{id}/activate")
+	DocumentTypeDTO activateDocumentType(@PathVariable UUID id);
+
+	@PutExchange("/{id}/deactivate")
+	DocumentTypeDTO deactivateDocumentType(@PathVariable UUID id);
+
+	@PostExchange("/{id}/undelete")
+	DocumentTypeDTO undeleteDocumentType(@PathVariable UUID id);
 }

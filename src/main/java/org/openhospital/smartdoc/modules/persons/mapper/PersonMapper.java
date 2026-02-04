@@ -6,6 +6,9 @@ import org.openhospital.smartdoc.config.MapperConfig;
 import org.openhospital.smartdoc.modules.persons.model.Person;
 import org.openhospital.smartdoc.openapi.*;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Mapper(config = MapperConfig.class)
@@ -22,4 +25,13 @@ public interface PersonMapper {
 	void updateModel(UpdatePersonRequestDTO req, @MappingTarget Person entity);
 
 	void patchModel(PatchPersonRequestDTO req, @MappingTarget Person entity);
+
+	// Date conversion methods
+	default Instant offsetDateTimeToInstant(OffsetDateTime offsetDateTime) {
+		return offsetDateTime != null ? offsetDateTime.toInstant() : null;
+	}
+
+	default OffsetDateTime instantToOffsetDateTime(Instant instant) {
+		return instant != null ? instant.atOffset(ZoneOffset.UTC) : null;
+	}
 }

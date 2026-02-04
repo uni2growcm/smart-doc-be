@@ -9,7 +9,7 @@ info:
 servers:
   - url: http://localhost:8080/api
 security:
-  - Bearer: [ ]
+  - Bearer: []
 tags:
   - name: Documents
     description: Operations related to document upload, retrieval, and deletion.
@@ -79,7 +79,7 @@ paths:
       tags:
         - Documents
       summary: Retrieve a document file (download/preview).
-      operationId: downloadDocument
+      operationId: findDocumentById
       parameters:
         - $ref: '#/components/parameters/Id'
       responses:
@@ -160,9 +160,10 @@ paths:
       tags:
         - Persons
       summary: List persons with pagination (used for stand-alone mode or autocomplete lookup).
-      operationId: listPersons
+      operationId: findPersons
       parameters:
         - $ref: '#/components/parameters/PersonNamePartial'
+        - $ref: '#/components/parameters/IncludeInactive'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
       responses:
@@ -213,7 +214,7 @@ paths:
       tags:
         - Persons
       summary: Retrieve a person by ID.
-      operationId: getPerson
+      operationId: findPersonById
       parameters:
         - $ref: '#/components/parameters/Id'
       responses:
@@ -371,6 +372,8 @@ paths:
         - System
       summary: Get supported document types.
       operationId: getDocumentTypes
+      parameters:
+        - $ref: '#/components/parameters/IncludeInactive'
       responses:
         '200':
           description: List of supported types.
@@ -413,7 +416,7 @@ paths:
       tags:
         - System
       summary: Retrieve a document type by ID.
-      operationId: getDocumentType
+      operationId: findDocumentTypeById
       parameters:
         - $ref: '#/components/parameters/Id'
       responses:
@@ -622,6 +625,14 @@ components:
       schema:
         type: string
       description: Partial name for filtering (used when proxied by OH-API for OH data lookup).
+    IncludeInactive:
+      name: includeInactive
+      in: query
+      description: Include inactive entities in the results.
+      required: false
+      schema:
+        type: boolean
+        default: false
   schemas:
     Base:
       type: object
@@ -797,6 +808,14 @@ components:
         - male
         - female
       description: Administrative gender values.
+    Status:
+      type: string
+      enum:
+        - active
+        - inactive
+        - deleted
+      description: Entity status enumeration supporting soft deletion
+      default: active
     Person:
       allOf:
         - $ref: '#/components/schemas/Base'
@@ -818,6 +837,12 @@ components:
               description: Primary phone number.
             gender:
               $ref: '#/components/schemas/Gender'
+            status:
+              $ref: '#/components/schemas/Status'
+          required:
+            - name
+            - pid
+            - status
     PaginatedPerson:
       type: object
       description: Structure for a paginated list of persons.
@@ -911,9 +936,12 @@ components:
             description:
               type: string
               description: A description of the document type.
+            status:
+              $ref: '#/components/schemas/Status'
           required:
             - code
             - name
+            - status
     DocumentTypeArray:
       type: array
       items:
