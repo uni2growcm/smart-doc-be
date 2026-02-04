@@ -126,7 +126,17 @@ public class GlobalExceptionHandler {
 	ResponseEntity<ProblemDTO> handle(DataIntegrityViolationException exception) {
 		log.debug("Exception {} occurred", exception.getClass(), exception);
 
-		var code = exception instanceof DuplicateKeyException ? "errors.dao.duplicate-key" : "errors.dao.data-integrity-violation";
+		String message = exception.getLocalizedMessage().toLowerCase();
+		String code;
+
+		if (message.contains("uk_persons_pid")) {
+			code = "persons.errors.pid-already-exists";
+		} else if (message.contains("uk_document_types_code")) {
+			code = "documents.errors.type-code-already-exists";
+		} else {
+			code = exception instanceof DuplicateKeyException ? "errors.dao.duplicate-key" : "errors.dao.data-integrity-violation";
+		}
+
 		CustomException customEx = new CustomException(HttpStatus.BAD_REQUEST, code);
 		customEx.setDebugMessage(exception.getLocalizedMessage());
 		return buildResponse(customEx);

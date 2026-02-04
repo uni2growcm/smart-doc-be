@@ -3,6 +3,7 @@ package org.openhospital.smartdoc.modules.persons.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openhospital.smartdoc.exceptions.CustomException;
+import org.openhospital.smartdoc.modules.documents.mapper.DocumentMapper;
 import org.openhospital.smartdoc.modules.documents.model.Document;
 import org.openhospital.smartdoc.modules.documents.repository.DocumentRepository;
 import org.openhospital.smartdoc.modules.persons.mapper.PersonMapper;
@@ -34,6 +35,7 @@ public class PersonService implements IPersonService {
 	private final PersonRepository repository;
 	private final PersonMapper mapper;
 	private final DocumentRepository documentRepository;
+	private final DocumentMapper documentMapper;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -71,24 +73,13 @@ public class PersonService implements IPersonService {
 
 		validatePersonRequest(payload);
 
-		try {
-			Person entity = mapper.toModel(payload);
-			validatePerson(entity);
-			Person saved = repository.save(entity);
-			PersonDTO result = mapper.toDto(saved);
+		Person entity = mapper.toModel(payload);
+		validatePerson(entity);
+		Person saved = repository.save(entity);
+		PersonDTO result = mapper.toDto(saved);
 
-			log.info("Person created successfully with ID: {}", saved.getId());
-			return result;
-		} catch (DataIntegrityViolationException e) {
-			log.warn("Person creation failed due to data integrity violation: {}", e.getMessage());
-			if (e.getMessage().contains("uk_persons_pid")) {
-				throw CustomException.badRequest("persons.errors.pid-already-exists", new Object[]{payload.getPid()});
-			}
-			throw CustomException.badRequest("persons.errors.creation-constraint-violation");
-		} catch (Exception e) {
-			log.error("Failed to create person", e);
-			throw CustomException.internal("persons.errors.creation-failed");
-		}
+		log.info("Person created successfully with ID: {}", saved.getId());
+		return result;
 	}
 
 	@Override
@@ -116,20 +107,12 @@ public class PersonService implements IPersonService {
 			return CustomException.notFound("persons.errors.not-found", new Object[]{id});
 		});
 
-		try {
-			mapper.updateModel(payload, existing);
-			Person saved = repository.save(existing);
-			PersonDTO result = mapper.toDto(saved);
+		mapper.updateModel(payload, existing);
+		Person saved = repository.save(existing);
+		PersonDTO result = mapper.toDto(saved);
 
-			log.info("Person updated successfully: {} ({})", saved.getName(), saved.getPid());
-			return result;
-		} catch (DataIntegrityViolationException e) {
-			log.warn("Person update failed due to data integrity violation");
-			throw CustomException.badRequest("persons.errors.update-constraint-violation");
-		} catch (Exception e) {
-			log.error("Failed to update person", e);
-			throw CustomException.internal("persons.errors.update-failed");
-		}
+		log.info("Person updated successfully: {} ({})", saved.getName(), saved.getPid());
+		return result;
 	}
 
 	@Override
@@ -142,23 +125,14 @@ public class PersonService implements IPersonService {
 			return CustomException.notFound("persons.errors.not-found", new Object[]{id});
 		});
 
-		try {
-			mapper.patchModel(payload, existing);
-			Person saved = repository.save(existing);
-			PersonDTO result = mapper.toDto(saved);
+		mapper.patchModel(payload, existing);
+		Person saved = repository.save(existing);
+		PersonDTO result = mapper.toDto(saved);
 
-			log.info("Person patched successfully: {} ({})", saved.getName(), saved.getPid());
-			return result;
-		} catch (DataIntegrityViolationException e) {
-			log.warn("Person patch failed due to data integrity violation");
-			throw CustomException.badRequest("persons.errors.patch-constraint-violation");
-		} catch (Exception e) {
-			log.error("Failed to patch person", e);
-			throw CustomException.internal("persons.errors.patch-failed");
-		}
+		log.info("Person patched successfully: {} ({})", saved.getName(), saved.getPid());
+		return result;
 	}
 
-	@Override
 	@Transactional
 	public void deletePerson(UUID id) {
 		log.info("Deleting person with ID: {}", id);
@@ -174,8 +148,6 @@ public class PersonService implements IPersonService {
 			log.warn("Hard delete failed for person {} due to existing documents, falling back to soft delete", id, e);
 			person.setStatus(Status.DELETED);
 			repository.save(person);
-			log.info("Person {} soft DELETED due to dependencies", id);
-			throw CustomException.badRequest("persons.errors.has-dependencies");
 		}
 	}
 
@@ -247,21 +219,7 @@ public class PersonService implements IPersonService {
 
 			org.springframework.data.domain.Page<Document> documentPage = documentRepository.findWithFilters(id, type, fromInstant, toInstant, pageable);
 
-			List<DocumentDTO> content = documentPage.getContent().stream().map(doc -> {
-				DocumentDTO dto = new DocumentDTO();
-				dto.setId(doc.getId());
-				dto.setFileName(doc.getFileName());
-				dto.setPath(doc.getPath());
-				dto.setPersonId(doc.getPerson().getId().toString());
-				dto.setType(doc.getType().getId().toString());
-				dto.setDate(doc.getDate());
-				dto.setDescription(doc.getDescription());
-				dto.setFileSize(doc.getFileSize() != null ? doc.getFileSize().intValue() : null);
-				dto.setMimeType(doc.getMimeType());
-				dto.setStatus(doc.getStatus());
-				dto.setUploadDate(doc.getUploadDate());
-				return dto;
-			}).toList();
+			List<DocumentDTO> content = documentPage.getContent().stream().map(documentMapper::toDto).toList();
 
 			PageInfoDTO pageInfo = new PageInfoDTO(page, size, (int) documentPage.getTotalElements(), documentPage.getTotalPages());
 
@@ -297,9 +255,6 @@ public class PersonService implements IPersonService {
 		if (person.getEmail() != null && !person.getEmail().contains("@")) {
 			throw CustomException.badRequest("persons.errors.email-invalid");
 		}
-
-		// Age validation if birth date provided (assuming we add birthDate field later)
-		// Additional business rules can be added here
 	}
 
 	/**

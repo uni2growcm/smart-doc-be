@@ -217,21 +217,16 @@ public class DocumentService implements IDocumentService {
 			return CustomException.notFound("documents.errors.not-found", new Object[]{id});
 		});
 
-		try {
-			// Delete file from storage
-			boolean fileDeleted = uploadService.deleteFile(existing.getPath());
-			if (!fileDeleted) {
-				log.warn("File not found during deletion: {}", existing.getPath());
-			}
-
-			// Delete from database
-			repository.deleteById(id);
-
-			log.info("Document deleted successfully: {}", existing.getFileName());
-		} catch (Exception e) {
-			log.error("Failed to delete document", e);
-			throw CustomException.internal("documents.errors.deletion-failed");
+		// Delete file from storage
+		boolean fileDeleted = uploadService.deleteFile(existing.getPath());
+		if (!fileDeleted) {
+			log.warn("File not found during deletion: {}", existing.getPath());
 		}
+
+		// Delete from database
+		repository.deleteById(id);
+
+		log.info("Document deleted successfully: {}", existing.getFileName());
 	}
 
 	/**

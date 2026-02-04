@@ -41,15 +41,11 @@ public class DocumentTypeService implements IDocumentTypeService {
 		log.debug("Fetching all document types, includeInactive: {}", includeInactive);
 
 		try {
-			List<Status> statuses = includeInactive
-				? List.of(Status.ACTIVE, Status.INACTIVE)
-				: List.of(Status.ACTIVE);
+			List<Status> statuses = includeInactive ? List.of(Status.ACTIVE, Status.INACTIVE) : List.of(Status.ACTIVE);
 
 			Page<DocumentType> documentTypePage = repository.findByStatusIn(statuses, Pageable.unpaged());
 			List<DocumentType> documentTypes = documentTypePage.getContent();
-			List<DocumentTypeDTO> dtos = documentTypes.stream()
-			                                          .map(mapper::toDto)
-			                                          .toList();
+			List<DocumentTypeDTO> dtos = documentTypes.stream().map(mapper::toDto).toList();
 
 			log.info("Retrieved {} document types", dtos.size());
 			return dtos;
@@ -66,21 +62,13 @@ public class DocumentTypeService implements IDocumentTypeService {
 
 		validateDocumentTypeRequest(payload);
 
-		try {
-			DocumentType entity = mapper.toModel(payload);
-			validateDocumentType(entity);  // Entity validation with business rules
-			DocumentType saved = repository.save(entity);
-			DocumentTypeDTO result = mapper.toDto(saved);
+		DocumentType entity = mapper.toModel(payload);
+		validateDocumentType(entity);  // Entity validation with business rules
+		DocumentType saved = repository.save(entity);
+		DocumentTypeDTO result = mapper.toDto(saved);
 
-			log.info("Document type created successfully with ID: {}", saved.getId());
-			return result;
-		} catch (DataIntegrityViolationException e) {
-			log.warn("Document type creation failed due to data integrity violation: {}", e.getMessage());
-			throw CustomException.badRequest("documents.errors.type-code-already-exists", new Object[]{payload.getCode()});
-		} catch (Exception e) {
-			log.error("Failed to create document type", e);
-			throw CustomException.internal("documents.errors.type-creation-failed");
-		}
+		log.info("Document type created successfully with ID: {}", saved.getId());
+		return result;
 	}
 
 	@Override
@@ -88,11 +76,10 @@ public class DocumentTypeService implements IDocumentTypeService {
 	public DocumentTypeDTO findDocumentTypeById(UUID id) {
 		log.debug("Finding document type by ID: {}", id);
 
-		DocumentType entity = repository.findById(id)
-		                                .orElseThrow(() -> {
-			                                log.warn("Document type not found with ID: {}", id);
-			                                return CustomException.notFound("documents.errors.type-not-found", new Object[]{id});
-		                                });
+		DocumentType entity = repository.findById(id).orElseThrow(() -> {
+			log.warn("Document type not found with ID: {}", id);
+			return CustomException.notFound("documents.errors.type-not-found", new Object[]{id});
+		});
 
 		DocumentTypeDTO result = mapper.toDto(entity);
 		log.debug("Document type found: {}", entity.getCode());
@@ -104,26 +91,17 @@ public class DocumentTypeService implements IDocumentTypeService {
 	public DocumentTypeDTO updateDocumentType(UUID id, UpdateDocumentTypeRequestDTO payload) {
 		log.info("Updating document type with ID: {}", id);
 
-		DocumentType existing = repository.findById(id)
-		                                  .orElseThrow(() -> {
-			                                  log.warn("Document type not found for update with ID: {}", id);
-			                                  return CustomException.notFound("documents.errors.type-not-found", new Object[]{id});
-		                                  });
+		DocumentType existing = repository.findById(id).orElseThrow(() -> {
+			log.warn("Document type not found for update with ID: {}", id);
+			return CustomException.notFound("documents.errors.type-not-found", new Object[]{id});
+		});
 
-		try {
-			mapper.updateModel(payload, existing);
-			DocumentType saved = repository.save(existing);
-			DocumentTypeDTO result = mapper.toDto(saved);
+		mapper.updateModel(payload, existing);
+		DocumentType saved = repository.save(existing);
+		DocumentTypeDTO result = mapper.toDto(saved);
 
-			log.info("Document type updated successfully: {}", saved.getCode());
-			return result;
-		} catch (DataIntegrityViolationException e) {
-			log.warn("Document type update failed due to data integrity violation");
-			throw CustomException.badRequest("documents.errors.type-code-already-exists");
-		} catch (Exception e) {
-			log.error("Failed to update document type", e);
-			throw CustomException.internal("documents.errors.type-update-failed");
-		}
+		log.info("Document type updated successfully: {}", saved.getCode());
+		return result;
 	}
 
 	@Override
@@ -131,36 +109,24 @@ public class DocumentTypeService implements IDocumentTypeService {
 	public DocumentTypeDTO patchDocumentType(UUID id, PatchDocumentTypeRequestDTO payload) {
 		log.info("Patching document type with ID: {}", id);
 
-		DocumentType existing = repository.findById(id)
-		                                  .orElseThrow(() -> {
-			                                  log.warn("Document type not found for patch with ID: {}", id);
-			                                  return CustomException.notFound("documents.errors.type-not-found", new Object[]{id});
-		                                  });
+		DocumentType existing = repository.findById(id).orElseThrow(() -> {
+			log.warn("Document type not found for patch with ID: {}", id);
+			return CustomException.notFound("documents.errors.type-not-found", new Object[]{id});
+		});
 
-		try {
-			mapper.patchModel(payload, existing);
-			DocumentType saved = repository.save(existing);
-			DocumentTypeDTO result = mapper.toDto(saved);
+		mapper.patchModel(payload, existing);
+		DocumentType saved = repository.save(existing);
+		DocumentTypeDTO result = mapper.toDto(saved);
 
-			log.info("Document type patched successfully: {}", saved.getCode());
-			return result;
-		} catch (DataIntegrityViolationException e) {
-			log.warn("Document type patch failed due to data integrity violation");
-			throw CustomException.badRequest("documents.errors.type-code-already-exists");
-		} catch (Exception e) {
-			log.error("Failed to patch document type", e);
-			throw CustomException.internal("documents.errors.type-patch-failed");
-		}
+		log.info("Document type patched successfully: {}", saved.getCode());
+		return result;
 	}
 
-	@Override
 	@Transactional
 	public void deleteDocumentType(UUID id) {
 		log.info("Deleting document type with ID: {}", id);
 
-		DocumentType documentType = repository.findById(id).orElseThrow(
-			() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{id})
-		                                                               );
+		DocumentType documentType = repository.findById(id).orElseThrow(() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{id}));
 
 		try {
 			// Try hard delete first
@@ -171,8 +137,6 @@ public class DocumentTypeService implements IDocumentTypeService {
 			log.warn("Hard delete failed for document type {} due to existing documents, falling back to soft delete", id, e);
 			documentType.setStatus(Status.DELETED);
 			repository.save(documentType);
-			log.info("Document type {} soft deleted due to dependencies", id);
-			throw CustomException.badRequest("documents.errors.type-has-dependencies");
 		}
 	}
 
@@ -181,9 +145,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 	public DocumentTypeDTO activateDocumentType(UUID id) {
 		log.info("Activating document type with ID: {}", id);
 
-		DocumentType documentType = repository.findById(id).orElseThrow(
-			() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{id})
-		                                                               );
+		DocumentType documentType = repository.findById(id).orElseThrow(() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{id}));
 
 		if (documentType.getStatus() == Status.ACTIVE) {
 			throw CustomException.badRequest("documents.errors.type-already-active");
@@ -200,9 +162,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 	public DocumentTypeDTO deactivateDocumentType(UUID id) {
 		log.info("Deactivating document type with ID: {}", id);
 
-		DocumentType documentType = repository.findById(id).orElseThrow(
-			() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{id})
-		                                                               );
+		DocumentType documentType = repository.findById(id).orElseThrow(() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{id}));
 
 		if (documentType.getStatus() == Status.INACTIVE) {
 			throw CustomException.badRequest("documents.errors.type-already-inactive");
@@ -219,9 +179,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 	public DocumentTypeDTO restoreDocumentType(UUID id) {
 		log.info("Restoring document type with ID: {}", id);
 
-		DocumentType documentType = repository.findById(id).orElseThrow(
-			() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{id})
-		                                                               );
+		DocumentType documentType = repository.findById(id).orElseThrow(() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{id}));
 
 		if (documentType.getStatus() != Status.DELETED) {
 			throw CustomException.badRequest("documents.errors.type-not-deleted");
@@ -258,8 +216,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 	 * Validates document type reference for operations.
 	 */
 	public void validateDocumentTypeReference(UUID typeId) {
-		DocumentType documentType = repository.findByIdAndStatusNot(typeId, Status.DELETED)
-		                                      .orElseThrow(() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{typeId}));
+		DocumentType documentType = repository.findByIdAndStatusNot(typeId, Status.DELETED).orElseThrow(() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{typeId}));
 
 		if (documentType.getStatus() != Status.ACTIVE) {
 			throw CustomException.badRequest("documents.errors.type-not-active");
