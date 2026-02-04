@@ -39,7 +39,7 @@ public class DocumentService implements IDocumentService {
 	private final DocumentTypeRepository documentTypeRepository;
 	private final PersonRepository personRepository;
 	private final IUploadService uploadService;
-	private final DocumentMapper documentMapper;
+	private final DocumentMapper mapper;
 
 	private Document findById(UUID id) {
 		return repository.findById(id).orElseThrow(() -> CustomException.notFound("documents.errors.not-found", new Object[]{id}));
@@ -64,9 +64,7 @@ public class DocumentService implements IDocumentService {
 
 			var documentPage = repository.findWithFilters(personId, type, fromInstant, toInstant, pageable);
 
-			Page<DocumentDTO> result = Page.from(documentPage, documents -> documents.stream()
-			                                                                         .map(documentMapper::toDto)
-			                                                                         .toList());
+			Page<DocumentDTO> result = Page.from(documentPage, mapper::toDto);
 
 			log.info("Found {} documents (page {}/{}, total: {})", result.getData().size(), page, documentPage.getTotalPages(), documentPage.getTotalElements());
 			return result;
@@ -108,7 +106,7 @@ public class DocumentService implements IDocumentService {
 			entity.setUploadDate(Instant.now());
 
 			Document saved = repository.save(entity);
-			DocumentDTO result = documentMapper.toDto(saved);
+			DocumentDTO result = mapper.toDto(saved);
 
 			log.info("Document uploaded successfully with ID: {} for person: {}", saved.getId(), personId);
 			return result;
@@ -129,7 +127,7 @@ public class DocumentService implements IDocumentService {
 
 		Document document = findByIdAndStatusNot(id, DocumentStatus.DELETED);
 
-		DocumentDTO result = documentMapper.toDto(document);
+		DocumentDTO result = mapper.toDto(document);
 		log.debug("Document metadata retrieved successfully: {}", document.getFileName());
 		return result;
 	}
@@ -193,7 +191,7 @@ public class DocumentService implements IDocumentService {
 			}
 
 			Document saved = repository.save(existing);
-			DocumentDTO result = documentMapper.toDto(saved);
+			DocumentDTO result = mapper.toDto(saved);
 
 			log.info("Document updated successfully: {}", saved.getId());
 			return result;

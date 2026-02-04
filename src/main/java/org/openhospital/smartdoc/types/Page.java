@@ -13,9 +13,9 @@ public class Page<T> {
 	List<T> data;
 	PageInfoDTO metadata;
 
-	public static <T, R> Page<R> from(org.springframework.data.domain.Page<T> page, Function<List<T>, List<R>> mapper) {
+	public static <T, R> Page<R> from(org.springframework.data.domain.Page<T> page, Function<T, R> mapper) {
 		return new Page<>(
-			mapper.apply(page.getContent()),
+			page.getContent().stream().map(mapper).toList(),
 			new PageInfoDTO()
 				.page(page.getNumber())
 				.size(page.getSize())

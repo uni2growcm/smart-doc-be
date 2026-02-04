@@ -63,7 +63,7 @@ public class PersonService implements IPersonService {
 
 			var personPage = StringUtils.hasText(name) ? repository.findByNameContainingIgnoreCaseAndStatusIn(name.trim(), statuses, pageable) : repository.findByStatusIn(statuses, pageable);
 
-			Page<PersonDTO> result = Page.from(personPage, persons -> persons.stream().map(mapper::toDto).toList());
+			Page<PersonDTO> result = Page.from(personPage, mapper::toDto);
 
 			log.info("Found {} persons (page {}/{}, total: {})", result.getData().size(), page, personPage.getTotalPages(), personPage.getTotalElements());
 
@@ -203,35 +203,25 @@ public class PersonService implements IPersonService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public PaginatedDocumentDTO findPersonDocuments(UUID id, UUID type, LocalDate fromDate, LocalDate toDate, int page, int size) {
+	public Page<DocumentDTO> findPersonDocuments(UUID id, UUID type, LocalDate fromDate, LocalDate toDate, int page, int size) {
 		log.debug("Finding documents for person ID: {}, type: {}, date range: {} to {}, page: {}, size: {}", id, type, fromDate, toDate, page, size);
 
 		// Verify person exists and is active
 		validatePersonReference(id);
 
-		try {
-			Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
+		Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
 
-			// Convert LocalDate to Instant for database query
-			Instant fromInstant = fromDate != null ? fromDate.atStartOfDay().toInstant(java.time.ZoneOffset.UTC) : null;
-			Instant toInstant = toDate != null ? toDate.atTime(23, 59, 59).toInstant(java.time.ZoneOffset.UTC) : null;
+		// Convert LocalDate to Instant for database query
+		Instant fromInstant = fromDate != null ? fromDate.atStartOfDay().toInstant(java.time.ZoneOffset.UTC) : null;
+		Instant toInstant = toDate != null ? toDate.atTime(23, 59, 59).toInstant(java.time.ZoneOffset.UTC) : null;
 
-			org.springframework.data.domain.Page<Document> documentPage = documentRepository.findWithFilters(id, type, fromInstant, toInstant, pageable);
+		org.springframework.data.domain.Page<Document> documentPage = documentRepository.findWithFilters(id, type, fromInstant, toInstant, pageable);
 
-			List<DocumentDTO> content = documentPage.getContent().stream().map(documentMapper::toDto).toList();
+		Page<DocumentDTO> result = Page.from(documentPage, documentMapper::toDto);
 
-			PageInfoDTO pageInfo = new PageInfoDTO(page, size, (int) documentPage.getTotalElements(), documentPage.getTotalPages());
+		log.info("Found {} documents for person {} (page {}/{}, total: {})", result.getData().size(), id, page, documentPage.getTotalPages(), documentPage.getTotalElements());
 
-			PaginatedDocumentDTO result = new PaginatedDocumentDTO();
-			result.setData(content);
-			result.setMetadata(pageInfo);
-
-			log.info("Found {} documents for person {} (page {}/{}, total: {})", content.size(), id, page, documentPage.getTotalPages(), documentPage.getTotalElements());
-
-			return result;
-		} catch (CustomException e) {
-			throw e; // Re-throw custom exceptions
-		}
+		return result;
 	}
 
 	/**
