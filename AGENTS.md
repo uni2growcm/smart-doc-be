@@ -206,7 +206,7 @@ smart-doc-api/
 │   │   ├── modules/persons/port/        # HTTP client interface contracts
 │   │   ├── models/                      # Base entities (BaseEntity)
 │   │   ├── exceptions/                  # Global exception handling
-│   │   └── modules/*/                   # Feature modules (service, model, repository, mapper)
+│   │   └── modules/*/                   # Feature modules (service, model, repository, mapper, rest)
 │   ├── openapi/                         # OpenAPI specs (API-first)
 │   │   ├── openapi.yaml                 # Main spec
 │   │   ├── paths/                       # Endpoint definitions
@@ -254,6 +254,10 @@ Port interfaces in `modules/*/port/` define HTTP client contracts using Spring's
 6. **Document public APIs** with JavaDoc
 7. **Handle errors properly** using Problem Details (RFC 7807)
 8. **Never commit** IDE-specific files (already in `.gitignore`)
+
+## Recent Additions
+
+- Implemented `DocumentController` and `DocumentTypeController` in `modules/documents/rest/`, following the same pattern as `PersonController`. These controllers handle full CRUD operations for documents (including file upload/download) and document types, integrating with existing services and repositories.
 
 ## Quick Reference
 

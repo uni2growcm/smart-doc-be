@@ -11,10 +11,7 @@ import java.util.UUID;
 public interface IDocumentTypeService {
 
 	@GetExchange
-	List<DocumentTypeDTO> getDocumentTypes();
-
-	@GetExchange
-	List<DocumentTypeDTO> getDocumentTypes(@RequestParam(defaultValue = "false") boolean includeInactive);
+	List<DocumentTypeDTO> findDocumentTypes(@RequestParam(defaultValue = "false") boolean includeInactive);
 
 	@PostExchange
 	DocumentTypeDTO createDocumentType(@RequestBody CreateDocumentTypeRequestDTO payload);

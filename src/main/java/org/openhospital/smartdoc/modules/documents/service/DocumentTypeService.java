@@ -39,13 +39,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<DocumentTypeDTO> getDocumentTypes() {
-		return getDocumentTypes(false);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public List<DocumentTypeDTO> getDocumentTypes(boolean includeInactive) {
+	public List<DocumentTypeDTO> findDocumentTypes(boolean includeInactive) {
 		log.debug("Fetching all document types, includeInactive: {}", includeInactive);
 
 		try {

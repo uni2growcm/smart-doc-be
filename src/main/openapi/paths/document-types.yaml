@@ -2,7 +2,7 @@ get:
   tags:
     - System
   summary: Get supported document types.
-  operationId: getDocumentTypes
+  operationId: findDocumentTypes
   parameters:
     - $ref: ../components/parameters/IncludeInactive.yaml
   responses:

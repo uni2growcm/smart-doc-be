@@ -487,7 +487,7 @@ paths:
       tags:
         - System
       summary: Get supported document types.
-      operationId: getDocumentTypes
+      operationId: findDocumentTypes
       parameters:
         - $ref: '#/components/parameters/IncludeInactive'
       responses:
