@@ -49,13 +49,7 @@ public class PersonService implements IPersonService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Page<PersonDTO> findPersons(String name, int page, int size) {
-		return findPersons(name, false, page, size);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public Page<PersonDTO> findPersons(String name, boolean includeInactive, int page, int size) {
+	public Page<PersonResponse> findPersons(String name, boolean includeInactive, int page, int size) {
 		log.debug("Finding persons with name filter: {}, includeInactive: {}, page: {}, size: {}", name, includeInactive, page, size);
 
 		try {
@@ -65,7 +59,7 @@ public class PersonService implements IPersonService {
 
 			var personPage = StringUtils.hasText(name) ? repository.findByNameContainingIgnoreCaseAndStatusIn(name.trim(), statuses, pageable) : repository.findByStatusIn(statuses, pageable);
 
-			Page<PersonDTO> result = Page.from(personPage, mapper::toDto);
+			Page<PersonResponse> result = Page.from(personPage, mapper::toDto);
 
 			log.info("Found {} persons (page {}/{}, total: {})", result.getData().size(), page, personPage.getTotalPages(), personPage.getTotalElements());
 
@@ -78,7 +72,7 @@ public class PersonService implements IPersonService {
 
 	@Override
 	@Transactional
-	public PersonDTO createPerson(CreatePersonRequestDTO payload) {
+	public PersonResponse createPerson(CreatePersonRequest payload) {
 		log.info("Creating person with PID: {}", payload.getPid());
 
 		validatePersonRequest(payload);
@@ -86,7 +80,7 @@ public class PersonService implements IPersonService {
 		Person entity = mapper.toModel(payload);
 		validatePerson(entity);
 		Person saved = repository.save(entity);
-		PersonDTO result = mapper.toDto(saved);
+		PersonResponse result = mapper.toDto(saved);
 
 		log.info("Person created successfully with ID: {}", saved.getId());
 		return result;
@@ -94,26 +88,26 @@ public class PersonService implements IPersonService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public PersonDTO findPersonById(UUID id) {
+	public PersonResponse findPersonById(UUID id) {
 		log.debug("Finding person by ID: {}", id);
 
 		Person entity = findByIdAndStatusNot(id, Status.DELETED);
 
-		PersonDTO result = mapper.toDto(entity);
+		PersonResponse result = mapper.toDto(entity);
 		log.debug("Person found: {} ({})", entity.getName(), entity.getPid());
 		return result;
 	}
 
 	@Override
 	@Transactional
-	public PersonDTO updatePerson(UUID id, UpdatePersonRequestDTO payload) {
+	public PersonResponse updatePerson(UUID id, UpdatePersonRequest payload) {
 		log.info("Updating person with ID: {}", id);
 
 		Person existing = findByIdAndStatusNot(id, Status.DELETED);
 
 		mapper.updateModel(payload, existing);
 		Person saved = repository.save(existing);
-		PersonDTO result = mapper.toDto(saved);
+		PersonResponse result = mapper.toDto(saved);
 
 		log.info("Person updated successfully: {} ({})", saved.getName(), saved.getPid());
 		return result;
@@ -121,14 +115,14 @@ public class PersonService implements IPersonService {
 
 	@Override
 	@Transactional
-	public PersonDTO patchPerson(UUID id, PatchPersonRequestDTO payload) {
+	public PersonResponse patchPerson(UUID id, PatchPersonRequest payload) {
 		log.info("Patching person with ID: {}", id);
 
 		Person existing = findByIdAndStatusNot(id, Status.DELETED);
 
 		mapper.patchModel(payload, existing);
 		Person saved = repository.save(existing);
-		PersonDTO result = mapper.toDto(saved);
+		PersonResponse result = mapper.toDto(saved);
 
 		log.info("Person patched successfully: {} ({})", saved.getName(), saved.getPid());
 		return result;
@@ -154,7 +148,7 @@ public class PersonService implements IPersonService {
 
 	@Override
 	@Transactional
-	public PersonDTO activatePerson(UUID id) {
+	public PersonResponse activatePerson(UUID id) {
 		log.info("Activating person with ID: {}", id);
 
 		Person person = findByIdAndStatusNot(id, Status.DELETED);
@@ -171,7 +165,7 @@ public class PersonService implements IPersonService {
 
 	@Override
 	@Transactional
-	public PersonDTO deactivatePerson(UUID id) {
+	public PersonResponse deactivatePerson(UUID id) {
 		log.info("Deactivating person with ID: {}", id);
 
 		Person person = findByIdAndStatusNot(id, Status.DELETED);
@@ -188,7 +182,7 @@ public class PersonService implements IPersonService {
 
 	@Override
 	@Transactional
-	public PersonDTO restorePerson(UUID id) {
+	public PersonResponse restorePerson(UUID id) {
 		log.info("Restoring person with ID: {}", id);
 
 		Person person = findById(id);
@@ -205,7 +199,7 @@ public class PersonService implements IPersonService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Page<DocumentDTO> findPersonDocuments(UUID id, UUID type, LocalDate fromDate, LocalDate toDate, int page, int size) {
+	public Page<DocumentResponse> findPersonDocuments(UUID id, UUID type, LocalDate fromDate, LocalDate toDate, int page, int size) {
 		log.debug("Finding documents for person ID: {}, type: {}, date range: {} to {}, page: {}, size: {}", id, type, fromDate, toDate, page, size);
 
 		// Verify person exists and is active
@@ -219,7 +213,7 @@ public class PersonService implements IPersonService {
 
 		org.springframework.data.domain.Page<Document> documentPage = documentRepository.findWithFilters(id, type, fromInstant, toInstant, pageable);
 
-		Page<DocumentDTO> result = Page.from(documentPage, documentMapper::toDto);
+		Page<DocumentResponse> result = Page.from(documentPage, documentMapper::toDto);
 
 		log.info("Found {} documents for person {} (page {}/{}, total: {})", result.getData().size(), id, page, documentPage.getTotalPages(), documentPage.getTotalElements());
 
@@ -262,7 +256,7 @@ public class PersonService implements IPersonService {
 	/**
 	 * Validates the create request payload.
 	 */
-	public void validatePersonRequest(CreatePersonRequestDTO payload) {
+	public void validatePersonRequest(CreatePersonRequest payload) {
 		if (payload.getPid() == null || payload.getPid().trim().isEmpty()) {
 			throw CustomException.badRequest("persons.errors.pid-required");
 		}

@@ -20,33 +20,28 @@ public class PersonController implements IPersonService {
 	}
 
 	@Override
-	public Page<PersonDTO> findPersons(@RequestParam(required = false) String name, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
-		return service.findPersons(name, page, size);
-	}
-
-	@Override
-	public Page<PersonDTO> findPersons(@RequestParam(required = false) String name, @RequestParam(defaultValue = "false") boolean includeInactive, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+	public Page<PersonResponse> findPersons(@RequestParam(required = false) String name, @RequestParam(defaultValue = "false") boolean includeInactive, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
 		return service.findPersons(name, includeInactive, page, size);
 	}
 
 	@Override
 	@ResponseStatus(HttpStatus.CREATED)
-	public PersonDTO createPerson(@RequestBody CreatePersonRequestDTO payload) {
+	public PersonResponse createPerson(@RequestBody CreatePersonRequest payload) {
 		return service.createPerson(payload);
 	}
 
 	@Override
-	public PersonDTO findPersonById(@PathVariable UUID id) {
+	public PersonResponse findPersonById(@PathVariable UUID id) {
 		return service.findPersonById(id);
 	}
 
 	@Override
-	public PersonDTO updatePerson(@PathVariable UUID id, @RequestBody UpdatePersonRequestDTO payload) {
+	public PersonResponse updatePerson(@PathVariable UUID id, @RequestBody UpdatePersonRequest payload) {
 		return service.updatePerson(id, payload);
 	}
 
 	@Override
-	public PersonDTO patchPerson(@PathVariable UUID id, @RequestBody PatchPersonRequestDTO payload) {
+	public PersonResponse patchPerson(@PathVariable UUID id, @RequestBody PatchPersonRequest payload) {
 		return service.patchPerson(id, payload);
 	}
 
@@ -57,22 +52,22 @@ public class PersonController implements IPersonService {
 	}
 
 	@Override
-	public PersonDTO activatePerson(@PathVariable UUID id) {
+	public PersonResponse activatePerson(@PathVariable UUID id) {
 		return service.activatePerson(id);
 	}
 
 	@Override
-	public PersonDTO deactivatePerson(@PathVariable UUID id) {
+	public PersonResponse deactivatePerson(@PathVariable UUID id) {
 		return service.deactivatePerson(id);
 	}
 
 	@Override
-	public PersonDTO restorePerson(@PathVariable UUID id) {
+	public PersonResponse restorePerson(@PathVariable UUID id) {
 		return service.restorePerson(id);
 	}
 
 	@Override
-	public Page<DocumentDTO> findPersonDocuments(@PathVariable UUID id, @RequestParam(required = false) UUID type, @RequestParam(required = false) LocalDate fromDate, @RequestParam(required = false) LocalDate toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+	public Page<DocumentResponse> findPersonDocuments(@PathVariable UUID id, @RequestParam(required = false) UUID type, @RequestParam(required = false) LocalDate fromDate, @RequestParam(required = false) LocalDate toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
 		return service.findPersonDocuments(id, type, fromDate, toDate, page, size);
 	}
 }

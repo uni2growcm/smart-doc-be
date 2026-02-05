@@ -11,29 +11,29 @@ import java.util.UUID;
 public interface IDocumentTypeService {
 
 	@GetExchange
-	List<DocumentTypeDTO> findDocumentTypes(@RequestParam(defaultValue = "false") boolean includeInactive);
+	List<DocumentTypeResponse> findDocumentTypes(@RequestParam(defaultValue = "false") boolean includeInactive);
 
 	@PostExchange
-	DocumentTypeDTO createDocumentType(@RequestBody CreateDocumentTypeRequestDTO payload);
+	DocumentTypeResponse createDocumentType(@RequestBody CreateDocumentTypeRequest payload);
 
 	@GetExchange("/{id}")
-	DocumentTypeDTO findDocumentTypeById(@PathVariable UUID id);
+	DocumentTypeResponse findDocumentTypeById(@PathVariable UUID id);
 
 	@PutExchange("/{id}")
-	DocumentTypeDTO updateDocumentType(@PathVariable UUID id, @RequestBody UpdateDocumentTypeRequestDTO payload);
+	DocumentTypeResponse updateDocumentType(@PathVariable UUID id, @RequestBody UpdateDocumentTypeRequest payload);
 
 	@PatchExchange("/{id}")
-	DocumentTypeDTO patchDocumentType(@PathVariable UUID id, @RequestBody PatchDocumentTypeRequestDTO payload);
+	DocumentTypeResponse patchDocumentType(@PathVariable UUID id, @RequestBody PatchDocumentTypeRequest payload);
 
 	@DeleteExchange("/{id}")
 	void deleteDocumentType(@PathVariable UUID id);
 
 	@PutExchange("/{id}/activate")
-	DocumentTypeDTO activateDocumentType(@PathVariable UUID id);
+	DocumentTypeResponse activateDocumentType(@PathVariable UUID id);
 
 	@PutExchange("/{id}/deactivate")
-	DocumentTypeDTO deactivateDocumentType(@PathVariable UUID id);
+	DocumentTypeResponse deactivateDocumentType(@PathVariable UUID id);
 
 	@PostExchange("/{id}/restore")
-	DocumentTypeDTO restoreDocumentType(@PathVariable UUID id);
+	DocumentTypeResponse restoreDocumentType(@PathVariable UUID id);
 }

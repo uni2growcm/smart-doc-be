@@ -41,7 +41,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<DocumentTypeDTO> findDocumentTypes(boolean includeInactive) {
+	public List<DocumentTypeResponse> findDocumentTypes(boolean includeInactive) {
 		log.debug("Fetching all document types, includeInactive: {}", includeInactive);
 
 		try {
@@ -49,7 +49,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 
 			Page<DocumentType> documentTypePage = repository.findByStatusIn(statuses, Pageable.unpaged());
 			List<DocumentType> documentTypes = documentTypePage.getContent();
-			List<DocumentTypeDTO> dtos = documentTypes.stream().map(mapper::toDto).toList();
+			List<DocumentTypeResponse> dtos = documentTypes.stream().map(mapper::toDto).toList();
 
 			log.info("Retrieved {} document types", dtos.size());
 			return dtos;
@@ -61,7 +61,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 
 	@Override
 	@Transactional
-	public DocumentTypeDTO createDocumentType(CreateDocumentTypeRequestDTO payload) {
+	public DocumentTypeResponse createDocumentType(CreateDocumentTypeRequest payload) {
 		log.info("Creating document type with code: {}", payload.getCode());
 
 		validateDocumentTypeRequest(payload);
@@ -69,7 +69,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 		DocumentType entity = mapper.toModel(payload);
 		validateDocumentType(entity);  // Entity validation with business rules
 		DocumentType saved = repository.save(entity);
-		DocumentTypeDTO result = mapper.toDto(saved);
+		DocumentTypeResponse result = mapper.toDto(saved);
 
 		log.info("Document type created successfully with ID: {}", saved.getId());
 		return result;
@@ -77,26 +77,26 @@ public class DocumentTypeService implements IDocumentTypeService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public DocumentTypeDTO findDocumentTypeById(UUID id) {
+	public DocumentTypeResponse findDocumentTypeById(UUID id) {
 		log.debug("Finding document type by ID: {}", id);
 
 		DocumentType entity = findByIdAndStatusNot(id, Status.DELETED);
 
-		DocumentTypeDTO result = mapper.toDto(entity);
+		DocumentTypeResponse result = mapper.toDto(entity);
 		log.debug("Document type found: {}", entity.getCode());
 		return result;
 	}
 
 	@Override
 	@Transactional
-	public DocumentTypeDTO updateDocumentType(UUID id, UpdateDocumentTypeRequestDTO payload) {
+	public DocumentTypeResponse updateDocumentType(UUID id, UpdateDocumentTypeRequest payload) {
 		log.info("Updating document type with ID: {}", id);
 
 		DocumentType existing = findByIdAndStatusNot(id, Status.DELETED);
 
 		mapper.updateModel(payload, existing);
 		DocumentType saved = repository.save(existing);
-		DocumentTypeDTO result = mapper.toDto(saved);
+		DocumentTypeResponse result = mapper.toDto(saved);
 
 		log.info("Document type updated successfully: {}", saved.getCode());
 		return result;
@@ -104,14 +104,14 @@ public class DocumentTypeService implements IDocumentTypeService {
 
 	@Override
 	@Transactional
-	public DocumentTypeDTO patchDocumentType(UUID id, PatchDocumentTypeRequestDTO payload) {
+	public DocumentTypeResponse patchDocumentType(UUID id, PatchDocumentTypeRequest payload) {
 		log.info("Patching document type with ID: {}", id);
 
 		DocumentType existing = findByIdAndStatusNot(id, Status.DELETED);
 
 		mapper.patchModel(payload, existing);
 		DocumentType saved = repository.save(existing);
-		DocumentTypeDTO result = mapper.toDto(saved);
+		DocumentTypeResponse result = mapper.toDto(saved);
 
 		log.info("Document type patched successfully: {}", saved.getCode());
 		return result;
@@ -137,7 +137,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 
 	@Override
 	@Transactional
-	public DocumentTypeDTO activateDocumentType(UUID id) {
+	public DocumentTypeResponse activateDocumentType(UUID id) {
 		log.info("Activating document type with ID: {}", id);
 
 		DocumentType documentType = findByIdAndStatusNot(id, Status.DELETED);
@@ -154,7 +154,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 
 	@Override
 	@Transactional
-	public DocumentTypeDTO deactivateDocumentType(UUID id) {
+	public DocumentTypeResponse deactivateDocumentType(UUID id) {
 		log.info("Deactivating document type with ID: {}", id);
 
 		DocumentType documentType = findByIdAndStatusNot(id, Status.DELETED);
@@ -171,7 +171,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 
 	@Override
 	@Transactional
-	public DocumentTypeDTO restoreDocumentType(UUID id) {
+	public DocumentTypeResponse restoreDocumentType(UUID id) {
 		log.info("Restoring document type with ID: {}", id);
 
 		DocumentType documentType = findById(id);
@@ -210,7 +210,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 	/**
 	 * Validates the create request payload.
 	 */
-	public void validateDocumentTypeRequest(CreateDocumentTypeRequestDTO payload) {
+	public void validateDocumentTypeRequest(CreateDocumentTypeRequest payload) {
 		if (payload.getCode() == null || payload.getCode().trim().isEmpty()) {
 			throw CustomException.badRequest("documents.errors.type-code-required");
 		}

@@ -12,17 +12,17 @@ import java.util.List;
 @Mapper(config = MapperConfig.class)
 public interface PersonMapper {
 
-	PersonDTO toDto(Person person);
+	PersonResponse toDto(Person person);
 
-	List<PersonDTO> toDtos(List<Person> persons);
+	List<PersonResponse> toDtos(List<Person> persons);
 
-	Person toModel(PersonDTO personDTO);
+	Person toModel(PersonResponse personDTO);
 
-	Person toModel(CreatePersonRequestDTO req);
+	Person toModel(CreatePersonRequest req);
 
-	void updateModel(UpdatePersonRequestDTO req, @MappingTarget Person entity);
+	void updateModel(UpdatePersonRequest req, @MappingTarget Person entity);
 
-	void patchModel(PatchPersonRequestDTO req, @MappingTarget Person entity);
+	void patchModel(PatchPersonRequest req, @MappingTarget Person entity);
 
 	// Date conversion methods
 	default Instant offsetDateTimeToInstant(OffsetDateTime offsetDateTime) {

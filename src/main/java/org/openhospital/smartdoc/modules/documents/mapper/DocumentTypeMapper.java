@@ -11,15 +11,15 @@ import java.time.*;
 @Mapper(config = MapperConfig.class)
 public interface DocumentTypeMapper {
 
-	DocumentTypeDTO toDto(DocumentType type);
+	DocumentTypeResponse toDto(DocumentType type);
 
-	DocumentType toModel(DocumentTypeDTO typeDTO);
+	DocumentType toModel(DocumentTypeResponse typeDTO);
 
-	DocumentType toModel(CreateDocumentTypeRequestDTO req);
+	DocumentType toModel(CreateDocumentTypeRequest req);
 
-	void updateModel(UpdateDocumentTypeRequestDTO req, @MappingTarget DocumentType entity);
+	void updateModel(UpdateDocumentTypeRequest req, @MappingTarget DocumentType entity);
 
-	void patchModel(PatchDocumentTypeRequestDTO req, @MappingTarget DocumentType entity);
+	void patchModel(PatchDocumentTypeRequest req, @MappingTarget DocumentType entity);
 
 	// Date conversion methods
 	default Instant offsetDateTimeToInstant(OffsetDateTime offsetDateTime) {

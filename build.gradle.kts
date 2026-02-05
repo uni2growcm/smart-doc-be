@@ -43,8 +43,7 @@ openApiGenerate {
     packageName.set("org.openhospital.smartdoc.openapi")
     inputSpec = "$projectDir/src/main/openapi/api-docs.yaml"
     globalProperties.set(mapOf("models" to ""))
-    modelNameSuffix = "DTO"
-    modelNameMappings.set(listOf("Gender", "DocumentStatus", "HealthStatus", "Status").associateWith { it })
+    modelNameMappings.set(listOf("Document", "DocumentType", "Person").associateWith { "${it}Response" })
 
     schemaMappings.set(
         mapOf(

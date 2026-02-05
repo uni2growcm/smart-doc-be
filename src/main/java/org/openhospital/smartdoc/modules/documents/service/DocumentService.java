@@ -53,7 +53,7 @@ public class DocumentService implements IDocumentService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Page<DocumentDTO> findDocuments(UUID personId, UUID type, LocalDate fromDate, LocalDate toDate, int page, int size) {
+	public Page<DocumentResponse> findDocuments(UUID personId, UUID type, LocalDate fromDate, LocalDate toDate, int page, int size) {
 		log.debug("Finding documents with filters - personId: {}, type: {}, date range: {} to {}, page: {}, size: {}", personId, type, fromDate, toDate, page, size);
 
 		try {
@@ -65,7 +65,7 @@ public class DocumentService implements IDocumentService {
 
 			var documentPage = repository.findWithFilters(personId, type, fromInstant, toInstant, pageable);
 
-			Page<DocumentDTO> result = Page.from(documentPage, mapper::toDto);
+			Page<DocumentResponse> result = Page.from(documentPage, mapper::toDto);
 
 			log.info("Found {} documents (page {}/{}, total: {})", result.getData().size(), page, documentPage.getTotalPages(), documentPage.getTotalElements());
 			return result;
@@ -78,12 +78,12 @@ public class DocumentService implements IDocumentService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public DocumentDTO findDocumentById(UUID id) {
+	public DocumentResponse findDocumentById(UUID id) {
 		log.debug("Retrieving document metadata by ID: {}", id);
 
 		Document document = findByIdAndStatusNot(id, DocumentStatus.DELETED);
 
-		DocumentDTO result = mapper.toDto(document);
+		DocumentResponse result = mapper.toDto(document);
 		log.debug("Document metadata retrieved successfully: {}", document.getFileName());
 		return result;
 	}
@@ -99,10 +99,9 @@ public class DocumentService implements IDocumentService {
 		return uploadService.downloadFile(document.getPath(), attachment);
 	}
 
-
 	@Override
 	@Transactional
-	public DocumentDTO uploadDocument(MultipartFile document, DocumentMetadataDTO metadata) {
+	public DocumentResponse uploadDocument(MultipartFile document, DocumentMetadata metadata) {
 		var personId = metadata.getPersonId();
 		var typeId = metadata.getType();
 		var date = metadata.getDate();
@@ -135,7 +134,7 @@ public class DocumentService implements IDocumentService {
 			entity.setUploadDate(Instant.now());
 
 			Document saved = repository.save(entity);
-			DocumentDTO result = mapper.toDto(saved);
+			DocumentResponse result = mapper.toDto(saved);
 
 			log.info("Document uploaded successfully with ID: {} for person: {}", saved.getId(), personId);
 			return result;
@@ -150,7 +149,7 @@ public class DocumentService implements IDocumentService {
 
 	@Override
 	@Transactional
-	public DocumentDTO updateDocument(UUID id, MultipartFile document, DocumentMetadataDTO metadata) {
+	public DocumentResponse updateDocument(UUID id, MultipartFile document, DocumentMetadata metadata) {
 		var personId = metadata.getPersonId();
 		var typeId = metadata.getType();
 		var date = metadata.getDate();
@@ -200,7 +199,7 @@ public class DocumentService implements IDocumentService {
 			}
 
 			Document saved = repository.save(existing);
-			DocumentDTO result = mapper.toDto(saved);
+			DocumentResponse result = mapper.toDto(saved);
 
 			log.info("Document updated successfully: {}", saved.getId());
 			return result;

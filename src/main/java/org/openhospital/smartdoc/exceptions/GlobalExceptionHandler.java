@@ -2,7 +2,7 @@ package org.openhospital.smartdoc.exceptions;
 
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
-import org.openhospital.smartdoc.openapi.ProblemDTO;
+import org.openhospital.smartdoc.openapi.Problem;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.Ordered;
@@ -53,8 +53,8 @@ public class GlobalExceptionHandler {
 		};
 	}
 
-	private ResponseEntity<ProblemDTO> buildResponse(CustomException exception) {
-		ProblemDTO problem = new ProblemDTO().type(URI.create(getTypeUri(exception.getStatus().value()))).title(messageSource.getMessage(exception.getCode(), exception.getArgs(), LocaleContextHolder.getLocale())).detail(exception.getDebugMessage()).status(exception.getStatus().value()).instance(URI.create(org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString())).traceId(UUID.randomUUID());
+	private ResponseEntity<Problem> buildResponse(CustomException exception) {
+		Problem problem = new Problem().type(URI.create(getTypeUri(exception.getStatus().value()))).title(messageSource.getMessage(exception.getCode(), exception.getArgs(), LocaleContextHolder.getLocale())).detail(exception.getDebugMessage()).status(exception.getStatus().value()).instance(URI.create(org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString())).traceId(UUID.randomUUID());
 
 		return ResponseEntity.status(exception.getStatus().value()).contentType(MediaType.APPLICATION_JSON).body(problem);
 	}
@@ -67,7 +67,7 @@ public class GlobalExceptionHandler {
 	 * @return a structured error response with appropriate status and localized message
 	 */
 	@ExceptionHandler({CustomException.class})
-	ResponseEntity<ProblemDTO> handle(CustomException exception) {
+	ResponseEntity<Problem> handle(CustomException exception) {
 		String messageKey = exception.getCode() != null ? exception.getCode() : "errors.common.internal";
 		exception.setDebugMessage(messageSource.getMessage(messageKey, exception.getArgs(), LocaleContextHolder.getLocale()));
 		return buildResponse(exception);
@@ -80,7 +80,7 @@ public class GlobalExceptionHandler {
 	 * @return a 403 FORBIDDEN response with a localized error message
 	 */
 	@ExceptionHandler({PermissionDeniedDataAccessException.class})
-	ResponseEntity<ProblemDTO> handle(PermissionDeniedDataAccessException exception) {
+	ResponseEntity<Problem> handle(PermissionDeniedDataAccessException exception) {
 		CustomException customEx = new CustomException(HttpStatus.FORBIDDEN, "auth.errors.permission-denied");
 		customEx.setDebugMessage(exception.getLocalizedMessage());
 		return buildResponse(customEx);
@@ -97,7 +97,7 @@ public class GlobalExceptionHandler {
 	 * @return a {@code ResponseEntity} containing the error details with HTTP status 403
 	 */
 	@ExceptionHandler({AccessDeniedException.class})
-	ResponseEntity<ProblemDTO> handle(AccessDeniedException exception) {
+	ResponseEntity<Problem> handle(AccessDeniedException exception) {
 		CustomException customEx = new CustomException(HttpStatus.FORBIDDEN, "auth.errors.access-denied");
 		customEx.setDebugMessage(exception.getLocalizedMessage());
 		return buildResponse(customEx);
@@ -110,7 +110,7 @@ public class GlobalExceptionHandler {
 	 * @return a 412 PRECONDITION_FAILED response with a localized message
 	 */
 	@ExceptionHandler({OptimisticLockingFailureException.class})
-	ResponseEntity<ProblemDTO> handle(OptimisticLockingFailureException exception) {
+	ResponseEntity<Problem> handle(OptimisticLockingFailureException exception) {
 		CustomException customEx = new CustomException(HttpStatus.PRECONDITION_FAILED, "errors.dao.locking-failed");
 		customEx.setDebugMessage(exception.getLocalizedMessage());
 		return buildResponse(customEx);
@@ -123,7 +123,7 @@ public class GlobalExceptionHandler {
 	 * @return a 400 BAD_REQUEST response with a localized message
 	 */
 	@ExceptionHandler({DataIntegrityViolationException.class})
-	ResponseEntity<ProblemDTO> handle(DataIntegrityViolationException exception) {
+	ResponseEntity<Problem> handle(DataIntegrityViolationException exception) {
 		log.debug("Exception {} occurred", exception.getClass(), exception);
 
 		String message = exception.getLocalizedMessage().toLowerCase();
@@ -143,7 +143,7 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler({ConstraintViolationException.class})
-	ResponseEntity<ProblemDTO> handle(ConstraintViolationException exception) {
+	ResponseEntity<Problem> handle(ConstraintViolationException exception) {
 		log.debug("Exception {} occurred", exception.getClass(), exception);
 
 		CustomException customEx = new CustomException(HttpStatus.BAD_REQUEST, "errors.validation.constraint-violation");
@@ -152,7 +152,7 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler({MethodArgumentNotValidException.class})
-	ResponseEntity<ProblemDTO> handle(MethodArgumentNotValidException exception) {
+	ResponseEntity<Problem> handle(MethodArgumentNotValidException exception) {
 		CustomException customEx = new CustomException(HttpStatus.BAD_REQUEST, "errors.validation.constraint-violation");
 		customEx.setDebugMessage(exception.getLocalizedMessage());
 		return buildResponse(customEx);
@@ -165,7 +165,7 @@ public class GlobalExceptionHandler {
 	 * @return a 500 INTERNAL_SERVER_ERROR response with debug information
 	 */
 	@ExceptionHandler({Exception.class})
-	ResponseEntity<ProblemDTO> handleException(Exception exception) {
+	ResponseEntity<Problem> handleException(Exception exception) {
 		log.debug("Exception {} occurred", exception.getClass(), exception);
 
 		CustomException customEx = new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "errors.common.internal");

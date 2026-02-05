@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.openhospital.smartdoc.config.MapperConfig;
 import org.openhospital.smartdoc.modules.documents.model.Document;
-import org.openhospital.smartdoc.openapi.DocumentDTO;
+import org.openhospital.smartdoc.openapi.DocumentResponse;
 
 @Mapper(config = MapperConfig.class)
 public interface DocumentMapper {
@@ -17,5 +17,5 @@ public interface DocumentMapper {
 	@Mapping(target = "lastModifiedDate", ignore = true)
 	@Mapping(target = "lastModifiedBy", ignore = true)
 	@Mapping(target = "version", ignore = true)
-	DocumentDTO toDto(Document document);
+	DocumentResponse toDto(Document document);
 }

@@ -2,8 +2,8 @@ package org.openhospital.smartdoc.modules.documents.rest;
 
 import org.openhospital.smartdoc.modules.documents.port.IDocumentService;
 import org.openhospital.smartdoc.modules.documents.service.DocumentService;
-import org.openhospital.smartdoc.openapi.DocumentDTO;
-import org.openhospital.smartdoc.openapi.DocumentMetadataDTO;
+import org.openhospital.smartdoc.openapi.DocumentMetadata;
+import org.openhospital.smartdoc.openapi.DocumentResponse;
 import org.openhospital.smartdoc.types.Page;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ByteArrayResource;
@@ -24,12 +24,12 @@ public class DocumentController implements IDocumentService {
 	}
 
 	@Override
-	public Page<DocumentDTO> findDocuments(@RequestParam(required = false) UUID personId, @RequestParam(required = false) UUID type, @RequestParam(required = false) LocalDate fromDate, @RequestParam(required = false) LocalDate toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+	public Page<DocumentResponse> findDocuments(@RequestParam(required = false) UUID personId, @RequestParam(required = false) UUID type, @RequestParam(required = false) LocalDate fromDate, @RequestParam(required = false) LocalDate toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
 		return service.findDocuments(personId, type, fromDate, toDate, page, size);
 	}
 
 	@Override
-	public DocumentDTO findDocumentById(@PathVariable UUID id) {
+	public DocumentResponse findDocumentById(@PathVariable UUID id) {
 		return service.findDocumentById(id);
 	}
 
@@ -39,19 +39,19 @@ public class DocumentController implements IDocumentService {
 	}
 
 	@Override
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void deleteDocument(@PathVariable UUID id) {
+		service.deleteDocument(id);
+	}
+
+	@Override
 	@ResponseStatus(HttpStatus.CREATED)
-	public DocumentDTO uploadDocument(@RequestPart MultipartFile document, @RequestPart DocumentMetadataDTO metadata) {
+	public DocumentResponse uploadDocument(@RequestPart MultipartFile document, @RequestPart DocumentMetadata metadata) {
 		return service.uploadDocument(document, metadata);
 	}
 
 	@Override
-	public DocumentDTO updateDocument(@PathVariable UUID id, @RequestPart MultipartFile document, @RequestPart DocumentMetadataDTO metadata) {
+	public DocumentResponse updateDocument(@PathVariable UUID id, @RequestPart MultipartFile document, @RequestPart DocumentMetadata metadata) {
 		return service.updateDocument(id, document, metadata);
-	}
-
-	@Override
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void deleteDocument(@PathVariable UUID id) {
-		service.deleteDocument(id);
 	}
 }

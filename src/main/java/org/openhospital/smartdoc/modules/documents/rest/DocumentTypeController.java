@@ -19,28 +19,28 @@ public class DocumentTypeController implements IDocumentTypeService {
 	}
 
 	@Override
-	public List<DocumentTypeDTO> findDocumentTypes(@RequestParam(defaultValue = "false") boolean includeInactive) {
+	public List<DocumentTypeResponse> findDocumentTypes(@RequestParam(defaultValue = "false") boolean includeInactive) {
 		return service.findDocumentTypes(includeInactive);
 	}
 
 	@Override
 	@ResponseStatus(HttpStatus.CREATED)
-	public DocumentTypeDTO createDocumentType(@RequestBody CreateDocumentTypeRequestDTO payload) {
+	public DocumentTypeResponse createDocumentType(@RequestBody CreateDocumentTypeRequest payload) {
 		return service.createDocumentType(payload);
 	}
 
 	@Override
-	public DocumentTypeDTO findDocumentTypeById(@PathVariable UUID id) {
+	public DocumentTypeResponse findDocumentTypeById(@PathVariable UUID id) {
 		return service.findDocumentTypeById(id);
 	}
 
 	@Override
-	public DocumentTypeDTO updateDocumentType(@PathVariable UUID id, @RequestBody UpdateDocumentTypeRequestDTO payload) {
+	public DocumentTypeResponse updateDocumentType(@PathVariable UUID id, @RequestBody UpdateDocumentTypeRequest payload) {
 		return service.updateDocumentType(id, payload);
 	}
 
 	@Override
-	public DocumentTypeDTO patchDocumentType(@PathVariable UUID id, @RequestBody PatchDocumentTypeRequestDTO payload) {
+	public DocumentTypeResponse patchDocumentType(@PathVariable UUID id, @RequestBody PatchDocumentTypeRequest payload) {
 		return service.patchDocumentType(id, payload);
 	}
 
@@ -51,17 +51,17 @@ public class DocumentTypeController implements IDocumentTypeService {
 	}
 
 	@Override
-	public DocumentTypeDTO activateDocumentType(@PathVariable UUID id) {
+	public DocumentTypeResponse activateDocumentType(@PathVariable UUID id) {
 		return service.activateDocumentType(id);
 	}
 
 	@Override
-	public DocumentTypeDTO deactivateDocumentType(@PathVariable UUID id) {
+	public DocumentTypeResponse deactivateDocumentType(@PathVariable UUID id) {
 		return service.deactivateDocumentType(id);
 	}
 
 	@Override
-	public DocumentTypeDTO restoreDocumentType(@PathVariable UUID id) {
+	public DocumentTypeResponse restoreDocumentType(@PathVariable UUID id) {
 		return service.restoreDocumentType(id);
 	}
 }

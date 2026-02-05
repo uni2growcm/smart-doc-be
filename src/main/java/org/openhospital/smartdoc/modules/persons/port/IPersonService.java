@@ -12,35 +12,32 @@ import java.util.UUID;
 public interface IPersonService {
 
 	@GetExchange
-	Page<PersonDTO> findPersons(@RequestParam(required = false) String name, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
-
-	@GetExchange
-	Page<PersonDTO> findPersons(@RequestParam(required = false) String name, @RequestParam(defaultValue = "false") boolean includeInactive, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
+	Page<PersonResponse> findPersons(@RequestParam(required = false) String name, @RequestParam(defaultValue = "false") boolean includeInactive, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
 
 	@PostExchange
-	PersonDTO createPerson(@RequestBody CreatePersonRequestDTO payload);
+	PersonResponse createPerson(@RequestBody CreatePersonRequest payload);
 
 	@GetExchange("/{id}")
-	PersonDTO findPersonById(@PathVariable UUID id);
+	PersonResponse findPersonById(@PathVariable UUID id);
 
 	@PutExchange("/{id}")
-	PersonDTO updatePerson(@PathVariable UUID id, @RequestBody UpdatePersonRequestDTO payload);
+	PersonResponse updatePerson(@PathVariable UUID id, @RequestBody UpdatePersonRequest payload);
 
 	@PatchExchange("/{id}")
-	PersonDTO patchPerson(@PathVariable UUID id, @RequestBody PatchPersonRequestDTO payload);
+	PersonResponse patchPerson(@PathVariable UUID id, @RequestBody PatchPersonRequest payload);
 
 	@DeleteExchange("/{id}")
 	void deletePerson(@PathVariable UUID id);
 
 	@PutExchange("/{id}/activate")
-	PersonDTO activatePerson(@PathVariable UUID id);
+	PersonResponse activatePerson(@PathVariable UUID id);
 
 	@PutExchange("/{id}/deactivate")
-	PersonDTO deactivatePerson(@PathVariable UUID id);
+	PersonResponse deactivatePerson(@PathVariable UUID id);
 
 	@PostExchange("/{id}/restore")
-	PersonDTO restorePerson(@PathVariable UUID id);
+	PersonResponse restorePerson(@PathVariable UUID id);
 
 	@GetExchange("/{id}/documents")
-	Page<DocumentDTO> findPersonDocuments(@PathVariable UUID id, @RequestParam(required = false) UUID type, @RequestParam(required = false) LocalDate fromDate, @RequestParam(required = false) LocalDate toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
+	Page<DocumentResponse> findPersonDocuments(@PathVariable UUID id, @RequestParam(required = false) UUID type, @RequestParam(required = false) LocalDate fromDate, @RequestParam(required = false) LocalDate toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
 }
