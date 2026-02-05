@@ -8,7 +8,6 @@ import org.springframework.data.annotation.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Data
@@ -37,5 +36,5 @@ public abstract class BaseEntity {
 	private Instant lastModifiedDate;
 
 	@Version
-	private Integer version;
+	private Long version;
 }

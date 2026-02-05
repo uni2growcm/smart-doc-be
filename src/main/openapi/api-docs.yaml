@@ -856,6 +856,10 @@ components:
         type: boolean
         default: false
   schemas:
+    Version:
+      type: integer
+      format: int64
+      description: The lock field for the object.
     Base:
       type: object
       properties:
@@ -878,8 +882,7 @@ components:
           format: date-time
           description: The date and time when the object was last updated.
         version:
-          type: integer
-          description: The lock field for the object.
+          $ref: '#/components/schemas/Version'
       required:
         - id
         - createdDate
@@ -1109,8 +1112,7 @@ components:
       type: object
       properties:
         version:
-          type: integer
-          description: The lock field for the object.
+          $ref: '#/components/schemas/Version'
         name:
           type: string
           description: Person's name (available when integrated with OH).
@@ -1197,8 +1199,7 @@ components:
       type: object
       properties:
         version:
-          type: integer
-          description: The lock field for the object.
+          $ref: '#/components/schemas/Version'
         code:
           type: string
           description: The unique code for the document type.

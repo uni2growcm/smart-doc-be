@@ -106,7 +106,8 @@ public class PersonService implements IPersonService {
 		Person existing = findByIdAndStatusNot(id, Status.DELETED);
 
 		mapper.updateModel(payload, existing);
-		Person saved = repository.save(existing);
+		log.info("Versions : new{} old({})", payload.getVersion(), existing.getVersion());
+		Person saved = repository.saveAndFlush(existing);
 		PersonResponse result = mapper.toDto(saved);
 
 		log.info("Person updated successfully: {} ({})", saved.getName(), saved.getPid());

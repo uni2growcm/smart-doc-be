@@ -68,9 +68,16 @@ sourceSets {
     main {
         java.srcDir(project.layout.buildDirectory.dir("generate-resources/main/src/main/java"))
     }
+    test {
+        java.srcDir(project.layout.buildDirectory.dir("generate-resources/main/src/main/java"))
+    }
 }
 
 tasks.compileJava {
+    dependsOn("openApiGenerate")
+}
+
+tasks.compileTestJava {
     dependsOn("openApiGenerate")
 }
 
