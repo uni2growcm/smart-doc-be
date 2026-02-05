@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * Maps to application properties with prefix "uploads".
  */
 @ConfigurationProperties(prefix = "uploads")
-public record UploadProperties(
+public record StorageProperties(
 	Paths paths,
 	Storage storage
 ) {
@@ -24,9 +24,13 @@ public record UploadProperties(
 
 	/**
 	 * Storage configuration.
+	 *
+	 * @param maxItems    Maximum number of items allowed.
+	 * @param maxFileSize Maximum file size allowed in mega bytes.
 	 */
 	public record Storage(
-		int maxItems
+		int maxItems,
+		int maxFileSize
 	) {
 	}
 }

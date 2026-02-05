@@ -28,9 +28,11 @@ import java.util.UUID;
  * Provides CRUD operations and document relationships management.
  */
 @Slf4j
-@Service
+@Service(PersonService.NAME)
 @RequiredArgsConstructor
 public class PersonService implements IPersonService {
+
+	public static final String NAME = "PersonService";
 
 	private final PersonRepository repository;
 	private final PersonMapper mapper;

@@ -11,8 +11,7 @@ import org.openhospital.smartdoc.modules.documents.repository.DocumentRepository
 import org.openhospital.smartdoc.modules.documents.repository.DocumentTypeRepository;
 import org.openhospital.smartdoc.modules.persons.repository.PersonRepository;
 import org.openhospital.smartdoc.modules.shared.port.IUploadService;
-import org.openhospital.smartdoc.openapi.DocumentDTO;
-import org.openhospital.smartdoc.openapi.DocumentStatus;
+import org.openhospital.smartdoc.openapi.*;
 import org.openhospital.smartdoc.types.Page;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.*;
@@ -31,9 +30,11 @@ import java.util.UUID;
  * Handles file uploads, downloads, and document management.
  */
 @Slf4j
-@Service
+@Service(DocumentService.NAME)
 @RequiredArgsConstructor
 public class DocumentService implements IDocumentService {
+
+	public static final String NAME = "DocumentService";
 
 	private final DocumentRepository repository;
 	private final DocumentTypeRepository documentTypeRepository;
@@ -76,8 +77,36 @@ public class DocumentService implements IDocumentService {
 
 
 	@Override
+	@Transactional(readOnly = true)
+	public DocumentDTO findDocumentById(UUID id) {
+		log.debug("Retrieving document metadata by ID: {}", id);
+
+		Document document = findByIdAndStatusNot(id, DocumentStatus.DELETED);
+
+		DocumentDTO result = mapper.toDto(document);
+		log.debug("Document metadata retrieved successfully: {}", document.getFileName());
+		return result;
+	}
+
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntity<ByteArrayResource> downloadDocument(UUID id, boolean attachment) {
+		log.debug("Downloading document by ID: {}, attachment: {}", id, attachment);
+
+		Document document = findByIdAndStatusNot(id, DocumentStatus.DELETED);
+
+		return uploadService.downloadFile(document.getPath(), attachment);
+	}
+
+
+	@Override
 	@Transactional
-	public DocumentDTO uploadDocument(MultipartFile document, UUID personId, UUID typeId, LocalDate date, String description) {
+	public DocumentDTO uploadDocument(MultipartFile document, DocumentMetadataDTO metadata) {
+		var personId = metadata.getPersonId();
+		var typeId = metadata.getType();
+		var date = metadata.getDate();
+		var description = metadata.getDescription();
 		log.info("Uploading document for person: {}, type: {}", personId, typeId);
 
 		// Validate references exist
@@ -119,34 +148,14 @@ public class DocumentService implements IDocumentService {
 		}
 	}
 
-
-	@Override
-	@Transactional(readOnly = true)
-	public DocumentDTO findDocumentById(UUID id) {
-		log.debug("Retrieving document metadata by ID: {}", id);
-
-		Document document = findByIdAndStatusNot(id, DocumentStatus.DELETED);
-
-		DocumentDTO result = mapper.toDto(document);
-		log.debug("Document metadata retrieved successfully: {}", document.getFileName());
-		return result;
-	}
-
-
-	@Override
-	@Transactional(readOnly = true)
-	public ResponseEntity<ByteArrayResource> downloadDocument(UUID id, boolean attachment) {
-		log.debug("Downloading document by ID: {}, attachment: {}", id, attachment);
-
-		Document document = findByIdAndStatusNot(id, DocumentStatus.DELETED);
-
-		return uploadService.downloadFile(document.getPath(), attachment);
-	}
-
-
 	@Override
 	@Transactional
-	public DocumentDTO updateDocument(UUID id, MultipartFile document, UUID personId, UUID typeId, LocalDate date, String description) {
+	public DocumentDTO updateDocument(UUID id, MultipartFile document, DocumentMetadataDTO metadata) {
+		var personId = metadata.getPersonId();
+		var typeId = metadata.getType();
+		var date = metadata.getDate();
+		var description = metadata.getDescription();
+
 		log.info("Updating document with ID: {}", id);
 
 		Document existing = findById(id);
@@ -203,7 +212,6 @@ public class DocumentService implements IDocumentService {
 			throw CustomException.internal("documents.errors.update-failed");
 		}
 	}
-
 
 	@Override
 	@Transactional

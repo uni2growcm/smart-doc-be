@@ -1,53 +1,57 @@
 package org.openhospital.smartdoc.modules.documents.rest;
 
-import lombok.RequiredArgsConstructor;
 import org.openhospital.smartdoc.modules.documents.port.IDocumentService;
 import org.openhospital.smartdoc.modules.documents.service.DocumentService;
 import org.openhospital.smartdoc.openapi.DocumentDTO;
+import org.openhospital.smartdoc.openapi.DocumentMetadataDTO;
 import org.openhospital.smartdoc.types.Page;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
-@org.springframework.web.bind.annotation.RestController
-@RequiredArgsConstructor
+@RestController
 public class DocumentController implements IDocumentService {
-	private final DocumentService service;
+	private final IDocumentService service;
+
+	public DocumentController(@Qualifier(DocumentService.NAME) IDocumentService service) {
+		this.service = service;
+	}
 
 	@Override
-	public Page<DocumentDTO> findDocuments(UUID personId, UUID type, LocalDate fromDate, LocalDate toDate, int page, int size) {
+	public Page<DocumentDTO> findDocuments(@RequestParam(required = false) UUID personId, @RequestParam(required = false) UUID type, @RequestParam(required = false) LocalDate fromDate, @RequestParam(required = false) LocalDate toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
 		return service.findDocuments(personId, type, fromDate, toDate, page, size);
 	}
 
 	@Override
-	@ResponseStatus(HttpStatus.CREATED)
-	public DocumentDTO uploadDocument(MultipartFile document, UUID personId, UUID type, LocalDate date, String description) {
-		return service.uploadDocument(document, personId, type, date, description);
-	}
-
-	@Override
-	public DocumentDTO findDocumentById(UUID id) {
+	public DocumentDTO findDocumentById(@PathVariable UUID id) {
 		return service.findDocumentById(id);
 	}
 
 	@Override
-	public ResponseEntity<ByteArrayResource> downloadDocument(UUID id, boolean attachment) {
+	public ResponseEntity<ByteArrayResource> downloadDocument(@PathVariable UUID id, @RequestParam(defaultValue = "false") boolean attachment) {
 		return service.downloadDocument(id, attachment);
 	}
 
 	@Override
-	public DocumentDTO updateDocument(UUID id, MultipartFile document, UUID personId, UUID type, LocalDate date, String description) {
-		return service.updateDocument(id, document, personId, type, date, description);
+	@ResponseStatus(HttpStatus.CREATED)
+	public DocumentDTO uploadDocument(@RequestPart MultipartFile document, @RequestPart DocumentMetadataDTO metadata) {
+		return service.uploadDocument(document, metadata);
+	}
+
+	@Override
+	public DocumentDTO updateDocument(@PathVariable UUID id, @RequestPart MultipartFile document, @RequestPart DocumentMetadataDTO metadata) {
+		return service.updateDocument(id, document, metadata);
 	}
 
 	@Override
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void deleteDocument(UUID id) {
+	public void deleteDocument(@PathVariable UUID id) {
 		service.deleteDocument(id);
 	}
 }

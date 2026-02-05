@@ -1,6 +1,7 @@
 package org.openhospital.smartdoc.modules.documents.port;
 
 import org.openhospital.smartdoc.openapi.DocumentDTO;
+import org.openhospital.smartdoc.openapi.DocumentMetadataDTO;
 import org.openhospital.smartdoc.types.Page;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
@@ -17,17 +18,17 @@ public interface IDocumentService {
 	@GetExchange
 	Page<DocumentDTO> findDocuments(@RequestParam(required = false) UUID personId, @RequestParam(required = false) UUID type, @RequestParam(required = false) LocalDate fromDate, @RequestParam(required = false) LocalDate toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
 
-	@PostExchange
-	DocumentDTO uploadDocument(@RequestPart("document") MultipartFile document, @RequestParam("personId") UUID personId, @RequestParam("type") UUID type, @RequestParam(value = "date", required = false) LocalDate date, @RequestParam(value = "description", required = false) String description);
-
 	@GetExchange("/{id}")
 	DocumentDTO findDocumentById(@PathVariable UUID id);
 
 	@GetExchange("/{id}/download")
 	ResponseEntity<ByteArrayResource> downloadDocument(@PathVariable UUID id, @RequestParam(defaultValue = "false") boolean attachment);
 
+	@PostExchange
+	DocumentDTO uploadDocument(@RequestPart MultipartFile document, @RequestPart DocumentMetadataDTO metadata);
+
 	@PutExchange("/{id}")
-	DocumentDTO updateDocument(@PathVariable UUID id, @RequestPart("document") MultipartFile document, @RequestParam("personId") UUID personId, @RequestParam("type") UUID type, @RequestParam(value = "date", required = false) LocalDate date, @RequestParam(value = "description", required = false) String description);
+	DocumentDTO updateDocument(@PathVariable UUID id, @RequestPart MultipartFile document, @RequestPart DocumentMetadataDTO metadata);
 
 	@DeleteExchange("/{id}")
 	void deleteDocument(@PathVariable UUID id);

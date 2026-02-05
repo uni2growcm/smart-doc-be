@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openhospital.smartdoc.exceptions.CustomException;
 import org.openhospital.smartdoc.modules.shared.port.IStorageService;
-import org.openhospital.smartdoc.modules.shared.properties.UploadProperties;
+import org.openhospital.smartdoc.modules.shared.properties.StorageProperties;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -25,9 +25,8 @@ public class StorageService implements IStorageService {
 	// Allowed file extensions for security
 	private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList("pdf", "doc", "docx", "txt", "rtf", "odt", "jpg", "jpeg", "png", "gif", "bmp", "tiff", "mp4", "avi", "mov", "wmv", "flv", "webm");
 	// Maximum file size (200MB as configured)
-	private static final long MAX_FILE_SIZE = 200 * 1024 * 1024; // 200MB
 
-	private final UploadProperties properties;
+	private final StorageProperties properties;
 
 	@Override
 	public String storeFile(byte[] content, String filename, UUID personId, String subDir) throws IOException {
@@ -105,7 +104,7 @@ public class StorageService implements IStorageService {
 			throw CustomException.badRequest("uploads.errors.file-invalid-name");
 		}
 
-		if (content.length > MAX_FILE_SIZE) {
+		if (content.length > getMaxFileSize()) {
 			throw CustomException.badRequest("uploads.errors.file-too-large");
 		}
 
@@ -113,6 +112,11 @@ public class StorageService implements IStorageService {
 		if (!ALLOWED_EXTENSIONS.contains(extension)) {
 			throw CustomException.badRequest("uploads.errors.file-type-not-allowed", new Object[]{extension});
 		}
+	}
+
+	@Override
+	public long getMaxFileSize() {
+		return properties.storage().maxFileSize() * 1024L * 1024L; // Convert MB to bytes
 	}
 
 	@Override

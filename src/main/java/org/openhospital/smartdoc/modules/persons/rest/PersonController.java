@@ -1,10 +1,10 @@
 package org.openhospital.smartdoc.modules.persons.rest;
 
-import lombok.RequiredArgsConstructor;
 import org.openhospital.smartdoc.modules.persons.port.IPersonService;
 import org.openhospital.smartdoc.modules.persons.service.PersonService;
 import org.openhospital.smartdoc.openapi.*;
 import org.openhospital.smartdoc.types.Page;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,9 +12,12 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @RestController
-@RequiredArgsConstructor
 public class PersonController implements IPersonService {
-	private final PersonService service;
+	private final IPersonService service;
+
+	public PersonController(@Qualifier(PersonService.NAME) IPersonService service) {
+		this.service = service;
+	}
 
 	@Override
 	public Page<PersonDTO> findPersons(@RequestParam(required = false) String name, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {

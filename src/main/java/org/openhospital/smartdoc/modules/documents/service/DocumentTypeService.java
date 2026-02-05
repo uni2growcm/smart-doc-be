@@ -22,9 +22,11 @@ import java.util.UUID;
  * Provides CRUD operations for document type management.
  */
 @Slf4j
-@Service
+@Service(DocumentTypeService.NAME)
 @RequiredArgsConstructor
 public class DocumentTypeService implements IDocumentTypeService {
+
+	public static final String NAME = "DocumentTypeService";
 
 	private final DocumentTypeRepository repository;
 	private final DocumentTypeMapper mapper;

@@ -1,9 +1,9 @@
 package org.openhospital.smartdoc.modules.documents.rest;
 
-import lombok.RequiredArgsConstructor;
 import org.openhospital.smartdoc.modules.documents.port.IDocumentTypeService;
 import org.openhospital.smartdoc.modules.documents.service.DocumentTypeService;
 import org.openhospital.smartdoc.openapi.*;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,9 +11,12 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequiredArgsConstructor
 public class DocumentTypeController implements IDocumentTypeService {
-	private final DocumentTypeService service;
+	private final IDocumentTypeService service;
+
+	public DocumentTypeController(@Qualifier(DocumentTypeService.NAME) IDocumentTypeService service) {
+		this.service = service;
+	}
 
 	@Override
 	public List<DocumentTypeDTO> findDocumentTypes(@RequestParam(defaultValue = "false") boolean includeInactive) {

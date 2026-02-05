@@ -50,6 +50,13 @@ public interface IStorageService {
 	void validateFile(byte[] content, String filename);
 
 	/**
+	 * Gets the maximum allowed file size for uploads.
+	 *
+	 * @return maximum file size in bytes
+	 */
+	long getMaxFileSize();
+
+	/**
 	 * Resolves the full file system path for a file.
 	 *
 	 * @param personId the person identifier

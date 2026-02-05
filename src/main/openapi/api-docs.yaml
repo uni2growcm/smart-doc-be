@@ -997,17 +997,12 @@ components:
       type: string
       format: binary
       description: Represents raw binary file content (JPEG, JavaScript bundle).
-    UploadDocumentRequest:
+    DocumentMetadata:
       type: object
       required:
-        - document
         - personId
         - type
       properties:
-        document:
-          allOf:
-            - $ref: '#/components/schemas/BinaryFile'
-          description: The file to upload (JPG).
         personId:
           type: string
           format: uuid
@@ -1023,6 +1018,19 @@ components:
         description:
           type: string
           description: Optional description to be included in the filename.
+      description: Document metadata associated with an uploaded file.
+    UploadDocumentRequest:
+      type: object
+      required:
+        - document
+        - metadata
+      properties:
+        document:
+          allOf:
+            - $ref: '#/components/schemas/BinaryFile'
+          description: The file to upload (JPG).
+        metadata:
+          $ref: '#/components/schemas/DocumentMetadata'
       description: Fields required for document upload via multipart/form-data.
     Gender:
       type: string
