@@ -39,12 +39,6 @@ public class DocumentController implements IDocumentService {
 	}
 
 	@Override
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void deleteDocument(@PathVariable UUID id) {
-		service.deleteDocument(id);
-	}
-
-	@Override
 	@ResponseStatus(HttpStatus.CREATED)
 	public DocumentResponse uploadDocument(@RequestPart MultipartFile document, @RequestPart DocumentMetadata metadata) {
 		return service.uploadDocument(document, metadata);
@@ -53,5 +47,11 @@ public class DocumentController implements IDocumentService {
 	@Override
 	public DocumentResponse updateDocument(@PathVariable UUID id, @RequestPart MultipartFile document, @RequestPart DocumentMetadata metadata) {
 		return service.updateDocument(id, document, metadata);
+	}
+
+	@Override
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void deleteDocument(@PathVariable UUID id) {
+		service.deleteDocument(id);
 	}
 }

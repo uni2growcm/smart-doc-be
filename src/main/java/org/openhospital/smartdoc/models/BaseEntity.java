@@ -7,6 +7,7 @@ import lombok.Data;
 import org.springframework.data.annotation.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -25,7 +26,7 @@ public abstract class BaseEntity {
 
 	@CreatedDate
 	@Column(name = "created_date")
-	private OffsetDateTime createdDate;
+	private Instant createdDate;
 
 	@LastModifiedBy
 	@Column(name = "last_modified_by")
@@ -33,7 +34,7 @@ public abstract class BaseEntity {
 
 	@LastModifiedDate
 	@Column(name = "last_modified_date")
-	private OffsetDateTime lastModifiedDate;
+	private Instant lastModifiedDate;
 
 	@Version
 	private Integer version;

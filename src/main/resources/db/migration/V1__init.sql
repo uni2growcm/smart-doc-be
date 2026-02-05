@@ -52,7 +52,7 @@ CREATE TABLE documents
     description        VARCHAR(255),
     file_size          BIGINT,
     mime_type          VARCHAR(255),
-    status             VARCHAR(255),
+    status             ENUM('active', 'archived', 'deleted')  NOT NULL DEFAULT 'active',
     upload_date        TIMESTAMP,
     CONSTRAINT fk_documents_person_id FOREIGN KEY (person_id) REFERENCES persons (id),
     CONSTRAINT fk_documents_type_id FOREIGN KEY (type_id) REFERENCES document_types (id)

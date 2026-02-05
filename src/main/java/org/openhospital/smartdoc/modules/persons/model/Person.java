@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.openhospital.smartdoc.models.BaseEntity;
 import org.openhospital.smartdoc.modules.documents.model.Document;
+import org.openhospital.smartdoc.openapi.Gender;
 import org.openhospital.smartdoc.openapi.Status;
 
 import java.util.ArrayList;
@@ -22,6 +23,9 @@ public class Person extends BaseEntity {
 	private String pid;
 
 	private String email;
+
+	@Enumerated(EnumType.STRING)
+	private Gender gender;
 
 	@Column(name = "phone_number")
 	private String phoneNumber;
