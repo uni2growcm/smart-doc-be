@@ -212,17 +212,6 @@ public class DocumentTypeService implements IDocumentTypeService {
 	}
 
 	/**
-	 * Validates document type reference for operations.
-	 */
-	public void validateDocumentTypeReference(UUID typeId) {
-		DocumentType documentType = repository.findByIdAndStatusNot(typeId, Status.DELETED).orElseThrow(() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{typeId}));
-
-		if (documentType.getStatus() != Status.ACTIVE) {
-			throw CustomException.badRequest("documents.errors.type-not-active");
-		}
-	}
-
-	/**
 	 * Validates the create request payload.
 	 */
 	public void validateDocumentTypeRequest(CreateDocumentTypeRequestDTO payload) {

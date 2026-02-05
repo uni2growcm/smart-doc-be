@@ -250,7 +250,7 @@ public class PersonService implements IPersonService {
 	 * Validates person reference for operations.
 	 */
 	public void validatePersonReference(UUID personId) {
-		Person person = repository.findByIdAndStatusNot(personId, Status.DELETED).orElseThrow(() -> CustomException.notFound("persons.errors.not-found", new Object[]{personId}));
+		Person person = findByIdAndStatusNot(personId, Status.DELETED);
 
 		if (person.getStatus() != Status.ACTIVE) {
 			throw CustomException.badRequest("persons.errors.not-active");
