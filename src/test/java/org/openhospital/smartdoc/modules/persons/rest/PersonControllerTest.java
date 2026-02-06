@@ -93,8 +93,8 @@ public class PersonControllerTest {
 		}
 
 		@Test
-		@DisplayName("Should handle duplicate PID")
-		public void shouldHandleDuplicatePid() {
+		@DisplayName("Should throw exception for duplicate PID")
+		public void shouldThrowExceptionForDuplicatePid() {
 			var request = new CreatePersonRequest()
 				.name("Duplicate PID")
 				.pid("PID001")
@@ -106,8 +106,8 @@ public class PersonControllerTest {
 		}
 
 		@Test
-		@DisplayName("Should handle missing required fields")
-		public void shouldHandleMissingRequiredFields() {
+		@DisplayName("Should throw exception for missing required fields")
+		public void shouldThrowExceptionForMissingRequiredFields() {
 			var request = new CreatePersonRequest()
 				.name("")
 				.pid("MISS001")
@@ -117,8 +117,8 @@ public class PersonControllerTest {
 		}
 
 		@Test
-		@DisplayName("Should handle invalid email format")
-		public void shouldHandleInvalidEmailFormat() {
+		@DisplayName("Should throw exception for invalid email format")
+		public void shouldThrowExceptionForInvalidEmailFormat() {
 			var request = new CreatePersonRequest()
 				.name("Invalid Email")
 				.pid("INV001")
@@ -154,16 +154,16 @@ public class PersonControllerTest {
 		}
 
 		@Test
-		@DisplayName("Should return not found for non-existent ID")
-		public void shouldReturnNotFoundForNonExistentId() {
+		@DisplayName("Should throw exception for non-existent ID")
+		public void shouldThrowExceptionForNonExistentId() {
 			var id = UUID.randomUUID();
 			var exception = assertThrows(CustomException.class, () -> service.findPersonById(id));
 			assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
 		}
 
 		@Test
-		@DisplayName("Should return not found for deleted person")
-		public void shouldReturnNotFoundForDeletedPerson() {
+		@DisplayName("Should throw exception for deleted person")
+		public void shouldThrowExceptionForDeletedPerson() {
 			var id = UUID.fromString("660e8400-e29b-41d4-a716-446655440012"); // Megan (deleted)
 			var exception = assertThrows(CustomException.class, () -> service.findPersonById(id));
 			assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
@@ -191,8 +191,8 @@ public class PersonControllerTest {
 		}
 
 		@Test
-		@DisplayName("Should handle update non-existent")
-		public void shouldHandleUpdateNonExistent() {
+		@DisplayName("Should throw exception for update non-existent")
+		public void shouldThrowExceptionForUpdateNonExistent() {
 			var id = UUID.randomUUID();
 			var request = new UpdatePersonRequest()
 				.name("Non-existent")
@@ -231,8 +231,8 @@ public class PersonControllerTest {
 		}
 
 		@Test
-		@DisplayName("Should handle patch non-existent")
-		public void shouldHandlePatchNonExistent() {
+		@DisplayName("Should throw exception for patch non-existent")
+		public void shouldThrowExceptionForPatchNonExistent() {
 			var id = UUID.randomUUID();
 			var request = new PatchPersonRequest()
 				.name("Patched Non-existent");
@@ -255,16 +255,16 @@ public class PersonControllerTest {
 		}
 
 		@Test
-		@DisplayName("Should handle delete non-existent")
-		public void shouldHandleDeleteNonExistent() {
+		@DisplayName("Should throw exception for delete non-existent")
+		public void shouldThrowExceptionForDeleteNonExistent() {
 			var id = UUID.randomUUID();
 			var exception = assertThrows(CustomException.class, () -> service.deletePerson(id));
 			assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
 		}
 
 		@Test
-		@DisplayName("Should handle delete already deleted")
-		public void shouldHandleDeleteAlreadyDeleted() {
+		@DisplayName("Should throw exception for delete already deleted")
+		public void shouldThrowExceptionForDeleteAlreadyDeleted() {
 			var id = UUID.fromString("660e8400-e29b-41d4-a716-446655440013"); // Noah (status: deleted)
 			var exception = assertThrows(CustomException.class, () -> service.deletePerson(id));
 			assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
@@ -284,16 +284,16 @@ public class PersonControllerTest {
 		}
 
 		@Test
-		@DisplayName("Should handle activate already active")
-		public void shouldHandleActivateAlreadyActive() {
+		@DisplayName("Should throw exception for activate already active")
+		public void shouldThrowExceptionForActivateAlreadyActive() {
 			var id = UUID.fromString("660e8400-e29b-41d4-a716-446655440006"); // Grace (active)
 			var exception = assertThrows(CustomException.class, () -> service.activatePerson(id));
 			assertEquals(HttpStatus.CONFLICT, exception.getStatus());
 		}
 
 		@Test
-		@DisplayName("Should handle activate non-existent")
-		public void shouldHandleActivateNonExistent() {
+		@DisplayName("Should throw exception for activate non-existent")
+		public void shouldThrowExceptionForActivateNonExistent() {
 			var id = UUID.randomUUID();
 			var exception = assertThrows(CustomException.class, () -> service.activatePerson(id));
 			assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
@@ -313,16 +313,16 @@ public class PersonControllerTest {
 		}
 
 		@Test
-		@DisplayName("Should handle deactivate already inactive")
-		public void shouldHandleDeactivateAlreadyInactive() {
+		@DisplayName("Should throw exception for deactivate already inactive")
+		public void shouldThrowExceptionForDeactivateAlreadyInactive() {
 			var id = UUID.fromString("660e8400-e29b-41d4-a716-446655440010"); // Kevin (inactive)
 			var exception = assertThrows(CustomException.class, () -> service.deactivatePerson(id));
 			assertEquals(HttpStatus.CONFLICT, exception.getStatus());
 		}
 
 		@Test
-		@DisplayName("Should handle deactivate non-existent")
-		public void shouldHandleDeactivateNonExistent() {
+		@DisplayName("Should throw exception for deactivate non-existent")
+		public void shouldThrowExceptionForDeactivateNonExistent() {
 			var id = UUID.randomUUID();
 			var exception = assertThrows(CustomException.class, () -> service.deactivatePerson(id));
 			assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
@@ -342,16 +342,16 @@ public class PersonControllerTest {
 		}
 
 		@Test
-		@DisplayName("Should handle restore non-deleted")
-		public void shouldHandleRestoreNonDeleted() {
+		@DisplayName("Should throw exception for restore non-deleted")
+		public void shouldThrowExceptionForRestoreNonDeleted() {
 			var id = UUID.fromString("660e8400-e29b-41d4-a716-446655440008"); // Ivy (active)
 			var exception = assertThrows(CustomException.class, () -> service.restorePerson(id));
 			assertEquals(HttpStatus.CONFLICT, exception.getStatus());
 		}
 
 		@Test
-		@DisplayName("Should handle restore non-existent")
-		public void shouldHandleRestoreNonExistent() {
+		@DisplayName("Should throw exception for restore non-existent")
+		public void shouldThrowExceptionForRestoreNonExistent() {
 			var id = UUID.randomUUID();
 			var exception = assertThrows(CustomException.class, () -> service.restorePerson(id));
 			assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
@@ -411,8 +411,8 @@ public class PersonControllerTest {
 		}
 
 		@Test
-		@DisplayName("Should handle documents for non-existent person")
-		public void shouldHandleDocumentsForNonExistentPerson() {
+		@DisplayName("Should throw exception for documents of non-existent person")
+		public void shouldThrowExceptionForDocumentsOfNonExistentPerson() {
 			var id = UUID.randomUUID();
 			var exception = assertThrows(CustomException.class, () -> service.findPersonDocuments(id, null, null, null, 0, 20));
 			assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());

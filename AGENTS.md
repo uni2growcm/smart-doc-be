@@ -11,7 +11,6 @@ This file provides essential information for AI coding agents working in the Sma
 - Spring Boot 4.0.2
 - Gradle (Kotlin DSL)
 - OpenAPI 3.1 (API-first design)
-- MapStruct (DTO mapping)
 - Lombok (boilerplate reduction)
 - JUnit 5 (testing)
 - MySQL database with Flyway migrations
@@ -31,10 +30,10 @@ This file provides essential information for AI coding agents working in the Sma
 ./gradlew test
 
 # Run a single test class
-./gradlew test --tests "org.openhospital.smartdoc.SmartdocApplicationTests"
+./gradlew test --tests "org.openhospital.smartdoc.PersonControllerTest"
 
 # Run a specific test method
-./gradlew test --tests "org.openhospital.smartdoc.SomeTest.specificTestMethod"
+./gradlew test --tests "org.openhospital.smartdoc.PersonControllerTest.shouldThrowExceptionForDuplicatePid"
 
 # Clean build artifacts
 ./gradlew clean
@@ -96,6 +95,7 @@ mvn test                          # Run tests
 - **Variables:** camelCase
 - **Constants:** UPPER_SNAKE_CASE
 - **Test classes:** `{ClassName}Test` or `{ClassName}Tests`
+- **Test methods:** `shouldThrowExceptionFor{Scenario}` for exceptions, `should{Action}{Condition}` otherwise
 - **Packages:** lowercase, dot-separated (e.g., `org.openhospital.smartdoc`)
 
 #### API Method Naming Conventions
@@ -115,6 +115,7 @@ mvn test                          # Run tests
   - `@Slf4j` for logging
   - `@RequiredArgsConstructor` for constructor injection
   - `@AllArgsConstructor` when all constructor parameters needed
+  - `@NoArgsConstructor` for JPA entities
 
 #### Annotations
 - Place annotations on separate lines (except parameters)
@@ -165,7 +166,7 @@ mvn test                          # Run tests
 - Use `@WebMvcTest` for controller tests
 - Mock external dependencies with `@MockBean`
 - Organize tests with nested test classes when appropriate
-- Use descriptive test method names (e.g., `shouldReturnDocumentWhenIdExists`)
+- Use descriptive test method names (e.g., `shouldReturnDocumentWhenIdExists`, `shouldThrowExceptionForInvalidInput`)
 - Use `@ActiveProfiles("test")` for test-specific configuration
 
 ## OpenAPI-First Development
@@ -193,6 +194,14 @@ This project uses **OpenAPI Generator** to generate Spring interfaces from OpenA
 - Implement generated interfaces in your controllers
 - Use `operationId` in YAML to control method names
 - Follow existing schema patterns (see `Document.yaml`, `Problem.yaml`)
+
+## Mappers and DTO Mapping
+
+Use plain `@Component` classes for mapping instead of MapStruct. Implement fluent builders using Lombok `@Builder` for entity mappings and generated builders for response DTOs.
+
+- Mappers should have methods like `toDto`, `toModel`, `toDtos`, `toModels`, `updateModel`, `patchModel`
+- For patch operations, only set non-null fields
+- Use constructor injection for dependencies
 
 ## Project Structure
 
@@ -249,14 +258,16 @@ Port interfaces in `modules/*/port/` define HTTP client contracts using Spring's
 1. **Always run tests** after making changes: `./gradlew test`
 2. **Regenerate OpenAPI code** if specs change: `./gradlew openApiGenerate`
 3. **Follow Spring Boot conventions** for configuration and structure
-4. **Use Lombok** to reduce boilerplate (getters, setters, constructors)
-5. **Use MapStruct** for DTO-to-entity mapping
+4. **Use Lombok** to reduce boilerplate (getters, setters, constructors, builders)
+5. **Implement mappers as @Component classes** with builder patterns
 6. **Document public APIs** with JavaDoc
 7. **Handle errors properly** using Problem Details (RFC 7807)
 8. **Never commit** IDE-specific files (already in `.gitignore`)
 
 ## Recent Additions
 
+- Migrated mappers from MapStruct interfaces to plain `@Component` classes using builder patterns
+- Updated test naming to "Should throw exception for ..." for exception-throwing tests
 - Implemented `DocumentController` and `DocumentTypeController` in `modules/documents/rest/`, following the same pattern as `PersonController`. These controllers handle full CRUD operations for documents (including file upload/download) and document types, integrating with existing services and repositories.
 
 ## Quick Reference
@@ -269,4 +280,5 @@ Port interfaces in `modules/*/port/` define HTTP client contracts using Spring's
 | Run app | `./gradlew bootRun` |
 | Clean | `./gradlew clean` |
 | Lint OpenAPI | `./gradlew lint` |
-| Generate API code | `./gradlew openApiGenerate` |
+| Generate API code | `./gradlew openApiGenerate` |</content>
+<parameter name="filePath">AGENTS.md
