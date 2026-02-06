@@ -123,16 +123,10 @@ public class DocumentTypeService implements IDocumentTypeService {
 
 		DocumentType documentType = findNotDeletedById(id);
 
-		try {
-			// Try hard delete first
-			repository.deleteById(id);
-			log.info("Document type {} hard deleted successfully", id);
-		} catch (DataIntegrityViolationException e) {
-			// Foreign key constraint violation - document type has associated documents
-			log.warn("Hard delete failed for document type {} due to existing documents, falling back to soft delete", id, e);
-			documentType.setStatus(Status.DELETED);
-			repository.save(documentType);
-		}
+		documentType.setStatus(Status.DELETED);
+		repository.save(documentType);
+
+		log.info("Document type {} soft deleted successfully", id);
 	}
 
 	@Override
