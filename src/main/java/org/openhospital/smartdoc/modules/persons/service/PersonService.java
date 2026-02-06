@@ -43,8 +43,8 @@ public class PersonService implements IPersonService {
 		return repository.findById(id).orElseThrow(() -> CustomException.notFound("persons.errors.not-found", new Object[]{id}));
 	}
 
-	private Person findByIdAndStatusNot(UUID id, Status status) {
-		return repository.findByIdAndStatusNot(id, status).orElseThrow(() -> CustomException.notFound("persons.errors.not-found", new Object[]{id}));
+	private Person findNotDeletedById(UUID id) {
+		return repository.findByIdAndStatusNot(id, Status.DELETED).orElseThrow(() -> CustomException.notFound("persons.errors.not-found", new Object[]{id}));
 	}
 
 	@Override
@@ -59,7 +59,7 @@ public class PersonService implements IPersonService {
 
 			var personPage = StringUtils.hasText(name) ? repository.findByNameContainingIgnoreCaseAndStatusIn(name.trim(), statuses, pageable) : repository.findByStatusIn(statuses, pageable);
 
-			Page<PersonResponse> result = Page.from(personPage, mapper::toDto);
+			Page<PersonResponse> result = Page.from(personPage, mapper::toDtos);
 
 			log.info("Found {} persons (page {}/{}, total: {})", result.getData().size(), page, personPage.getTotalPages(), personPage.getTotalElements());
 
@@ -91,7 +91,7 @@ public class PersonService implements IPersonService {
 	public PersonResponse findPersonById(UUID id) {
 		log.debug("Finding person by ID: {}", id);
 
-		Person entity = findByIdAndStatusNot(id, Status.DELETED);
+		Person entity = findNotDeletedById(id);
 
 		PersonResponse result = mapper.toDto(entity);
 		log.debug("Person found: {} ({})", entity.getName(), entity.getPid());
@@ -103,7 +103,7 @@ public class PersonService implements IPersonService {
 	public PersonResponse updatePerson(UUID id, UpdatePersonRequest payload) {
 		log.info("Updating person with ID: {}", id);
 
-		Person existing = findByIdAndStatusNot(id, Status.DELETED);
+		Person existing = findNotDeletedById(id);
 
 		mapper.updateModel(payload, existing);
 		log.info("Versions : new{} old({})", payload.getVersion(), existing.getVersion());
@@ -119,7 +119,7 @@ public class PersonService implements IPersonService {
 	public PersonResponse patchPerson(UUID id, PatchPersonRequest payload) {
 		log.info("Patching person with ID: {}", id);
 
-		Person existing = findByIdAndStatusNot(id, Status.DELETED);
+		Person existing = findNotDeletedById(id);
 
 		mapper.patchModel(payload, existing);
 		Person saved = repository.save(existing);
@@ -133,7 +133,7 @@ public class PersonService implements IPersonService {
 	public void deletePerson(UUID id) {
 		log.info("Deleting person with ID: {}", id);
 
-		Person person = findByIdAndStatusNot(id, Status.DELETED);
+		Person person = findNotDeletedById(id);
 
 		try {
 			// Try hard delete first
@@ -152,7 +152,7 @@ public class PersonService implements IPersonService {
 	public PersonResponse activatePerson(UUID id) {
 		log.info("Activating person with ID: {}", id);
 
-		Person person = findByIdAndStatusNot(id, Status.DELETED);
+		Person person = findNotDeletedById(id);
 
 		if (person.getStatus() == Status.ACTIVE) {
 			throw CustomException.badRequest("persons.errors.already-active");
@@ -169,7 +169,7 @@ public class PersonService implements IPersonService {
 	public PersonResponse deactivatePerson(UUID id) {
 		log.info("Deactivating person with ID: {}", id);
 
-		Person person = findByIdAndStatusNot(id, Status.DELETED);
+		Person person = findNotDeletedById(id);
 
 		if (person.getStatus() == Status.INACTIVE) {
 			throw CustomException.badRequest("persons.errors.already-inactive");
@@ -214,7 +214,7 @@ public class PersonService implements IPersonService {
 
 		org.springframework.data.domain.Page<Document> documentPage = documentRepository.findWithFilters(id, type, fromInstant, toInstant, pageable);
 
-		Page<DocumentResponse> result = Page.from(documentPage, documentMapper::toDto);
+		Page<DocumentResponse> result = Page.from(documentPage, documentMapper::toDtos);
 
 		log.info("Found {} documents for person {} (page {}/{}, total: {})", result.getData().size(), id, page, documentPage.getTotalPages(), documentPage.getTotalElements());
 
@@ -247,7 +247,7 @@ public class PersonService implements IPersonService {
 	 * Validates person reference for operations.
 	 */
 	public void validatePersonReference(UUID personId) {
-		Person person = findByIdAndStatusNot(personId, Status.DELETED);
+		Person person = findNotDeletedById(personId);
 
 		if (person.getStatus() != Status.ACTIVE) {
 			throw CustomException.badRequest("persons.errors.not-active");

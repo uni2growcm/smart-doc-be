@@ -1,8 +1,9 @@
 package org.openhospital.smartdoc.modules.documents.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
+import lombok.experimental.Accessors;
+import lombok.experimental.SuperBuilder;
 import org.openhospital.smartdoc.models.BaseEntity;
 import org.openhospital.smartdoc.modules.persons.model.Person;
 import org.openhospital.smartdoc.openapi.DocumentStatus;
@@ -10,9 +11,12 @@ import org.openhospital.smartdoc.openapi.DocumentStatus;
 import java.time.Instant;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "documents")
+@SuperBuilder
+@Accessors(chain = true)
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class Document extends BaseEntity {
 
 	@Column(name = "file_name")

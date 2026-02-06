@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.persistence.Id;
 import jakarta.persistence.Version;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -11,7 +13,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Data
+@SuperBuilder
 @MappedSuperclass
+@NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
 

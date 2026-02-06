@@ -1,21 +1,54 @@
 package org.openhospital.smartdoc.modules.persons.mapper;
 
-import org.mapstruct.*;
-import org.openhospital.smartdoc.config.MapperConfig;
 import org.openhospital.smartdoc.modules.persons.model.Person;
 import org.openhospital.smartdoc.openapi.*;
+import org.springframework.stereotype.Component;
 
-@Mapper(config = MapperConfig.class)
-public interface PersonMapper {
+import java.util.List;
 
-	PersonResponse toDto(Person person);
+@Component
+public class PersonMapper {
 
-	Person toModel(PersonResponse personDTO);
+	public PersonResponse toDto(Person person) {
+		return new PersonResponse().id(person.getId()).createdDate(person.getCreatedDate()).lastModifiedDate(person.getLastModifiedDate()).version(person.getVersion()).name(person.getName()).pid(person.getPid()).email(person.getEmail()).phoneNumber(person.getPhoneNumber()).gender(person.getGender()).status(person.getStatus());
+	}
 
-	Person toModel(CreatePersonRequest req);
+	public Person toModel(CreatePersonRequest req) {
+		return Person.builder().name(req.getName()).pid(req.getPid()).email(req.getEmail()).phoneNumber(req.getPhoneNumber()).gender(req.getGender()).build();
+	}
 
-	void updateModel(UpdatePersonRequest req, @MappingTarget Person entity);
+	public void updateModel(UpdatePersonRequest req, Person entity) {
+		entity
+			.setName(req.getName())
+			.setPid(req.getPid())
+			.setEmail(req.getEmail())
+			.setPhoneNumber(req.getPhoneNumber())
+			.setGender(req.getGender());
+		entity.setVersion(req.getVersion());
+	}
 
-	@BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-	void patchModel(PatchPersonRequest req, @MappingTarget Person entity);
+	public void patchModel(PatchPersonRequest req, Person entity) {
+		if (req.getVersion() != null) {
+			entity.setVersion(req.getVersion());
+		}
+		if (req.getName() != null) {
+			entity.setName(req.getName());
+		}
+		if (req.getPid() != null) {
+			entity.setPid(req.getPid());
+		}
+		if (req.getEmail() != null) {
+			entity.setEmail(req.getEmail());
+		}
+		if (req.getPhoneNumber() != null) {
+			entity.setPhoneNumber(req.getPhoneNumber());
+		}
+		if (req.getGender() != null) {
+			entity.setGender(req.getGender());
+		}
+	}
+
+	public List<PersonResponse> toDtos(List<Person> persons) {
+		return persons.stream().map(this::toDto).toList();
+	}
 }

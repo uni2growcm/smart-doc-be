@@ -3,6 +3,7 @@ package org.openhospital.smartdoc.modules.documents.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openhospital.smartdoc.exceptions.CustomException;
+import org.openhospital.smartdoc.helpers.DateUtils;
 import org.openhospital.smartdoc.modules.documents.mapper.DocumentMapper;
 import org.openhospital.smartdoc.modules.documents.model.Document;
 import org.openhospital.smartdoc.modules.documents.model.DocumentType;
@@ -47,8 +48,8 @@ public class DocumentService implements IDocumentService {
 	}
 
 
-	private Document findByIdAndStatusNot(UUID id, DocumentStatus status) {
-		return repository.findByIdAndStatusNot(id, status).orElseThrow(() -> CustomException.notFound("documents.errors.not-found", new Object[]{id}));
+	private Document findNotDeletedById(UUID id) {
+		return repository.findByIdAndStatusNot(id, DocumentStatus.DELETED).orElseThrow(() -> CustomException.notFound("documents.errors.not-found", new Object[]{id}));
 	}
 
 	@Override
@@ -59,13 +60,12 @@ public class DocumentService implements IDocumentService {
 		try {
 			Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
 
-			// Convert LocalDate to Instant for database query
-			Instant fromInstant = fromDate != null ? fromDate.atStartOfDay().toInstant(java.time.ZoneOffset.UTC) : null;
-			Instant toInstant = toDate != null ? toDate.atTime(23, 59, 59).toInstant(java.time.ZoneOffset.UTC) : null;
+			Instant fromInstant = DateUtils.toInstant(fromDate);
+			Instant toInstant = DateUtils.toInstant(toDate);
 
 			var documentPage = repository.findWithFilters(personId, type, fromInstant, toInstant, pageable);
 
-			Page<DocumentResponse> result = Page.from(documentPage, mapper::toDto);
+			Page<DocumentResponse> result = Page.from(documentPage, mapper::toDtos);
 
 			log.info("Found {} documents (page {}/{}, total: {})", result.getData().size(), page, documentPage.getTotalPages(), documentPage.getTotalElements());
 			return result;
@@ -81,7 +81,7 @@ public class DocumentService implements IDocumentService {
 	public DocumentResponse findDocumentById(UUID id) {
 		log.debug("Retrieving document metadata by ID: {}", id);
 
-		Document document = findByIdAndStatusNot(id, DocumentStatus.DELETED);
+		Document document = findNotDeletedById(id);
 
 		DocumentResponse result = mapper.toDto(document);
 		log.debug("Document metadata retrieved successfully: {}", document.getFileName());
@@ -94,7 +94,7 @@ public class DocumentService implements IDocumentService {
 	public ResponseEntity<ByteArrayResource> downloadDocument(UUID id, boolean attachment) {
 		log.debug("Downloading document by ID: {}, attachment: {}", id, attachment);
 
-		Document document = findByIdAndStatusNot(id, DocumentStatus.DELETED);
+		Document document = findNotDeletedById(id);
 
 		return uploadService.downloadFile(document.getPath(), attachment);
 	}
@@ -254,7 +254,6 @@ public class DocumentService implements IDocumentService {
 		if (typeCode == null) return "documents";
 
 		return switch (typeCode.toLowerCase()) {
-			case "pdf", "doc", "docx", "txt", "rtf", "odt" -> "documents";
 			case "jpg", "jpeg", "png", "gif", "bmp", "tiff" -> "images";
 			case "mp4", "avi", "mov", "wmv", "flv", "webm" -> "videos";
 			default -> "documents";

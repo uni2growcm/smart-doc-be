@@ -35,8 +35,8 @@ public class DocumentTypeService implements IDocumentTypeService {
 		return repository.findById(id).orElseThrow(() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{id}));
 	}
 
-	private DocumentType findByIdAndStatusNot(UUID id, Status status) {
-		return repository.findByIdAndStatusNot(id, status).orElseThrow(() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{id}));
+	private DocumentType findNotDeletedById(UUID id) {
+		return repository.findByIdAndStatusNot(id, Status.DELETED).orElseThrow(() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{id}));
 	}
 
 	@Override
@@ -49,7 +49,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 
 			Page<DocumentType> documentTypePage = repository.findByStatusIn(statuses, Pageable.unpaged());
 			List<DocumentType> documentTypes = documentTypePage.getContent();
-			List<DocumentTypeResponse> dtos = documentTypes.stream().map(mapper::toDto).toList();
+			List<DocumentTypeResponse> dtos = mapper.toDtos(documentTypes);
 
 			log.info("Retrieved {} document types", dtos.size());
 			return dtos;
@@ -80,7 +80,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 	public DocumentTypeResponse findDocumentTypeById(UUID id) {
 		log.debug("Finding document type by ID: {}", id);
 
-		DocumentType entity = findByIdAndStatusNot(id, Status.DELETED);
+		DocumentType entity = findNotDeletedById(id);
 
 		DocumentTypeResponse result = mapper.toDto(entity);
 		log.debug("Document type found: {}", entity.getCode());
@@ -92,7 +92,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 	public DocumentTypeResponse updateDocumentType(UUID id, UpdateDocumentTypeRequest payload) {
 		log.info("Updating document type with ID: {}", id);
 
-		DocumentType existing = findByIdAndStatusNot(id, Status.DELETED);
+		DocumentType existing = findNotDeletedById(id);
 
 		mapper.updateModel(payload, existing);
 		DocumentType saved = repository.save(existing);
@@ -107,7 +107,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 	public DocumentTypeResponse patchDocumentType(UUID id, PatchDocumentTypeRequest payload) {
 		log.info("Patching document type with ID: {}", id);
 
-		DocumentType existing = findByIdAndStatusNot(id, Status.DELETED);
+		DocumentType existing = findNotDeletedById(id);
 
 		mapper.patchModel(payload, existing);
 		DocumentType saved = repository.save(existing);
@@ -121,7 +121,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 	public void deleteDocumentType(UUID id) {
 		log.info("Deleting document type with ID: {}", id);
 
-		DocumentType documentType = findByIdAndStatusNot(id, Status.DELETED);
+		DocumentType documentType = findNotDeletedById(id);
 
 		try {
 			// Try hard delete first
@@ -140,7 +140,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 	public DocumentTypeResponse activateDocumentType(UUID id) {
 		log.info("Activating document type with ID: {}", id);
 
-		DocumentType documentType = findByIdAndStatusNot(id, Status.DELETED);
+		DocumentType documentType = findNotDeletedById(id);
 
 		if (documentType.getStatus() == Status.ACTIVE) {
 			throw CustomException.badRequest("documents.errors.type-already-active");
@@ -157,7 +157,7 @@ public class DocumentTypeService implements IDocumentTypeService {
 	public DocumentTypeResponse deactivateDocumentType(UUID id) {
 		log.info("Deactivating document type with ID: {}", id);
 
-		DocumentType documentType = findByIdAndStatusNot(id, Status.DELETED);
+		DocumentType documentType = findNotDeletedById(id);
 
 		if (documentType.getStatus() == Status.INACTIVE) {
 			throw CustomException.badRequest("documents.errors.type-already-inactive");

@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.openhospital.smartdoc.exceptions.CustomException;
 import org.openhospital.smartdoc.modules.shared.port.IStorageService;
 import org.openhospital.smartdoc.modules.shared.port.IUploadService;
-import org.openhospital.smartdoc.modules.shared.properties.StorageProperties;
 import org.springframework.core.io.*;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -27,9 +26,7 @@ public class UploadService implements IUploadService {
 
 	// Allowed file extensions for security
 	private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList("pdf", "doc", "docx", "txt", "rtf", "odt", "jpg", "jpeg", "png", "gif", "bmp", "tiff", "mp4", "avi", "mov", "wmv", "flv", "webm");
-	// Maximum file size (200MB as configured)
 
-	private final StorageProperties properties;
 	private final IStorageService storageService;
 
 	@Override

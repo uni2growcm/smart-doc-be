@@ -1136,8 +1136,7 @@ components:
       type: object
       properties:
         version:
-          type: integer
-          description: The lock field for the object.
+          $ref: '#/components/schemas/Version'
         name:
           type: string
           description: Person's name (available when integrated with OH).
@@ -1218,8 +1217,7 @@ components:
       type: object
       properties:
         version:
-          type: integer
-          description: The lock field for the object.
+          $ref: '#/components/schemas/Version'
         code:
           type: string
           description: The unique code for the document type.
