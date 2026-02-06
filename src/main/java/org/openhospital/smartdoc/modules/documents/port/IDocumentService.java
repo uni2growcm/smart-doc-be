@@ -9,14 +9,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.service.annotation.*;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.UUID;
 
 @HttpExchange("/documents")
 public interface IDocumentService {
 
 	@GetExchange
-	Page<DocumentResponse> findDocuments(@RequestParam(required = false) UUID personId, @RequestParam(required = false) UUID type, @RequestParam(required = false) LocalDate fromDate, @RequestParam(required = false) LocalDate toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
+	Page<DocumentResponse> findDocuments(@RequestParam(required = false) UUID personId, @RequestParam(required = false) UUID type, @RequestParam(required = false) Instant fromDate, @RequestParam(required = false) Instant toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
 
 	@GetExchange("/{id}")
 	DocumentResponse findDocumentById(@PathVariable UUID id);

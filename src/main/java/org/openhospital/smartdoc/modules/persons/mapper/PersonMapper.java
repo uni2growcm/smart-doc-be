@@ -24,7 +24,9 @@ public class PersonMapper {
 			.setEmail(req.getEmail())
 			.setPhoneNumber(req.getPhoneNumber())
 			.setGender(req.getGender());
-		entity.setVersion(req.getVersion());
+		if (req.getVersion() != null) {
+			entity.setVersion(req.getVersion());
+		}
 	}
 
 	public void patchModel(PatchPersonRequest req, Person entity) {

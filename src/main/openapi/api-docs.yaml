@@ -800,7 +800,7 @@ components:
       required: false
       schema:
         type: string
-        format: date
+        format: date-time
       description: Filter documents starting from this clinical date (YYYY-MM-DD), parsed from the filename.
     FilterToDate:
       name: toDate
@@ -808,7 +808,7 @@ components:
       required: false
       schema:
         type: string
-        format: date
+        format: date-time
       description: Filter documents up to this clinical date (YYYY-MM-DD), parsed from the filename.
     Page:
       name: page

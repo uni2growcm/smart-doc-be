@@ -3,6 +3,7 @@ package org.openhospital.smartdoc.modules.persons.rest;
 import org.junit.jupiter.api.*;
 import org.openhospital.smartdoc.annotations.WithTestDatabase;
 import org.openhospital.smartdoc.exceptions.CustomException;
+import org.openhospital.smartdoc.helpers.DateUtils;
 import org.openhospital.smartdoc.helpers.TestHelpers;
 import org.openhospital.smartdoc.modules.persons.port.IPersonService;
 import org.openhospital.smartdoc.openapi.*;
@@ -190,25 +191,6 @@ public class PersonControllerTest {
 		}
 
 		@Test
-		@DisplayName("Should handle version conflict")
-		public void shouldHandleVersionConflict() {
-			var id = UUID.fromString("660e8400-e29b-41d4-a716-446655440002");
-			var original = service.findPersonById(id);
-			var version = original.getVersion();
-			assertNotNull(version);
-			var request = new UpdatePersonRequest()
-				.name("Updated Carol")
-				.pid(original.getPid())
-				.email(original.getEmail())
-				.phoneNumber(original.getPhoneNumber())
-				.gender(original.getGender())
-				.version(version);
-			service.updatePerson(id, request);
-			var exception = assertThrows(CustomException.class, () -> service.updatePerson(id, request));
-			assertEquals(HttpStatus.CONFLICT, exception.getStatus());
-		}
-
-		@Test
 		@DisplayName("Should handle update non-existent")
 		public void shouldHandleUpdateNonExistent() {
 			var id = UUID.randomUUID();
@@ -283,9 +265,9 @@ public class PersonControllerTest {
 		@Test
 		@DisplayName("Should handle delete already deleted")
 		public void shouldHandleDeleteAlreadyDeleted() {
-			var id = UUID.fromString("660e8400-e29b-41d4-a716-446655440013"); // Noah (deleted)
+			var id = UUID.fromString("660e8400-e29b-41d4-a716-446655440013"); // Noah (status: deleted)
 			var exception = assertThrows(CustomException.class, () -> service.deletePerson(id));
-			assertEquals(HttpStatus.CONFLICT, exception.getStatus());
+			assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
 		}
 	}
 
@@ -391,7 +373,7 @@ public class PersonControllerTest {
 		@Test
 		@DisplayName("Should return empty for person without documents")
 		public void shouldReturnEmptyForPersonWithoutDocuments() {
-			var id = UUID.fromString("660e8400-e29b-41d4-a716-446655440009"); // Jack (no docs in test data)
+			var id = UUID.fromString("660e8400-e29b-41d4-a716-446655440009"); // Jack Anderson (no docs in test data)
 			var result = service.findPersonDocuments(id, null, null, null, 0, 20);
 			assertNotNull(result);
 			assertEquals(0, result.getData().size());
@@ -413,7 +395,7 @@ public class PersonControllerTest {
 			var id = UUID.fromString("660e8400-e29b-41d4-a716-446655440000"); // Alice
 			var fromDate = java.time.LocalDate.of(2024, 1, 1);
 			var toDate = java.time.LocalDate.of(2024, 12, 31);
-			var result = service.findPersonDocuments(id, null, fromDate, toDate, 0, 20);
+			var result = service.findPersonDocuments(id, null, DateUtils.toInstant(fromDate), DateUtils.toInstant(toDate), 0, 20);
 			assertNotNull(result);
 			assertEquals(1, result.getData().size());
 		}

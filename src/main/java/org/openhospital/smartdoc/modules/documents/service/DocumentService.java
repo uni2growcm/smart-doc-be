@@ -3,7 +3,6 @@ package org.openhospital.smartdoc.modules.documents.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openhospital.smartdoc.exceptions.CustomException;
-import org.openhospital.smartdoc.helpers.DateUtils;
 import org.openhospital.smartdoc.modules.documents.mapper.DocumentMapper;
 import org.openhospital.smartdoc.modules.documents.model.Document;
 import org.openhospital.smartdoc.modules.documents.model.DocumentType;
@@ -23,7 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -54,16 +53,13 @@ public class DocumentService implements IDocumentService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Page<DocumentResponse> findDocuments(UUID personId, UUID type, LocalDate fromDate, LocalDate toDate, int page, int size) {
+	public Page<DocumentResponse> findDocuments(UUID personId, UUID type, Instant fromDate, Instant toDate, int page, int size) {
 		log.debug("Finding documents with filters - personId: {}, type: {}, date range: {} to {}, page: {}, size: {}", personId, type, fromDate, toDate, page, size);
 
 		try {
 			Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
 
-			Instant fromInstant = DateUtils.toInstant(fromDate);
-			Instant toInstant = DateUtils.toInstant(toDate);
-
-			var documentPage = repository.findWithFilters(personId, type, fromInstant, toInstant, pageable);
+			var documentPage = repository.findWithFilters(personId, type, fromDate, toDate, List.of(DocumentStatus.ACTIVE), pageable);
 
 			Page<DocumentResponse> result = Page.from(documentPage, mapper::toDtos);
 

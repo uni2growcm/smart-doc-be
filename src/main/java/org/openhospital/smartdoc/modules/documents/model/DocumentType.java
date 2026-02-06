@@ -25,5 +25,6 @@ public class DocumentType extends BaseEntity {
 	private String description;
 
 	@Builder.Default
+	@Enumerated(EnumType.STRING)
 	private Status status = Status.ACTIVE;
 }

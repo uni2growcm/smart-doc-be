@@ -176,6 +176,26 @@ public class CustomException extends RuntimeException {
 	 * @param code the detail message key
 	 * @return the created {@code CustomException} with a status code of {@link HttpStatus#INTERNAL_SERVER_ERROR}
 	 */
+	public static CustomException preconditionFailed(String code) {
+		return new CustomException(HttpStatus.PRECONDITION_FAILED, code, code);
+	}
+
+	/**
+	 * Creates a new {@code CustomException} representing a conflict request with the specified message.
+	 *
+	 * @param code the detail message key
+	 * @return the created {@code CustomException} with a status code of {@link HttpStatus#CONFLICT}
+	 */
+	public static CustomException conflict(String code) {
+		return new CustomException(HttpStatus.CONFLICT, code, code);
+	}
+
+	/**
+	 * Creates a new {@code CustomException} representing an internal server error request with the specified message.
+	 *
+	 * @param code the detail message key
+	 * @return the created {@code CustomException} with a status code of {@link HttpStatus#INTERNAL_SERVER_ERROR}
+	 */
 	public static CustomException internal(String code) {
 		return new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, code, code);
 	}
@@ -222,6 +242,28 @@ public class CustomException extends RuntimeException {
 	 */
 	public static CustomException forbidden(String code, Object[] args) {
 		return new CustomException(HttpStatus.FORBIDDEN, code, args);
+	}
+
+	/**
+	 * Creates a new {@code CustomException} representing an internal server error request with the specified message.
+	 *
+	 * @param code the detail message key
+	 * @param args translation params
+	 * @return the created {@code CustomException} with a status code of {@link HttpStatus#INTERNAL_SERVER_ERROR}
+	 */
+	public static CustomException preconditionFailed(String code, Object[] args) {
+		return new CustomException(HttpStatus.PRECONDITION_FAILED, code, args);
+	}
+
+	/**
+	 * Creates a new {@code CustomException} representing a conflict request with the specified message.
+	 *
+	 * @param code the detail message key
+	 * @param args translation params
+	 * @return the created {@code CustomException} with a status code of {@link HttpStatus#CONFLICT}
+	 */
+	public static CustomException conflict(String code, Object[] args) {
+		return new CustomException(HttpStatus.CONFLICT, code, args);
 	}
 
 	/**

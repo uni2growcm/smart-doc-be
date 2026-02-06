@@ -24,9 +24,10 @@ public interface DocumentRepository extends JpaRepository<Document, UUID> {
 		AND (?2 IS NULL OR d.type.id = ?2)
 		AND (?3 IS NULL OR d.date >= ?3)
 		AND (?4 IS NULL OR d.date <= ?4)
+		AND (?5 IS NULL OR d.status IN ?5)
 		ORDER BY d.date DESC
 		""")
-	Page<Document> findWithFilters(UUID personId, UUID typeId, Instant fromDate, Instant toDate, Pageable pageable);
+	Page<Document> findWithFilters(UUID personId, UUID typeId, Instant fromDate, Instant toDate, List<DocumentStatus> statuses, Pageable pageable);
 
 	Optional<Document> findByIdAndStatusNot(UUID id, DocumentStatus status);
 }

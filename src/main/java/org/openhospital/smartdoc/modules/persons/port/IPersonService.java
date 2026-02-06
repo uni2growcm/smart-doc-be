@@ -5,7 +5,7 @@ import org.openhospital.smartdoc.types.Page;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.service.annotation.*;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.UUID;
 
 @HttpExchange("/persons")
@@ -39,5 +39,5 @@ public interface IPersonService {
 	PersonResponse restorePerson(@PathVariable UUID id);
 
 	@GetExchange("/{id}/documents")
-	Page<DocumentResponse> findPersonDocuments(@PathVariable UUID id, @RequestParam(required = false) UUID type, @RequestParam(required = false) LocalDate fromDate, @RequestParam(required = false) LocalDate toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
+	Page<DocumentResponse> findPersonDocuments(@PathVariable UUID id, @RequestParam(required = false) UUID type, @RequestParam(required = false) Instant fromDate, @RequestParam(required = false) Instant toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
 }

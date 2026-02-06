@@ -8,7 +8,8 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.*;
-import org.springframework.http.*;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -54,6 +55,7 @@ public class GlobalExceptionHandler {
 	}
 
 	private ResponseEntity<Problem> buildResponse(CustomException exception) {
+		exception.printStackTrace();
 		Problem problem = new Problem().type(URI.create(getTypeUri(exception.getStatus().value()))).title(messageSource.getMessage(exception.getCode(), exception.getArgs(), LocaleContextHolder.getLocale())).detail(exception.getDebugMessage()).status(exception.getStatus().value()).instance(URI.create(org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString())).traceId(UUID.randomUUID());
 
 		return ResponseEntity.status(exception.getStatus().value()).contentType(MediaType.APPLICATION_JSON).body(problem);
@@ -69,6 +71,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler({CustomException.class})
 	ResponseEntity<Problem> handle(CustomException exception) {
 		String messageKey = exception.getCode() != null ? exception.getCode() : "errors.common.internal";
+		exception.setCode(messageKey);
 		exception.setDebugMessage(messageSource.getMessage(messageKey, exception.getArgs(), LocaleContextHolder.getLocale()));
 		return buildResponse(exception);
 	}
@@ -81,7 +84,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler({PermissionDeniedDataAccessException.class})
 	ResponseEntity<Problem> handle(PermissionDeniedDataAccessException exception) {
-		CustomException customEx = new CustomException(HttpStatus.FORBIDDEN, "auth.errors.permission-denied");
+		CustomException customEx = CustomException.forbidden("auth.errors.permission-denied");
 		customEx.setDebugMessage(exception.getLocalizedMessage());
 		return buildResponse(customEx);
 	}
@@ -98,7 +101,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler({AccessDeniedException.class})
 	ResponseEntity<Problem> handle(AccessDeniedException exception) {
-		CustomException customEx = new CustomException(HttpStatus.FORBIDDEN, "auth.errors.access-denied");
+		CustomException customEx = CustomException.forbidden("auth.errors.access-denied");
 		customEx.setDebugMessage(exception.getLocalizedMessage());
 		return buildResponse(customEx);
 	}
@@ -111,7 +114,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler({OptimisticLockingFailureException.class})
 	ResponseEntity<Problem> handle(OptimisticLockingFailureException exception) {
-		CustomException customEx = new CustomException(HttpStatus.PRECONDITION_FAILED, "errors.dao.locking-failed");
+		CustomException customEx = CustomException.preconditionFailed("errors.dao.locking-failed");
 		customEx.setDebugMessage(exception.getLocalizedMessage());
 		return buildResponse(customEx);
 	}
@@ -137,7 +140,7 @@ public class GlobalExceptionHandler {
 			code = exception instanceof DuplicateKeyException ? "errors.dao.duplicate-key" : "errors.dao.data-integrity-violation";
 		}
 
-		CustomException customEx = new CustomException(HttpStatus.BAD_REQUEST, code);
+		CustomException customEx = CustomException.badRequest(code);
 		customEx.setDebugMessage(exception.getLocalizedMessage());
 		return buildResponse(customEx);
 	}
@@ -146,14 +149,14 @@ public class GlobalExceptionHandler {
 	ResponseEntity<Problem> handle(ConstraintViolationException exception) {
 		log.debug("Exception {} occurred", exception.getClass(), exception);
 
-		CustomException customEx = new CustomException(HttpStatus.BAD_REQUEST, "errors.validation.constraint-violation");
+		CustomException customEx = CustomException.badRequest("errors.validation.constraint-violation");
 		customEx.setDebugMessage(exception.getLocalizedMessage());
 		return buildResponse(customEx);
 	}
 
 	@ExceptionHandler({MethodArgumentNotValidException.class})
 	ResponseEntity<Problem> handle(MethodArgumentNotValidException exception) {
-		CustomException customEx = new CustomException(HttpStatus.BAD_REQUEST, "errors.validation.constraint-violation");
+		CustomException customEx = CustomException.badRequest("errors.validation.constraint-violation");
 		customEx.setDebugMessage(exception.getLocalizedMessage());
 		return buildResponse(customEx);
 	}
@@ -168,7 +171,7 @@ public class GlobalExceptionHandler {
 	ResponseEntity<Problem> handleException(Exception exception) {
 		log.debug("Exception {} occurred", exception.getClass(), exception);
 
-		CustomException customEx = new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "errors.common.internal");
+		CustomException customEx = CustomException.internal("errors.common.internal");
 		customEx.setDebugMessage(exception.getLocalizedMessage());
 		return buildResponse(customEx);
 	}

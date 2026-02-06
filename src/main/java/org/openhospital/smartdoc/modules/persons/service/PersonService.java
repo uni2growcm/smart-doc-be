@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -106,8 +105,7 @@ public class PersonService implements IPersonService {
 		Person existing = findNotDeletedById(id);
 
 		mapper.updateModel(payload, existing);
-		log.info("Versions : new{} old({})", payload.getVersion(), existing.getVersion());
-		Person saved = repository.saveAndFlush(existing);
+		Person saved = repository.save(existing);
 		PersonResponse result = mapper.toDto(saved);
 
 		log.info("Person updated successfully: {} ({})", saved.getName(), saved.getPid());
@@ -155,7 +153,7 @@ public class PersonService implements IPersonService {
 		Person person = findNotDeletedById(id);
 
 		if (person.getStatus() == Status.ACTIVE) {
-			throw CustomException.badRequest("persons.errors.already-active");
+			throw CustomException.conflict("persons.errors.already-active");
 		}
 
 		person.setStatus(Status.ACTIVE);
@@ -172,7 +170,7 @@ public class PersonService implements IPersonService {
 		Person person = findNotDeletedById(id);
 
 		if (person.getStatus() == Status.INACTIVE) {
-			throw CustomException.badRequest("persons.errors.already-inactive");
+			throw CustomException.conflict("persons.errors.already-inactive");
 		}
 
 		person.setStatus(Status.INACTIVE);
@@ -189,7 +187,7 @@ public class PersonService implements IPersonService {
 		Person person = findById(id);
 
 		if (person.getStatus() != Status.DELETED) {
-			throw CustomException.badRequest("persons.errors.not-DELETED");
+			throw CustomException.conflict("persons.errors.not-deleted");
 		}
 
 		person.setStatus(Status.ACTIVE);
@@ -200,7 +198,7 @@ public class PersonService implements IPersonService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Page<DocumentResponse> findPersonDocuments(UUID id, UUID type, LocalDate fromDate, LocalDate toDate, int page, int size) {
+	public Page<DocumentResponse> findPersonDocuments(UUID id, UUID type, Instant fromDate, Instant toDate, int page, int size) {
 		log.debug("Finding documents for person ID: {}, type: {}, date range: {} to {}, page: {}, size: {}", id, type, fromDate, toDate, page, size);
 
 		// Verify person exists and is active
@@ -208,11 +206,7 @@ public class PersonService implements IPersonService {
 
 		Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
 
-		// Convert LocalDate to Instant for database query
-		Instant fromInstant = fromDate != null ? fromDate.atStartOfDay().toInstant(java.time.ZoneOffset.UTC) : null;
-		Instant toInstant = toDate != null ? toDate.atTime(23, 59, 59).toInstant(java.time.ZoneOffset.UTC) : null;
-
-		org.springframework.data.domain.Page<Document> documentPage = documentRepository.findWithFilters(id, type, fromInstant, toInstant, pageable);
+		org.springframework.data.domain.Page<Document> documentPage = documentRepository.findWithFilters(id, type, fromDate, toDate, List.of(DocumentStatus.ACTIVE), pageable);
 
 		Page<DocumentResponse> result = Page.from(documentPage, documentMapper::toDtos);
 
@@ -228,7 +222,7 @@ public class PersonService implements IPersonService {
 		// PID uniqueness check (excluding DELETED)
 		if (person.getId() == null && person.getPid() != null) {
 			if (repository.existsByPidAndStatusNot(person.getPid(), Status.DELETED)) {
-				throw CustomException.badRequest("persons.errors.pid-already-exists");
+				throw CustomException.conflict("persons.errors.pid-already-exists");
 			}
 		}
 

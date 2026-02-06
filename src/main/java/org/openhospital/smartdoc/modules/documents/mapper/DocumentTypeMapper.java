@@ -34,7 +34,9 @@ public class DocumentTypeMapper {
 			.setCode(req.getCode())
 			.setName(req.getName())
 			.setDescription(req.getDescription());
-		entity.setVersion(req.getVersion());
+		if (req.getVersion() != null) {
+			entity.setVersion(req.getVersion());
+		}
 	}
 
 	public void patchModel(PatchDocumentTypeRequest req, DocumentType entity) {
