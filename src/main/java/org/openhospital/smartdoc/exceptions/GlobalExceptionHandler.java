@@ -14,6 +14,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.net.URI;
 import java.util.UUID;
@@ -55,8 +56,15 @@ public class GlobalExceptionHandler {
 	}
 
 	private ResponseEntity<Problem> buildResponse(CustomException exception) {
-		exception.printStackTrace();
-		Problem problem = new Problem().type(URI.create(getTypeUri(exception.getStatus().value()))).title(messageSource.getMessage(exception.getCode(), exception.getArgs(), LocaleContextHolder.getLocale())).detail(exception.getDebugMessage()).status(exception.getStatus().value()).instance(URI.create(org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString())).traceId(UUID.randomUUID());
+		var title = messageSource.getMessage(exception.getCode(), exception.getArgs(), LocaleContextHolder.getLocale());
+		var instance = URI.create(org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString());
+		Problem problem = new Problem()
+			.type(URI.create(getTypeUri(exception.getStatus().value())))
+			.title(title)
+			.detail(exception.getDebugMessage())
+			.status(exception.getStatus().value())
+			.instance(instance)
+			.traceId(UUID.randomUUID());
 
 		return ResponseEntity.status(exception.getStatus().value()).contentType(MediaType.APPLICATION_JSON).body(problem);
 	}
@@ -127,7 +135,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler({DataIntegrityViolationException.class})
 	ResponseEntity<Problem> handle(DataIntegrityViolationException exception) {
-		log.debug("Exception {} occurred", exception.getClass(), exception);
+		log.error("Exception {} occurred", exception.getClass(), exception);
 
 		String message = exception.getLocalizedMessage().toLowerCase();
 		String code;
@@ -147,15 +155,25 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler({ConstraintViolationException.class})
 	ResponseEntity<Problem> handle(ConstraintViolationException exception) {
-		log.debug("Exception {} occurred", exception.getClass(), exception);
+		log.error("Exception {} occurred", exception.getClass(), exception);
 
 		CustomException customEx = CustomException.badRequest("errors.validation.constraint-violation");
 		customEx.setDebugMessage(exception.getLocalizedMessage());
 		return buildResponse(customEx);
 	}
 
+	@ExceptionHandler({MissingServletRequestPartException.class})
+	ResponseEntity<Problem> handle(MissingServletRequestPartException exception) {
+		log.error("Exception {} occurred", exception.getClass(), exception);
+
+		CustomException customEx = CustomException.badRequest("errors.validation.missing-request-part");
+		customEx.setDebugMessage(exception.getLocalizedMessage());
+		return buildResponse(customEx);
+	}
+
 	@ExceptionHandler({MethodArgumentNotValidException.class})
 	ResponseEntity<Problem> handle(MethodArgumentNotValidException exception) {
+		log.error("Exception {} occurred", exception.getClass(), exception);
 		CustomException customEx = CustomException.badRequest("errors.validation.constraint-violation");
 		customEx.setDebugMessage(exception.getLocalizedMessage());
 		return buildResponse(customEx);
@@ -169,9 +187,9 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler({Exception.class})
 	ResponseEntity<Problem> handleException(Exception exception) {
-		log.debug("Exception {} occurred", exception.getClass(), exception);
-
+		log.error("Exception {} occurred", exception.getClass(), exception);
 		CustomException customEx = CustomException.internal("errors.common.internal");
+		customEx.setStackTrace(exception.getStackTrace());
 		customEx.setDebugMessage(exception.getLocalizedMessage());
 		return buildResponse(customEx);
 	}

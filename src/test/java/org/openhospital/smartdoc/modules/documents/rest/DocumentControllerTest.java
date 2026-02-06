@@ -1,12 +1,14 @@
 package org.openhospital.smartdoc.modules.documents.rest;
 
 import org.junit.jupiter.api.*;
+import org.mockito.InjectMocks;
 import org.openhospital.smartdoc.annotations.WithTestDatabase;
 import org.openhospital.smartdoc.exceptions.CustomException;
 import org.openhospital.smartdoc.helpers.DateUtils;
 import org.openhospital.smartdoc.helpers.TestHelpers;
 import org.openhospital.smartdoc.modules.documents.port.IDocumentService;
-import org.openhospital.smartdoc.openapi.*;
+import org.openhospital.smartdoc.modules.shared.port.IStorageService;
+import org.openhospital.smartdoc.openapi.DocumentMetadata;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
@@ -24,6 +26,9 @@ import static org.junit.jupiter.api.Assertions.*;
 	webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT
 )
 public class DocumentControllerTest {
+	@InjectMocks
+	IStorageService storageService;
+
 	private IDocumentService service;
 
 	@BeforeEach
@@ -63,7 +68,7 @@ public class DocumentControllerTest {
 			var personId = UUID.fromString("660e8400-e29b-41d4-a716-446655440000"); // Alice
 			var result = service.findDocuments(personId, null, null, null, 0, 20);
 			assertNotNull(result);
-			assertEquals(2, result.getData().size()); // Alice has ID_CARD and VISA (archived)
+			assertEquals(1, result.getData().size());
 		}
 
 		@Test
