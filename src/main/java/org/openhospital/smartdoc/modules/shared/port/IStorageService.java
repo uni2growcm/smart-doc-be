@@ -4,6 +4,7 @@ import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.LocalDate;
 
 /**
  * Port interface for core file storage operations.
@@ -17,10 +18,11 @@ public interface IStorageService {
 	 * @param content  the file content as byte array
 	 * @param filename the original filename
 	 * @param subDir   the subdirectory within the person folder (e.g., "documents", "images")
+	 * @param date     the date to use for filename prefix
 	 * @return the stored file path relative to the base directory
 	 * @throws IOException if file storage fails
 	 */
-	String storeFile(byte[] content, String filename, String subDir) throws IOException;
+	String storeFile(byte[] content, String filename, String subDir, LocalDate date) throws IOException;
 
 	/**
 	 * Retrieves a file from the file system.

@@ -28,11 +28,11 @@ public class StorageService implements IStorageService {
 	private final StorageProperties properties;
 
 	@Override
-	public String storeFile(byte[] content, String filename, String subDir) throws IOException {
+	public String storeFile(byte[] content, String filename, String subDir, LocalDate date) throws IOException {
 		validateFile(content, filename);
 
 		// Generate unique filename to prevent conflicts
-		String datePrefix = DateUtils.format(LocalDate.now(), DateTimeFormatter.BASIC_ISO_DATE);
+		String datePrefix = DateUtils.format(date == null ? LocalDate.now() : date, DateTimeFormatter.BASIC_ISO_DATE);
 
 		String cleanFilename = org.springframework.util.StringUtils.cleanPath(filename);
 		String uniqueFilename = "%s_%s"

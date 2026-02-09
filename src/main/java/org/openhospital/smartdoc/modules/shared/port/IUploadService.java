@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.LocalDate;
 
 /**
  * Port interface for file upload and storage operations.
@@ -18,10 +19,11 @@ public interface IUploadService {
 	 *
 	 * @param file   the multipart file to store
 	 * @param subDir the subdirectory within the person folder (e.g., "documents", "images")
+	 * @param date   the date to use for filename prefix
 	 * @return the stored file path relative to the base directory
 	 * @throws IOException if file storage fails
 	 */
-	String uploadFile(MultipartFile file, String subDir) throws IOException;
+	String uploadFile(MultipartFile file, String subDir, LocalDate date) throws IOException;
 
 	/**
 	 * Retrieves a file from the file system.

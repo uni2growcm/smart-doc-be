@@ -6,7 +6,6 @@ import org.openhospital.smartdoc.exceptions.CustomException;
 import org.openhospital.smartdoc.helpers.DateUtils;
 import org.openhospital.smartdoc.helpers.TestHelpers;
 import org.openhospital.smartdoc.modules.documents.port.IDocumentService;
-import org.openhospital.smartdoc.openapi.DocumentMetadata;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
@@ -45,7 +44,7 @@ public class DocumentControllerTest {
 			assertNotNull(result);
 			assertEquals(1, result.getData().size());
 			assertEquals("00/00/01/ID_CARD/20260208_my-id-card.avif", result.getData().get(0).getId());
-			assertEquals(1, result.getData().get(0).getPersonId());
+			assertEquals(1, result.getData().get(0).getClientId());
 			assertEquals("ID_CARD", result.getData().get(0).getType());
 		}
 
@@ -64,7 +63,7 @@ public class DocumentControllerTest {
 			var result = service.findDocuments(personId, null, null, null, 0, 20);
 			assertNotNull(result);
 			assertEquals(1, result.getData().size());
-			assertEquals(1, result.getData().get(0).getPersonId());
+			assertEquals(1, result.getData().get(0).getClientId());
 		}
 
 		@Test
@@ -101,10 +100,7 @@ public class DocumentControllerTest {
 			try (InputStream is = resource.getInputStream()) {
 				byte[] fileContent = is.readAllBytes();
 				MultipartFile file = new MockMultipartFile("document", "my-id-card.avif", "image/avif", fileContent);
-				var metadata = new DocumentMetadata()
-					.personId(2)
-					.type("ID_CARD");
-				var result = service.uploadDocument(file, metadata);
+				var result = service.uploadDocument(file, 2, "ID_CARD", LocalDate.now());
 				assertNotNull(result);
 				assert result.getId() != null;
 				assertTrue(result.getId().startsWith("00/00/02/ID_CARD/"));
@@ -115,40 +111,48 @@ public class DocumentControllerTest {
 		}
 
 		@Test
-		@DisplayName("Should throw exception for invalid upload")
-		public void shouldThrowExceptionForInvalidUpload() {
-			MultipartFile file = new MockMultipartFile("document", "", "application/pdf", new byte[0]);
-			var metadata = new DocumentMetadata();
-			var exception = assertThrows(CustomException.class, () -> service.uploadDocument(file, metadata));
-			assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
-		}
-	}
+		@DisplayName("Should throw exception when invalid client ID")
+		public void shouldThrowExceptionWhenInvalidClientId() {
+			ClassPathResource resource = new ClassPathResource(
+				"static/00/00/01/ID_CARD/20260208_my-id-card.avif"
+			);
 
-	@Nested
-	@DisplayName("GET /documents/{id}")
-	class DownloadDocument {
-		@Test
-		@DisplayName("Should download document successfully")
-		public void shouldDownloadDocumentSuccessfully() {
-			var id = "00/00/01/ID_CARD/20260208_my-id-card.avif";
-			var client = TestHelpers.buildRestClient();
-			var result = client
-				.get()
-				.uri("/documents/%s".formatted(id))
-				.accept(MediaType.ALL)
-				.retrieve()
-				.toBodilessEntity();
-			assertNotNull(result);
-			assertEquals(HttpStatus.OK, result.getStatusCode());
-			assertEquals("image/avif", Objects.requireNonNull(result.getHeaders().getContentType()).toString());
+			try (InputStream is = resource.getInputStream()) {
+				byte[] fileContent = is.readAllBytes();
+				MultipartFile file = new MockMultipartFile("document", "my-id-card.avif", "image/avif", fileContent);
+				var exception = assertThrows(CustomException.class, () -> service.uploadDocument(file, 14, "ID_CARD", null));
+				assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+			} catch (Exception e) {
+				fail();
+			}
 		}
 
-		@Test
-		@DisplayName("Should throw exception for download non-existent")
-		public void shouldThrowExceptionForDownloadNonExistent() {
-			var id = "nonexistent";
-			var exception = assertThrows(CustomException.class, () -> service.downloadDocument(id, false));
-			assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+		@Nested
+		@DisplayName("GET /documents/{id}")
+		class DownloadDocument {
+			@Test
+			@DisplayName("Should download document successfully")
+			public void shouldDownloadDocumentSuccessfully() {
+				var id = "00/00/01/ID_CARD/20260208_my-id-card.avif";
+				var client = TestHelpers.buildRestClient();
+				var result = client
+					.get()
+					.uri("/documents/%s".formatted(id))
+					.accept(MediaType.ALL)
+					.retrieve()
+					.toBodilessEntity();
+				assertNotNull(result);
+				assertEquals(HttpStatus.OK, result.getStatusCode());
+				assertEquals("image/avif", Objects.requireNonNull(result.getHeaders().getContentType()).toString());
+			}
+
+			@Test
+			@DisplayName("Should throw exception for download non-existent")
+			public void shouldThrowExceptionForDownloadNonExistent() {
+				var id = "nonexistent";
+				var exception = assertThrows(CustomException.class, () -> service.downloadDocument(id, false));
+				assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+			}
 		}
 	}
 }

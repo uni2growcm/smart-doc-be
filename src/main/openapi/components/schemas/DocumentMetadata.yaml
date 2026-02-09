@@ -1,9 +1,0 @@
-type: object
-required: [ personId, type ]
-properties:
-  personId:
-    $ref: ./PersonId.yaml
-  type:
-    type: string
-    description: Document category type id.
-description: Document metadata associated with an uploaded file.

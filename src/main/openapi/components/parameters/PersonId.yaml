@@ -1,5 +1,6 @@
 name: personId
 in: query
+required: true
 schema:
   type: integer
   minimum: 1

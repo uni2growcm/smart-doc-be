@@ -55,6 +55,15 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/UploadDocumentRequest'
+      parameters:
+        - $ref: '#/components/parameters/PersonId'
+        - $ref: '#/components/parameters/DocumentType'
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: The document date (YYYY-MM-DD)
       responses:
         '201':
           description: Document successfully uploaded and stored.
@@ -704,6 +713,7 @@ components:
     PersonId:
       name: personId
       in: query
+      required: true
       schema:
         type: integer
         minimum: 1
@@ -712,7 +722,6 @@ components:
     DocumentType:
       name: type
       in: query
-      required: true
       schema:
         type: string
       description: Document category code. Used to target a specific subfolder.
@@ -799,11 +808,15 @@ components:
         id:
           type: string
           description: The document id.
-        personId:
+        clientId:
           $ref: '#/components/schemas/PersonId'
         type:
           type: string
           description: The document type code.
+        date:
+          type: string
+          format: date
+          description: The document date (YYYY-MM-DD).
     PageInfo:
       type: object
       description: Pagination information.
@@ -874,30 +887,15 @@ components:
       type: string
       format: binary
       description: Represents raw binary file content (JPEG, JavaScript bundle).
-    DocumentMetadata:
-      type: object
-      required:
-        - personId
-        - type
-      properties:
-        personId:
-          $ref: '#/components/schemas/PersonId'
-        type:
-          type: string
-          description: Document category type id.
-      description: Document metadata associated with an uploaded file.
     UploadDocumentRequest:
       type: object
       required:
         - document
-        - metadata
       properties:
         document:
           allOf:
             - $ref: '#/components/schemas/BinaryFile'
           description: The file to upload (JPG).
-        metadata:
-          $ref: '#/components/schemas/DocumentMetadata'
       description: Fields required for document upload via multipart/form-data.
     Version:
       type: integer

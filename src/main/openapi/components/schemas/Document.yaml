@@ -4,8 +4,12 @@ properties:
   id:
     type: string
     description: The document id.
-  personId:
+  clientId:
     $ref: ./PersonId.yaml
   type:
     type: string
     description: The document type code.
+  date:
+    type: string
+    format: date
+    description: The document date (YYYY-MM-DD).

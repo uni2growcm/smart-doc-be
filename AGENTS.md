@@ -228,31 +228,6 @@ smart-doc-api/
 └── gradle/libs.versions.toml            # Dependency versions
 ```
 
-## Architecture Notes
-
-- **Not directly exposed:** All requests proxied through OH-API/BE
-- **Stateless:** No session management (JWT expected from proxy)
-- **Security:** OH-API/BE handles authentication; SD-BE validates tokens
-- **Storage:** File system-based document storage (organized by personId)
-- **Domain:** Follows Open Hospital domain models and conventions
-- **Entities:** DocumentType, Person, and Document provide full CRUD operations
-- **Database Schema:** Managed by Flyway migrations; `hibernate.ddl-auto` disabled to prevent drift
-- **Database Constraints:** Primary keys inline on id; FKs named `fk_{table}_{column}`; unique keys named `uk_{table}_{column}`; indexes named `idx_{table}_{column}`
-- **Request Schemas:** APIs use Create*Request (POST), Update*Request (PUT with version), Patch*Request (PATCH with optional fields)
-
-## Pagination Response Conventions
-
-Services use a custom `Page<T>` class for paginated responses:
-- **Location:** `org.openhospital.smartdoc.types.Page`
-- **Structure:** Contains `data` (List<T>) and `metadata` (PageInfoDTO)
-- **Usage:** `Page.from(springPage, mapper::toDtos)` for conversion from Spring Data Page
-- **Benefits:** Consistent internal pagination handling across services
-- **Note:** This differs from OpenAPI DTOs like `PaginatedDocumentDTO` which are used for external API contracts
-
-## Port Interfaces
-
-Port interfaces in `modules/*/port/` define HTTP client contracts using Spring's `@HttpExchange` annotations. These interfaces serve as type-safe contracts that are implemented by controllers, services, and tests.
-
 ## Important Reminders
 
 1. **Always run tests** after making changes: `./gradlew test`
@@ -264,11 +239,12 @@ Port interfaces in `modules/*/port/` define HTTP client contracts using Spring's
 7. **Handle errors properly** using Problem Details (RFC 7807)
 8. **Never commit** IDE-specific files (already in `.gitignore`)
 
-## Recent Additions
+## Recent Changes
 
-- Migrated mappers from MapStruct interfaces to plain `@Component` classes using builder patterns
-- Updated test naming to "Should throw exception for ..." for exception-throwing tests
-- Implemented `DocumentController` and `DocumentTypeController` in `modules/documents/rest/`, following the same pattern as `PersonController`. These controllers handle full CRUD operations for documents (including file upload/download) and document types, integrating with existing services and repositories.
+- **Document Upload API**: Now uses query parameters (`clientId`, `type`, `date`) instead of multipart metadata
+- **Document Schema**: Renamed `personId` to `clientId`, added `date` field (YYYY-MM-DD format)
+- **File Storage**: Uses provided date for filename prefix instead of `LocalDate.now()`
+- **Directory Structure**: Uses `clientId` instead of `personId` for file organization
 
 ## Quick Reference
 

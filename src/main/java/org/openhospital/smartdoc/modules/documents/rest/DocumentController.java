@@ -2,7 +2,6 @@ package org.openhospital.smartdoc.modules.documents.rest;
 
 import org.openhospital.smartdoc.modules.documents.port.IDocumentService;
 import org.openhospital.smartdoc.modules.documents.service.DocumentService;
-import org.openhospital.smartdoc.openapi.DocumentMetadata;
 import org.openhospital.smartdoc.openapi.DocumentResponse;
 import org.openhospital.smartdoc.types.Page;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -14,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.service.annotation.GetExchange;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @RestController
 public class DocumentController implements IDocumentService {
@@ -23,7 +23,7 @@ public class DocumentController implements IDocumentService {
 		this.service = service;
 	}
 
-	public Page<DocumentResponse> findDocuments(@RequestParam(required = false) int personId, @RequestParam(required = false) String type, @RequestParam(required = false) Instant fromDate, @RequestParam(required = false) Instant toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+	public Page<DocumentResponse> findDocuments(@RequestParam int personId, @RequestParam(required = false) String type, @RequestParam(required = false) Instant fromDate, @RequestParam(required = false) Instant toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
 		return service.findDocuments(personId, type, fromDate, toDate, page, size);
 	}
 
@@ -35,7 +35,7 @@ public class DocumentController implements IDocumentService {
 
 	@Override
 	@ResponseStatus(HttpStatus.CREATED)
-	public DocumentResponse uploadDocument(@RequestPart MultipartFile document, @RequestPart DocumentMetadata metadata) {
-		return service.uploadDocument(document, metadata);
+	public DocumentResponse uploadDocument(@RequestPart MultipartFile document, @RequestParam int clientId, @RequestParam String type, @RequestParam(required = false) LocalDate date) {
+		return service.uploadDocument(document, clientId, type, date);
 	}
 }

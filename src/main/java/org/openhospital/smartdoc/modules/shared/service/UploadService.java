@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.time.LocalDate;
 import java.util.Objects;
 
 /**
@@ -27,7 +28,7 @@ public class UploadService implements IUploadService {
 	private final IStorageService storageService;
 
 	@Override
-	public String uploadFile(MultipartFile file, String subDir) throws IOException {
+	public String uploadFile(MultipartFile file, String subDir, LocalDate date) throws IOException {
 		validateFile(file);
 
 		// Extract file content as bytes
@@ -37,7 +38,7 @@ public class UploadService implements IUploadService {
 		String originalFilename = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
 
 		// Delegate to storage service for actual storage
-		return storageService.storeFile(content, originalFilename, subDir);
+		return storageService.storeFile(content, originalFilename, subDir, date);
 	}
 
 	@Override

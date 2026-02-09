@@ -11,7 +11,8 @@ import org.openhospital.smartdoc.modules.documents.repository.DocumentTypeReposi
 import org.openhospital.smartdoc.modules.persons.repository.PersonRepository;
 import org.openhospital.smartdoc.modules.shared.port.IUploadService;
 import org.openhospital.smartdoc.modules.shared.properties.StorageProperties;
-import org.openhospital.smartdoc.openapi.*;
+import org.openhospital.smartdoc.openapi.DocumentResponse;
+import org.openhospital.smartdoc.openapi.Status;
 import org.openhospital.smartdoc.types.Page;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.*;
@@ -60,7 +61,8 @@ public class DocumentService implements IDocumentService {
 			Path basePath = Paths.get(baseDir, personPath);
 			Pageable pageable = PageRequest.of(page, size);
 
-			if (!Files.exists(basePath) || !Files.exists(Paths.get(basePath.toString(), type))) {
+
+			if (!Files.exists(basePath) || !Files.exists(basePath)) {
 				return Page.from(new PageImpl<>(Collections.emptyList(), pageable, 0), Function.identity());
 			}
 
@@ -118,29 +120,27 @@ public class DocumentService implements IDocumentService {
 
 	@Override
 	@Transactional
-	public DocumentResponse uploadDocument(MultipartFile document, DocumentMetadata metadata) {
-		int personId = metadata.getPersonId();
-		String typeId = metadata.getType();
-		log.info("Uploading document for person: {}, type: {}", personId, typeId);
+	public DocumentResponse uploadDocument(MultipartFile document, int clientId, String type, LocalDate date) {
+		log.info("Uploading document for client: {}, type: {}", clientId, type);
 
 		// Validate references exist
-		validatePersonReference(personId);
-		DocumentType documentType = validateDocumentTypeReference(typeId);
+		validateClientReference(clientId);
+		DocumentType documentType = validateDocumentTypeReference(type);
 
 		try {
 			// Validate file
 			uploadService.validateFile(document);
 
-			String subDir = NumberUtils.toSixDigitPath(personId) + "/" + documentType.getCode();
-			String storedPath = uploadService.uploadFile(document, subDir);
+			String subDir = NumberUtils.toSixDigitPath(clientId) + "/" + documentType.getCode();
+			String storedPath = uploadService.uploadFile(document, subDir, date);
 
 			Path filePath = Paths.get(storageProperties.paths().baseDir(), storedPath);
 			DocumentResponse result = mapper.toDto(filePath, storageProperties.paths().baseDir());
 
-			log.info("Document uploaded successfully with ID: {} for person: {}", result.getId(), personId);
+			log.info("Document uploaded successfully with ID: {} for client: {}", result.getId(), clientId);
 			return result;
 		} catch (IOException e) {
-			log.error("File upload failed for person: {}", personId, e);
+			log.error("File upload failed for client: {}", clientId, e);
 			throw CustomException.internal("documents.errors.upload-failed");
 		} catch (Exception e) {
 			log.error("Document upload failed", e);
@@ -167,11 +167,11 @@ public class DocumentService implements IDocumentService {
 	}
 
 	/**
-	 * Validates person reference for operations.
+	 * Validates client reference for operations.
 	 */
-	private void validatePersonReference(int personId) {
-		if (!personRepository.existsByPidAndStatusNot(personId, Status.DELETED)) {
-			throw CustomException.notFound("persons.errors.not-found", new Object[]{personId});
+	private void validateClientReference(int clientId) {
+		if (!personRepository.existsByPidAndStatusNot(clientId, Status.DELETED)) {
+			throw CustomException.notFound("persons.errors.not-found", new Object[]{clientId});
 		}
 	}
 

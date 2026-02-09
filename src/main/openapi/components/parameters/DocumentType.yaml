@@ -1,6 +1,5 @@
 name: type
 in: query
-required: true
 schema:
   type: string
 description: Document category code. Used to target a specific subfolder.

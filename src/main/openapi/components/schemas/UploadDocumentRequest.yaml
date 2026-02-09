@@ -1,10 +1,8 @@
 type: object
-required: [ document, metadata ]
+required: [ document ]
 properties:
   document:
     allOf:
       - $ref: ./BinaryFile.yaml
     description: The file to upload (JPG).
-  metadata:
-    $ref: ./DocumentMetadata.yaml
 description: Fields required for document upload via multipart/form-data.
