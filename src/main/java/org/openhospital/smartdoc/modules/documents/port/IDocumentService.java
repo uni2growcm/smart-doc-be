@@ -16,20 +16,14 @@ import java.util.UUID;
 public interface IDocumentService {
 
 	@GetExchange
-	Page<DocumentResponse> findDocuments(@RequestParam(required = false) UUID personId, @RequestParam(required = false) UUID type, @RequestParam(required = false) Instant fromDate, @RequestParam(required = false) Instant toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
+	Page<DocumentResponse> findDocuments(@RequestParam(required = false) int personId, @RequestParam(required = false) String type, @RequestParam(required = false) Instant fromDate, @RequestParam(required = false) Instant toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
 
 	@GetExchange("/{id}")
-	DocumentResponse findDocumentById(@PathVariable UUID id);
+	DocumentResponse findDocumentById(@PathVariable String id);
 
-	@GetExchange("/{id}/download")
-	ResponseEntity<ByteArrayResource> downloadDocument(@PathVariable UUID id, @RequestParam(defaultValue = "false") boolean attachment);
+	ResponseEntity<ByteArrayResource> downloadDocument(@PathVariable String id, @RequestParam(defaultValue = "false") boolean attachment);
 
-	@PostExchange
 	DocumentResponse uploadDocument(@RequestPart MultipartFile document, @RequestPart DocumentMetadata metadata);
 
-	@PutExchange("/{id}")
-	DocumentResponse updateDocument(@PathVariable UUID id, @RequestPart MultipartFile document, @RequestPart DocumentMetadata metadata);
-
-	@DeleteExchange("/{id}")
-	void deleteDocument(@PathVariable UUID id);
+	void deleteDocument(@PathVariable String id);
 }

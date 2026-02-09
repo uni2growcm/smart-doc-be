@@ -5,7 +5,6 @@ import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
 import org.openhospital.smartdoc.models.BaseEntity;
-import org.openhospital.smartdoc.modules.documents.model.Document;
 import org.openhospital.smartdoc.openapi.Gender;
 import org.openhospital.smartdoc.openapi.Status;
 
@@ -24,7 +23,7 @@ public class Person extends BaseEntity {
 	private String name;
 
 	@Column(unique = true, nullable = false)
-	private String pid;
+	private int pid;
 
 	private String email;
 
@@ -37,8 +36,4 @@ public class Person extends BaseEntity {
 	@Builder.Default
 	@Enumerated(EnumType.STRING)
 	private Status status = Status.ACTIVE;
-
-	@Builder.Default
-	@OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	private List<Document> documents = new ArrayList<>();
 }

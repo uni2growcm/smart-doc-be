@@ -3,9 +3,7 @@ package org.openhospital.smartdoc.modules.persons.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openhospital.smartdoc.exceptions.CustomException;
-import org.openhospital.smartdoc.modules.documents.mapper.DocumentMapper;
-import org.openhospital.smartdoc.modules.documents.model.Document;
-import org.openhospital.smartdoc.modules.documents.repository.DocumentRepository;
+import org.openhospital.smartdoc.modules.documents.port.IDocumentService;
 import org.openhospital.smartdoc.modules.persons.mapper.PersonMapper;
 import org.openhospital.smartdoc.modules.persons.model.Person;
 import org.openhospital.smartdoc.modules.persons.port.IPersonService;
@@ -35,8 +33,7 @@ public class PersonService implements IPersonService {
 
 	private final PersonRepository repository;
 	private final PersonMapper mapper;
-	private final DocumentRepository documentRepository;
-	private final DocumentMapper documentMapper;
+	private final IDocumentService documentService;
 
 	private Person findById(UUID id) {
 		return repository.findById(id).orElseThrow(() -> CustomException.notFound("persons.errors.not-found", new Object[]{id}));
@@ -198,21 +195,13 @@ public class PersonService implements IPersonService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Page<DocumentResponse> findPersonDocuments(UUID id, UUID type, Instant fromDate, Instant toDate, int page, int size) {
+	public Page<DocumentResponse> findPersonDocuments(int id, String type, Instant fromDate, Instant toDate, int page, int size) {
 		log.debug("Finding documents for person ID: {}, type: {}, date range: {} to {}, page: {}, size: {}", id, type, fromDate, toDate, page, size);
 
 		// Verify person exists and is active
 		validatePersonReference(id);
 
-		Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
-
-		org.springframework.data.domain.Page<Document> documentPage = documentRepository.findWithFilters(id, type, fromDate, toDate, List.of(DocumentStatus.ACTIVE), pageable);
-
-		Page<DocumentResponse> result = Page.from(documentPage, documentMapper::toDtos);
-
-		log.info("Found {} documents for person {} (page {}/{}, total: {})", result.getData().size(), id, page, documentPage.getTotalPages(), documentPage.getTotalElements());
-
-		return result;
+		return documentService.findDocuments(id, type, fromDate, toDate, page, size);
 	}
 
 	/**
@@ -220,7 +209,7 @@ public class PersonService implements IPersonService {
 	 */
 	public void validatePerson(Person person) {
 		// PID uniqueness check (excluding DELETED)
-		if (person.getId() == null && person.getPid() != null) {
+		if (person.getId() == null && person.getPid() > 0) {
 			if (repository.existsByPidAndStatusNot(person.getPid(), Status.DELETED)) {
 				throw CustomException.conflict("persons.errors.pid-already-exists");
 			}
@@ -240,11 +229,9 @@ public class PersonService implements IPersonService {
 	/**
 	 * Validates person reference for operations.
 	 */
-	public void validatePersonReference(UUID personId) {
-		Person person = findNotDeletedById(personId);
-
-		if (person.getStatus() != Status.ACTIVE) {
-			throw CustomException.badRequest("persons.errors.not-active");
+	public void validatePersonReference(int personId) {
+		if (!repository.existsByPidAndStatusNot(personId, Status.DELETED)) {
+			throw CustomException.notFound("persons.errors.not-found", new Object[]{personId});
 		}
 	}
 

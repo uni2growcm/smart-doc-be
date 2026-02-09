@@ -1,35 +1,11 @@
-allOf:
-  - $ref: ./Base.yaml
-  - type: object
-    description: Detailed information about a single document.
-    properties:
-      fileName:
-        type: string
-        description: The full file name in the storage.
-      path:
-        type: string
-        description: The path of the document in the system.
-      personId:
-        type: string
-      type:
-        type: string
-        description: The document type code.
-      date:
-        type: string
-        format: date-time
-        description: The clinical date extracted from the file name.
-      description:
-        type: string
-        description: Human-readable description of the document content.
-      fileSize:
-        type: integer
-        description: File size in bytes.
-      mimeType:
-        type: string
-        description: MIME type of the file.
-      status:
-        $ref: ./DocumentStatus.yaml
-      uploadDate:
-        type: string
-        format: date-time
-        description: Timestamp of document upload.
+type: object
+description: Detailed information about a single document.
+properties:
+  id:
+    type: string
+    description: The document id.
+  personId:
+    $ref: ./PersonId.yaml
+  type:
+    type: string
+    description: The document type code.

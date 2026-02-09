@@ -10,17 +10,17 @@ import java.util.List;
 public class PersonMapper {
 
 	public PersonResponse toDto(Person person) {
-		return new PersonResponse().id(person.getId()).createdDate(person.getCreatedDate()).lastModifiedDate(person.getLastModifiedDate()).version(person.getVersion()).name(person.getName()).pid(person.getPid()).email(person.getEmail()).phoneNumber(person.getPhoneNumber()).gender(person.getGender()).status(person.getStatus());
+		return new PersonResponse().id(person.getId()).createdDate(person.getCreatedDate()).lastModifiedDate(person.getLastModifiedDate()).version(person.getVersion()).name(person.getName()).pid(String.valueOf(person.getPid())).email(person.getEmail()).phoneNumber(person.getPhoneNumber()).gender(person.getGender()).status(person.getStatus());
 	}
 
 	public Person toModel(CreatePersonRequest req) {
-		return Person.builder().name(req.getName()).pid(req.getPid()).email(req.getEmail()).phoneNumber(req.getPhoneNumber()).gender(req.getGender()).build();
+		return Person.builder().name(req.getName()).pid(Integer.parseInt(req.getPid())).email(req.getEmail()).phoneNumber(req.getPhoneNumber()).gender(req.getGender()).build();
 	}
 
 	public void updateModel(UpdatePersonRequest req, Person entity) {
 		entity
 			.setName(req.getName())
-			.setPid(req.getPid())
+			.setPid(Integer.parseInt(req.getPid()))
 			.setEmail(req.getEmail())
 			.setPhoneNumber(req.getPhoneNumber())
 			.setGender(req.getGender());
@@ -37,7 +37,7 @@ public class PersonMapper {
 			entity.setName(req.getName());
 		}
 		if (req.getPid() != null) {
-			entity.setPid(req.getPid());
+			entity.setPid(Integer.parseInt(req.getPid()));
 		}
 		if (req.getEmail() != null) {
 			entity.setEmail(req.getEmail());

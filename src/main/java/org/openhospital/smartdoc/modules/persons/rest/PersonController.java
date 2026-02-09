@@ -67,7 +67,7 @@ public class PersonController implements IPersonService {
 	}
 
 	@Override
-	public Page<DocumentResponse> findPersonDocuments(@PathVariable UUID id, @RequestParam(required = false) UUID type, @RequestParam(required = false) Instant fromDate, @RequestParam(required = false) Instant toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+	public Page<DocumentResponse> findPersonDocuments(@PathVariable int id, @RequestParam(required = false) String type, @RequestParam(required = false) Instant fromDate, @RequestParam(required = false) Instant toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
 		return service.findPersonDocuments(id, type, fromDate, toDate, page, size);
 	}
 }

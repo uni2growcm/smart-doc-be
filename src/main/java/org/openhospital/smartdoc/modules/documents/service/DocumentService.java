@@ -3,31 +3,42 @@ package org.openhospital.smartdoc.modules.documents.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openhospital.smartdoc.exceptions.CustomException;
+import org.openhospital.smartdoc.helpers.NumberUtils;
 import org.openhospital.smartdoc.modules.documents.mapper.DocumentMapper;
-import org.openhospital.smartdoc.modules.documents.model.Document;
 import org.openhospital.smartdoc.modules.documents.model.DocumentType;
 import org.openhospital.smartdoc.modules.documents.port.IDocumentService;
-import org.openhospital.smartdoc.modules.documents.repository.DocumentRepository;
 import org.openhospital.smartdoc.modules.documents.repository.DocumentTypeRepository;
 import org.openhospital.smartdoc.modules.persons.repository.PersonRepository;
 import org.openhospital.smartdoc.modules.shared.port.IUploadService;
+import org.openhospital.smartdoc.modules.shared.properties.StorageProperties;
 import org.openhospital.smartdoc.openapi.*;
 import org.openhospital.smartdoc.types.Page;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
-import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Service implementation for document operations.
- * Handles file uploads, downloads, and document management.
+ * Handles file uploads, downloads, and document management using filesystem-based metadata.
  */
 @Slf4j
 @Service(DocumentService.NAME)
@@ -36,34 +47,54 @@ public class DocumentService implements IDocumentService {
 
 	public static final String NAME = "DocumentService";
 
-	private final DocumentRepository repository;
 	private final DocumentTypeRepository documentTypeRepository;
 	private final PersonRepository personRepository;
 	private final IUploadService uploadService;
+	private final StorageProperties storageProperties;
 	private final DocumentMapper mapper;
-
-	private Document findById(UUID id) {
-		return repository.findById(id).orElseThrow(() -> CustomException.notFound("documents.errors.not-found", new Object[]{id}));
-	}
-
-
-	private Document findNotDeletedById(UUID id) {
-		return repository.findByIdAndStatusNot(id, DocumentStatus.DELETED).orElseThrow(() -> CustomException.notFound("documents.errors.not-found", new Object[]{id}));
-	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public Page<DocumentResponse> findDocuments(UUID personId, UUID type, Instant fromDate, Instant toDate, int page, int size) {
+	public Page<DocumentResponse> findDocuments(int personId, String type, Instant fromDate, Instant toDate, int page, int size) {
 		log.debug("Finding documents with filters - personId: {}, type: {}, date range: {} to {}, page: {}, size: {}", personId, type, fromDate, toDate, page, size);
 
 		try {
-			Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
+			String personPath = NumberUtils.toSixDigitPath(personId);
+			Path basePath = Paths.get(storageProperties.paths().baseDir(), personPath);
+			String baseDir = storageProperties.paths().baseDir();
 
-			var documentPage = repository.findWithFilters(personId, type, fromDate, toDate, List.of(DocumentStatus.ACTIVE), pageable);
+			List<DocumentResponse> allDocuments = Files.walk(basePath)
+					.filter(Files::isRegularFile)
+					.map(filePath -> {
+						try {
+							return mapper.toDto(filePath, baseDir);
+						} catch (Exception e) {
+							log.warn("Failed to parse document path: {}", filePath, e);
+							return null;
+						}
+					})
+					.filter(java.util.Objects::nonNull)
+					.filter(doc -> type == null || type.equals(doc.getType()))
+					.filter(doc -> {
+						if (fromDate == null && toDate == null) return true;
+						Instant docDate = parseDateFromId(doc.getId());
+						if (fromDate != null && docDate.isBefore(fromDate)) return false;
+						if (toDate != null && docDate.isAfter(toDate)) return false;
+						return true;
+					})
+					.sorted(Comparator.comparing((DocumentResponse doc) -> parseDateFromId(doc.getId())).reversed())
+					.collect(Collectors.toList());
 
-			Page<DocumentResponse> result = Page.from(documentPage, mapper::toDtos);
+			int totalElements = allDocuments.size();
+			int start = page * size;
+			int end = Math.min(start + size, totalElements);
+			List<DocumentResponse> pageData = allDocuments.subList(start, end);
 
-			log.info("Found {} documents (page {}/{}, total: {})", result.getData().size(), page, documentPage.getTotalPages(), documentPage.getTotalElements());
+			Pageable pageable = PageRequest.of(page, size);
+			org.springframework.data.domain.Page<DocumentResponse> springPage = new PageImpl<>(pageData, pageable, totalElements);
+			Page<DocumentResponse> result = Page.from(springPage, Function.identity());
+
+			log.info("Found {} documents (page {}/{}, total: {})", result.getData().size(), page, result.getMetadata().getTotalPages(), result.getMetadata().getTotalElements());
 			return result;
 		} catch (Exception e) {
 			log.error("Failed to find documents", e);
@@ -71,37 +102,34 @@ public class DocumentService implements IDocumentService {
 		}
 	}
 
-
 	@Override
 	@Transactional(readOnly = true)
-	public DocumentResponse findDocumentById(UUID id) {
+	public DocumentResponse findDocumentById(String id) {
 		log.debug("Retrieving document metadata by ID: {}", id);
 
-		Document document = findNotDeletedById(id);
+		Path filePath = Paths.get(storageProperties.paths().baseDir(), id);
+		if (!Files.exists(filePath)) {
+			throw CustomException.notFound("documents.errors.not-found", new Object[]{id});
+		}
 
-		DocumentResponse result = mapper.toDto(document);
-		log.debug("Document metadata retrieved successfully: {}", document.getFileName());
+		DocumentResponse result = mapper.toDto(filePath, storageProperties.paths().baseDir());
+		log.debug("Document metadata retrieved successfully: {}", result.getId());
 		return result;
 	}
 
-
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntity<ByteArrayResource> downloadDocument(UUID id, boolean attachment) {
+	public ResponseEntity<ByteArrayResource> downloadDocument(String id, boolean attachment) {
 		log.debug("Downloading document by ID: {}, attachment: {}", id, attachment);
 
-		Document document = findNotDeletedById(id);
-
-		return uploadService.downloadFile(document.getPath(), attachment);
+		return uploadService.downloadFile(id, attachment);
 	}
 
 	@Override
 	@Transactional
 	public DocumentResponse uploadDocument(MultipartFile document, DocumentMetadata metadata) {
-		var personId = metadata.getPersonId();
-		var typeId = metadata.getType();
-		var date = metadata.getDate();
-		var description = metadata.getDescription();
+		int personId = metadata.getPersonId();
+		String typeId = metadata.getType();
 		log.info("Uploading document for person: {}, type: {}", personId, typeId);
 
 		// Validate references exist
@@ -112,27 +140,13 @@ public class DocumentService implements IDocumentService {
 			// Validate file
 			uploadService.validateFile(document);
 
-			// Store file
-			String subDir = getSubDirForDocumentType(documentType.getCode());
-			String storedPath = uploadService.uploadFile(document, personId, subDir);
+			String subDir = NumberUtils.toSixDigitPath(personId) + "/" + documentType.getCode();
+			String storedPath = uploadService.uploadFile(document, subDir);
 
-			// Create document entity
-			Document entity = new Document();
-			entity.setFileName(document.getOriginalFilename());
-			entity.setPath(storedPath);
-			entity.setPerson(personRepository.findById(personId).orElseThrow());
-			entity.setType(documentType);
-			entity.setDate(date != null ? date.atStartOfDay().toInstant(java.time.ZoneOffset.UTC) : Instant.now());
-			entity.setDescription(description);
-			entity.setFileSize(document.getSize());
-			entity.setMimeType(document.getContentType());
-			entity.setStatus(DocumentStatus.ACTIVE);
-			entity.setUploadDate(Instant.now());
+			Path filePath = Paths.get(storageProperties.paths().baseDir(), storedPath);
+			DocumentResponse result = mapper.toDto(filePath, storageProperties.paths().baseDir());
 
-			Document saved = repository.save(entity);
-			DocumentResponse result = mapper.toDto(saved);
-
-			log.info("Document uploaded successfully with ID: {} for person: {}", saved.getId(), personId);
+			log.info("Document uploaded successfully with ID: {} for person: {}", result.getId(), personId);
 			return result;
 		} catch (IOException e) {
 			log.error("File upload failed for person: {}", personId, e);
@@ -145,93 +159,40 @@ public class DocumentService implements IDocumentService {
 
 	@Override
 	@Transactional
-	public DocumentResponse updateDocument(UUID id, MultipartFile document, DocumentMetadata metadata) {
-		var personId = metadata.getPersonId();
-		var typeId = metadata.getType();
-		var date = metadata.getDate();
-		var description = metadata.getDescription();
-
-		log.info("Updating document with ID: {}", id);
-
-		Document existing = findById(id);
-
-		try {
-			boolean fileChanged = document != null && !document.isEmpty();
-
-			if (fileChanged) {
-				// Validate new file
-				uploadService.validateFile(document);
-
-				// Delete old file
-				uploadService.deleteFile(existing.getPath());
-
-				// Store new file
-				DocumentType documentType = existing.getType();
-				if (typeId != null) {
-					documentType = validateDocumentTypeReference(typeId);
-				}
-				String subDir = getSubDirForDocumentType(documentType.getCode());
-				String newPath = uploadService.uploadFile(document, existing.getPerson().getId(), subDir);
-
-				existing.setFileName(document.getOriginalFilename());
-				existing.setPath(newPath);
-				existing.setFileSize(document.getSize());
-				existing.setMimeType(document.getContentType());
-			}
-
-			// Update metadata
-			if (personId != null) {
-				validatePersonReference(personId);
-				existing.setPerson(personRepository.findById(personId).orElseThrow());
-			}
-			if (typeId != null) {
-				existing.setType(validateDocumentTypeReference(typeId));
-			}
-			if (date != null) {
-				existing.setDate(date.atStartOfDay().toInstant(java.time.ZoneOffset.UTC));
-			}
-			if (description != null) {
-				existing.setDescription(description);
-			}
-
-			Document saved = repository.save(existing);
-			DocumentResponse result = mapper.toDto(saved);
-
-			log.info("Document updated successfully: {}", saved.getId());
-			return result;
-		} catch (IOException e) {
-			log.error("File update failed for document: {}", id, e);
-			throw CustomException.internal("documents.errors.update-failed");
-		} catch (Exception e) {
-			log.error("Failed to update document", e);
-			throw CustomException.internal("documents.errors.update-failed");
-		}
-	}
-
-	@Override
-	@Transactional
-	public void deleteDocument(UUID id) {
+	public void deleteDocument(String id) {
 		log.info("Deleting document with ID: {}", id);
 
-		Document existing = findById(id);
-
-		// Delete file from storage
-		boolean fileDeleted = uploadService.deleteFile(existing.getPath());
+		boolean fileDeleted = uploadService.deleteFile(id);
 		if (!fileDeleted) {
-			log.warn("File not found during deletion: {}", existing.getPath());
+			log.warn("File not found during deletion: {}", id);
 		}
 
-		// Delete from database
-		repository.deleteById(id);
+		log.info("Document deleted successfully: {}", id);
+	}
 
-		log.info("Document deleted successfully: {}", existing.getFileName());
+	/**
+	 * Parses the date from a document ID (relative path).
+	 */
+	private Instant parseDateFromId(String id) {
+		String[] parts = id.split("/");
+		if (parts.length != 5) {
+			throw new IllegalArgumentException("Invalid document ID: " + id);
+		}
+		String filename = parts[4];
+		int underscoreIndex = filename.indexOf('_');
+		if (underscoreIndex == -1) {
+			throw new IllegalArgumentException("Invalid filename in ID: " + filename);
+		}
+		String dateStr = filename.substring(0, underscoreIndex);
+		LocalDate date = LocalDate.parse(dateStr, DateTimeFormatter.BASIC_ISO_DATE);
+		return date.atStartOfDay().toInstant(ZoneOffset.UTC);
 	}
 
 	/**
 	 * Validates person reference for operations.
 	 */
-	private void validatePersonReference(UUID personId) {
-		if (!personRepository.existsById(personId)) {
+	private void validatePersonReference(int personId) {
+		if (!personRepository.existsByPidAndStatusNot(personId, Status.DELETED)) {
 			throw CustomException.notFound("persons.errors.not-found", new Object[]{personId});
 		}
 	}
@@ -239,20 +200,7 @@ public class DocumentService implements IDocumentService {
 	/**
 	 * Validates document type reference for operations.
 	 */
-	private DocumentType validateDocumentTypeReference(UUID typeId) {
-		return documentTypeRepository.findById(typeId).orElseThrow(() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{typeId}));
-	}
-
-	/**
-	 * Determines the subdirectory based on document type code.
-	 */
-	private String getSubDirForDocumentType(String typeCode) {
-		if (typeCode == null) return "documents";
-
-		return switch (typeCode.toLowerCase()) {
-			case "jpg", "jpeg", "png", "gif", "bmp", "tiff" -> "images";
-			case "mp4", "avi", "mov", "wmv", "flv", "webm" -> "videos";
-			default -> "documents";
-		};
+	private DocumentType validateDocumentTypeReference(String typeId) {
+		return documentTypeRepository.findByCode(typeId).orElseThrow(() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{typeId}));
 	}
 }

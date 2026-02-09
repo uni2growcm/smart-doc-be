@@ -4,7 +4,6 @@ import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.UUID;
 
 /**
  * Port interface for core file storage operations.
@@ -17,12 +16,11 @@ public interface IStorageService {
 	 *
 	 * @param content  the file content as byte array
 	 * @param filename the original filename
-	 * @param personId the person identifier for organizing files
 	 * @param subDir   the subdirectory within the person folder (e.g., "documents", "images")
 	 * @return the stored file path relative to the base directory
 	 * @throws IOException if file storage fails
 	 */
-	String storeFile(byte[] content, String filename, UUID personId, String subDir) throws IOException;
+	String storeFile(byte[] content, String filename, String subDir) throws IOException;
 
 	/**
 	 * Retrieves a file from the file system.
@@ -59,12 +57,11 @@ public interface IStorageService {
 	/**
 	 * Resolves the full file system path for a file.
 	 *
-	 * @param personId the person identifier
 	 * @param fileName the file name
 	 * @param subDir   the subdirectory
 	 * @return the resolved Path
 	 */
-	Path resolvePath(UUID personId, String fileName, String subDir);
+	Path resolvePath(String fileName, String subDir);
 
 	/**
 	 * Checks if a file exists.

@@ -30,7 +30,7 @@ public class UploadService implements IUploadService {
 	private final IStorageService storageService;
 
 	@Override
-	public String uploadFile(MultipartFile file, UUID personId, String subDir) throws IOException {
+	public String uploadFile(MultipartFile file, String subDir) throws IOException {
 		validateFile(file);
 
 		// Extract file content as bytes
@@ -40,7 +40,7 @@ public class UploadService implements IUploadService {
 		String originalFilename = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
 
 		// Delegate to storage service for actual storage
-		return storageService.storeFile(content, originalFilename, personId, subDir);
+		return storageService.storeFile(content, originalFilename, subDir);
 	}
 
 	@Override
@@ -118,8 +118,8 @@ public class UploadService implements IUploadService {
 	}
 
 	@Override
-	public Path resolvePath(UUID personId, String fileName, String subDir) {
-		return storageService.resolvePath(personId, fileName, subDir);
+	public Path resolvePath(String fileName, String subDir) {
+		return storageService.resolvePath(fileName, subDir);
 	}
 
 	@Override

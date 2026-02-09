@@ -358,7 +358,7 @@ paths:
       summary: Retrieve a paginated and filtered list of documents for a specific person.
       operationId: findPersonDocuments
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/Pid'
         - $ref: '#/components/parameters/DocumentType'
         - $ref: '#/components/parameters/FilterFromDate'
         - $ref: '#/components/parameters/FilterToDate'
@@ -780,8 +780,9 @@ components:
       name: personId
       in: query
       schema:
-        type: string
-        pattern: ^\d{1,6}$
+        type: integer
+        minimum: 1
+        maximum: 999999
       description: Numeric identifier of the person (up to 6 digits).
     DocumentType:
       name: type
@@ -789,11 +790,7 @@ components:
       required: true
       schema:
         type: string
-        enum:
-          - DOC
-          - MED
-          - REF
-      description: Document category type (DOC, MED, REF). Used to target a specific subfolder.
+      description: Document category code. Used to target a specific subfolder.
     FilterFromDate:
       name: fromDate
       in: query
@@ -855,81 +852,33 @@ components:
       schema:
         type: boolean
         default: false
+    Pid:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 999999
+      description: Numeric identifier of the person (up to 6 digits).
   schemas:
-    Version:
+    PersonId:
       type: integer
-      format: int64
-      description: The lock field for the object.
-    Base:
+      minimum: 1
+      maximum: 999999
+      description: Numeric identifier of the person (up to 6 digits).
+    Document:
       type: object
+      description: Detailed information about a single document.
       properties:
         id:
           type: string
-          format: uuid
-          description: The unique identifier of the object.
-        createdBy:
+          description: The document id.
+        personId:
+          $ref: '#/components/schemas/PersonId'
+        type:
           type: string
-          description: The user who created the object.
-        createdDate:
-          type: string
-          format: date-time
-          description: The date and time when the object was created.
-        lastModifiedBy:
-          type: string
-          description: The user who last updated the object.
-        lastModifiedDate:
-          type: string
-          format: date-time
-          description: The date and time when the object was last updated.
-        version:
-          $ref: '#/components/schemas/Version'
-      required:
-        - id
-        - createdDate
-        - lastModifiedDate
-    DocumentStatus:
-      type: string
-      enum:
-        - active
-        - archived
-        - deleted
-      description: Document lifecycle status values.
-    Document:
-      allOf:
-        - $ref: '#/components/schemas/Base'
-        - type: object
-          description: Detailed information about a single document.
-          properties:
-            fileName:
-              type: string
-              description: The full file name in the storage.
-            path:
-              type: string
-              description: The path of the document in the system.
-            personId:
-              type: string
-            type:
-              type: string
-              description: The document type code.
-            date:
-              type: string
-              format: date-time
-              description: The clinical date extracted from the file name.
-            description:
-              type: string
-              description: Human-readable description of the document content.
-            fileSize:
-              type: integer
-              description: File size in bytes.
-            mimeType:
-              type: string
-              description: MIME type of the file.
-            status:
-              $ref: '#/components/schemas/DocumentStatus'
-            uploadDate:
-              type: string
-              format: date-time
-              description: Timestamp of document upload.
+          description: The document type code.
     PageInfo:
       type: object
       description: Pagination information.
@@ -1007,20 +956,10 @@ components:
         - type
       properties:
         personId:
-          type: string
-          format: uuid
-          description: Numeric identifier of the person.
+          $ref: '#/components/schemas/PersonId'
         type:
           type: string
-          format: uuid
           description: Document category type id.
-        date:
-          type: string
-          format: date
-          description: The clinical date associated with the document (YYYY-MM-DD). Used for the file naming timestamp.
-        description:
-          type: string
-          description: Optional description to be included in the filename.
       description: Document metadata associated with an uploaded file.
     UploadDocumentRequest:
       type: object
@@ -1035,6 +974,37 @@ components:
         metadata:
           $ref: '#/components/schemas/DocumentMetadata'
       description: Fields required for document upload via multipart/form-data.
+    Version:
+      type: integer
+      format: int64
+      description: The lock field for the object.
+    Base:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The unique identifier of the object.
+        createdBy:
+          type: string
+          description: The user who created the object.
+        createdDate:
+          type: string
+          format: date-time
+          description: The date and time when the object was created.
+        lastModifiedBy:
+          type: string
+          description: The user who last updated the object.
+        lastModifiedDate:
+          type: string
+          format: date-time
+          description: The date and time when the object was last updated.
+        version:
+          $ref: '#/components/schemas/Version'
+      required:
+        - id
+        - createdDate
+        - lastModifiedDate
     Gender:
       type: string
       enum:

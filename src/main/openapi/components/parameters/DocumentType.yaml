@@ -3,8 +3,4 @@ in: query
 required: true
 schema:
   type: string
-  enum:
-    - DOC
-    - MED
-    - REF
-description: Document category type (DOC, MED, REF). Used to target a specific subfolder.
+description: Document category code. Used to target a specific subfolder.

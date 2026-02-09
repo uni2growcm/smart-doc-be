@@ -6,7 +6,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.UUID;
 
 /**
  * Port interface for file upload and storage operations.
@@ -17,13 +16,12 @@ public interface IUploadService {
 	/**
 	 * Stores a file in the file system under the specified person directory.
 	 *
-	 * @param file     the multipart file to store
-	 * @param personId the person identifier for organizing files
-	 * @param subDir   the subdirectory within the person folder (e.g., "documents", "images")
+	 * @param file   the multipart file to store
+	 * @param subDir the subdirectory within the person folder (e.g., "documents", "images")
 	 * @return the stored file path relative to the base directory
 	 * @throws IOException if file storage fails
 	 */
-	String uploadFile(MultipartFile file, UUID personId, String subDir) throws IOException;
+	String uploadFile(MultipartFile file, String subDir) throws IOException;
 
 	/**
 	 * Retrieves a file from the file system.
@@ -61,12 +59,11 @@ public interface IUploadService {
 	/**
 	 * Resolves the full file system path for a file.
 	 *
-	 * @param personId the person identifier
 	 * @param fileName the file name
 	 * @param subDir   the subdirectory
 	 * @return the resolved Path
 	 */
-	Path resolvePath(UUID personId, String fileName, String subDir);
+	Path resolvePath(String fileName, String subDir);
 
 	/**
 	 * Checks if a file exists.

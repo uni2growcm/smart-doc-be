@@ -39,5 +39,5 @@ public interface IPersonService {
 	PersonResponse restorePerson(@PathVariable UUID id);
 
 	@GetExchange("/{id}/documents")
-	Page<DocumentResponse> findPersonDocuments(@PathVariable UUID id, @RequestParam(required = false) UUID type, @RequestParam(required = false) Instant fromDate, @RequestParam(required = false) Instant toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
+	Page<DocumentResponse> findPersonDocuments(@PathVariable int id, @RequestParam(required = false) String type, @RequestParam(required = false) Instant fromDate, @RequestParam(required = false) Instant toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
 }

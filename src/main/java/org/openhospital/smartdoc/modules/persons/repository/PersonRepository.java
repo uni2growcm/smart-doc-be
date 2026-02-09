@@ -23,7 +23,7 @@ public interface PersonRepository extends JpaRepository<Person, UUID> {
 	// Status-aware query methods
 	Page<Person> findByStatusIn(List<Status> statuses, Pageable pageable);
 
-	boolean existsByPidAndStatusNot(String pid, Status status);
+	boolean existsByPidAndStatusNot(int pid, Status status);
 
 	Optional<Person> findByIdAndStatusNot(UUID id, Status status);
 }

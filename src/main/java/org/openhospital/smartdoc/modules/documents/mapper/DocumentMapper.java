@@ -1,30 +1,61 @@
 package org.openhospital.smartdoc.modules.documents.mapper;
 
-import org.openhospital.smartdoc.modules.documents.model.Document;
+import lombok.RequiredArgsConstructor;
 import org.openhospital.smartdoc.openapi.DocumentResponse;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
+/**
+ * Mapper for converting file paths to DocumentResponse objects.
+ */
 @Component
+@RequiredArgsConstructor
 public class DocumentMapper {
 
-    public DocumentResponse toDto(Document document) {
-        return new DocumentResponse()
-                .id(document.getId())
-                .fileName(document.getFileName())
-                .path(document.getPath())
-                .personId(document.getPerson().getId().toString())
-                .type(document.getType().getId().toString())
-                .date(document.getDate())
-                .description(document.getDescription())
-                .fileSize(document.getFileSize() != null ? document.getFileSize().intValue() : null)
-                .mimeType(document.getMimeType())
-                .status(document.getStatus())
-                .uploadDate(document.getUploadDate());
-    }
+    /**
+     * Converts a file path to a DocumentResponse by parsing filesystem metadata.
+     *
+     * @param filePath the absolute path to the document file
+     * @param baseDir  the base directory for relative path calculation
+     * @return DocumentResponse with extracted metadata
+     */
+    public DocumentResponse toDto(Path filePath, String baseDir) {
+        String relativePath = Paths.get(baseDir).relativize(filePath).toString();
+        String[] parts = relativePath.split("/");
 
-    public List<DocumentResponse> toDtos(List<Document> documents) {
-        return documents.stream().map(this::toDto).toList();
+        if (parts.length != 5) {
+            throw new IllegalArgumentException("Invalid document path structure: " + relativePath);
+        }
+
+        // Parse personId from xx/xx/xx
+        String personPath = parts[0] + parts[1] + parts[2];
+        int personId = Integer.parseInt(personPath);
+
+        // Extract type
+        String type = parts[3];
+
+        // Parse filename: YYYYMMDD_filename.ext
+        String filename = parts[4];
+        int underscoreIndex = filename.indexOf('_');
+        if (underscoreIndex == -1) {
+            throw new IllegalArgumentException("Invalid filename format: " + filename);
+        }
+
+        // Validate date format (no need to parse since not used in response)
+        String dateStr = filename.substring(0, underscoreIndex);
+        if (dateStr.length() != 8) {
+            throw new IllegalArgumentException("Invalid date format in filename: " + dateStr);
+        }
+
+        return new DocumentResponse()
+                .id(relativePath)
+                .personId(personId)
+                .type(type);
     }
 }

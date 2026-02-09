@@ -3,6 +3,7 @@ package org.openhospital.smartdoc.modules.shared.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openhospital.smartdoc.exceptions.CustomException;
+import org.openhospital.smartdoc.helpers.DateUtils;
 import org.openhospital.smartdoc.modules.shared.port.IStorageService;
 import org.openhospital.smartdoc.modules.shared.properties.StorageProperties;
 import org.springframework.core.io.FileSystemResource;
@@ -11,7 +12,10 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Service implementation for core file storage operations.
@@ -29,16 +33,18 @@ public class StorageService implements IStorageService {
 	private final StorageProperties properties;
 
 	@Override
-	public String storeFile(byte[] content, String filename, UUID personId, String subDir) throws IOException {
+	public String storeFile(byte[] content, String filename, String subDir) throws IOException {
 		validateFile(content, filename);
 
 		// Generate unique filename to prevent conflicts
+		String datePrefix = DateUtils.format(LocalDate.now(), DateTimeFormatter.BASIC_ISO_DATE);
+
 		String cleanFilename = org.springframework.util.StringUtils.cleanPath(filename);
-		String fileExtension = getFileExtension(cleanFilename);
-		String uniqueFilename = UUID.randomUUID() + "." + fileExtension;
+		String uniqueFilename = "%s_%s"
+			.formatted(datePrefix, cleanFilename);
 
 		// Resolve the target path
-		Path targetPath = resolvePath(personId, uniqueFilename, subDir);
+		Path targetPath = resolvePath(uniqueFilename, subDir);
 
 		// Ensure parent directories exist
 		Files.createDirectories(targetPath.getParent());
@@ -120,8 +126,8 @@ public class StorageService implements IStorageService {
 	}
 
 	@Override
-	public Path resolvePath(UUID personId, String fileName, String subDir) {
-		return Paths.get(properties.paths().baseDir(), personId.toString(), subDir, fileName);
+	public Path resolvePath(String fileName, String subDir) {
+		return Paths.get(properties.paths().baseDir(), subDir, fileName);
 	}
 
 	@Override

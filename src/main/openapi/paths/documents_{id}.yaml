@@ -18,38 +18,6 @@ get:
         application/json:
           schema:
             $ref: ../components/schemas/Problem.yaml
-put:
-  tags:
-    - Documents
-  summary: Update document metadata or replace the file.
-  operationId: updateDocument
-  parameters:
-    - $ref: ../components/parameters/Id.yaml
-  requestBody:
-    required: true
-    content:
-      multipart/form-data:
-        schema:
-          $ref: ../components/schemas/UploadDocumentRequest.yaml
-  responses:
-    '200':
-      description: Document successfully updated.
-      content:
-        application/json:
-          schema:
-            $ref: ../components/schemas/Document.yaml
-    '400':
-      description: Invalid request, file format/size, or missing required fields.
-      content:
-        application/json:
-          schema:
-            $ref: ../components/schemas/Problem.yaml
-    '500':
-      description: Internal server error (file system write error).
-      content:
-        application/json:
-          schema:
-            $ref: ../components/schemas/Problem.yaml
 delete:
   tags:
     - Documents
