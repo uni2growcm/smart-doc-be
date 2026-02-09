@@ -14,8 +14,7 @@ import java.lang.annotation.*;
 	@Sql(
 		scripts = {
 			"/sql/persons.sql",
-			"/sql/document-types.sql",
-			"/sql/documents.sql"
+			"/sql/document-types.sql"
 		},
 		executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
 	),

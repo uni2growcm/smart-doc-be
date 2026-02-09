@@ -14,25 +14,17 @@ import org.openhospital.smartdoc.modules.shared.properties.StorageProperties;
 import org.openhospital.smartdoc.openapi.*;
 import org.openhospital.smartdoc.types.Page;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.nio.file.*;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -58,12 +50,23 @@ public class DocumentService implements IDocumentService {
 	public Page<DocumentResponse> findDocuments(int personId, String type, Instant fromDate, Instant toDate, int page, int size) {
 		log.debug("Finding documents with filters - personId: {}, type: {}, date range: {} to {}, page: {}, size: {}", personId, type, fromDate, toDate, page, size);
 
+		if (!personRepository.existsByPidAndStatusNot(personId, Status.DELETED)) {
+			log.warn("Person with ID {} not found or deleted", personId);
+			throw CustomException.notFound("persons.errors.not-found", new Object[]{personId});
+		}
 		try {
 			String personPath = NumberUtils.toSixDigitPath(personId);
-			Path basePath = Paths.get(storageProperties.paths().baseDir(), personPath);
 			String baseDir = storageProperties.paths().baseDir();
+			Path basePath = Paths.get(baseDir, personPath);
+			Pageable pageable = PageRequest.of(page, size);
 
-			List<DocumentResponse> allDocuments = Files.walk(basePath)
+			if (!Files.exists(basePath) || !Files.exists(Paths.get(basePath.toString(), type))) {
+				return Page.from(new PageImpl<>(Collections.emptyList(), pageable, 0), Function.identity());
+			}
+
+			List<DocumentResponse> allDocuments;
+			try (var paths = Files.walk(basePath)) {
+				allDocuments = paths
 					.filter(Files::isRegularFile)
 					.map(filePath -> {
 						try {
@@ -77,20 +80,23 @@ public class DocumentService implements IDocumentService {
 					.filter(doc -> type == null || type.equals(doc.getType()))
 					.filter(doc -> {
 						if (fromDate == null && toDate == null) return true;
+						assert doc.getId() != null;
 						Instant docDate = parseDateFromId(doc.getId());
 						if (fromDate != null && docDate.isBefore(fromDate)) return false;
-						if (toDate != null && docDate.isAfter(toDate)) return false;
-						return true;
+						return toDate == null || !docDate.isAfter(toDate);
 					})
-					.sorted(Comparator.comparing((DocumentResponse doc) -> parseDateFromId(doc.getId())).reversed())
+					.sorted(Comparator.comparing((DocumentResponse doc) -> {
+						assert doc.getId() != null;
+						return parseDateFromId(doc.getId());
+					}).reversed())
 					.collect(Collectors.toList());
+			}
 
 			int totalElements = allDocuments.size();
 			int start = page * size;
 			int end = Math.min(start + size, totalElements);
 			List<DocumentResponse> pageData = allDocuments.subList(start, end);
 
-			Pageable pageable = PageRequest.of(page, size);
 			org.springframework.data.domain.Page<DocumentResponse> springPage = new PageImpl<>(pageData, pageable, totalElements);
 			Page<DocumentResponse> result = Page.from(springPage, Function.identity());
 
@@ -100,21 +106,6 @@ public class DocumentService implements IDocumentService {
 			log.error("Failed to find documents", e);
 			throw CustomException.internal("documents.errors.search-failed");
 		}
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public DocumentResponse findDocumentById(String id) {
-		log.debug("Retrieving document metadata by ID: {}", id);
-
-		Path filePath = Paths.get(storageProperties.paths().baseDir(), id);
-		if (!Files.exists(filePath)) {
-			throw CustomException.notFound("documents.errors.not-found", new Object[]{id});
-		}
-
-		DocumentResponse result = mapper.toDto(filePath, storageProperties.paths().baseDir());
-		log.debug("Document metadata retrieved successfully: {}", result.getId());
-		return result;
 	}
 
 	@Override
@@ -155,19 +146,6 @@ public class DocumentService implements IDocumentService {
 			log.error("Document upload failed", e);
 			throw CustomException.internal("documents.errors.upload-failed");
 		}
-	}
-
-	@Override
-	@Transactional
-	public void deleteDocument(String id) {
-		log.info("Deleting document with ID: {}", id);
-
-		boolean fileDeleted = uploadService.deleteFile(id);
-		if (!fileDeleted) {
-			log.warn("File not found during deletion: {}", id);
-		}
-
-		log.info("Document deleted successfully: {}", id);
 	}
 
 	/**

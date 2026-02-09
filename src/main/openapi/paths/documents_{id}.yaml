@@ -1,41 +1,21 @@
 get:
   tags:
     - Documents
-  summary: Retrieve document metadata.
-  operationId: findDocumentById
+  summary: Download a document file
+  operationId: downloadDocument
   parameters:
     - $ref: ../components/parameters/Id.yaml
+    - $ref: ../components/parameters/Attachment.yaml
   responses:
     '200':
-      description: Document metadata.
+      description: Document file download
       content:
-        application/json:
+        application/octet-stream:
           schema:
-            $ref: ../components/schemas/Document.yaml
+            type: string
+            format: binary
     '404':
-      description: Document not found.
-      content:
-        application/json:
-          schema:
-            $ref: ../components/schemas/Problem.yaml
-delete:
-  tags:
-    - Documents
-  summary: Permanently delete a document file from the file system.
-  operationId: deleteDocument
-  parameters:
-    - $ref: ../components/parameters/Id.yaml
-  responses:
-    '204':
-      description: Document successfully deleted.
-    '404':
-      description: Document not found.
-      content:
-        application/json:
-          schema:
-            $ref: ../components/schemas/Problem.yaml
-    '500':
-      description: File system deletion error.
+      description: Document not found
       content:
         application/json:
           schema:

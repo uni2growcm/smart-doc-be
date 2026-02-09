@@ -14,8 +14,6 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Service implementation for core file storage operations.
@@ -25,9 +23,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class StorageService implements IStorageService {
-
-	// Allowed file extensions for security
-	private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList("pdf", "doc", "docx", "txt", "rtf", "odt", "jpg", "jpeg", "png", "gif", "bmp", "tiff", "mp4", "avi", "mov", "wmv", "flv", "webm");
 	// Maximum file size (200MB as configured)
 
 	private final StorageProperties properties;
@@ -81,6 +76,11 @@ public class StorageService implements IStorageService {
 	public boolean deleteFile(String filePath) {
 		Path fullPath = Paths.get(properties.paths().baseDir(), filePath);
 
+		if (!Files.exists(fullPath)) {
+			log.warn("File not found for deletion: {}", filePath);
+			throw CustomException.notFound("uploads.errors.file-not-found");
+		}
+
 		// Security check
 		Path basePath = Paths.get(properties.paths().baseDir());
 		if (!fullPath.startsWith(basePath)) {
@@ -115,9 +115,6 @@ public class StorageService implements IStorageService {
 		}
 
 		String extension = getFileExtension(cleanFilename).toLowerCase();
-		if (!ALLOWED_EXTENSIONS.contains(extension)) {
-			throw CustomException.badRequest("uploads.errors.file-type-not-allowed", new Object[]{extension});
-		}
 	}
 
 	@Override

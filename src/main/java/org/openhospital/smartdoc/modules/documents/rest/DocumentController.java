@@ -11,9 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.service.annotation.GetExchange;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @RestController
 public class DocumentController implements IDocumentService {
@@ -28,11 +28,7 @@ public class DocumentController implements IDocumentService {
 	}
 
 	@Override
-	public DocumentResponse findDocumentById(@PathVariable String id) {
-		return service.findDocumentById(id);
-	}
-
-	@Override
+	@GetExchange("/{*id}")
 	public ResponseEntity<ByteArrayResource> downloadDocument(@PathVariable String id, @RequestParam(defaultValue = "false") boolean attachment) {
 		return service.downloadDocument(id, attachment);
 	}
@@ -41,11 +37,5 @@ public class DocumentController implements IDocumentService {
 	@ResponseStatus(HttpStatus.CREATED)
 	public DocumentResponse uploadDocument(@RequestPart MultipartFile document, @RequestPart DocumentMetadata metadata) {
 		return service.uploadDocument(document, metadata);
-	}
-
-	@Override
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void deleteDocument(@PathVariable String id) {
-		service.deleteDocument(id);
 	}
 }

@@ -41,7 +41,7 @@ public final class HttpClientHelpers {
 				if (body != null) {
 					Object msg = body.get("title");
 					if (msg instanceof String) message = (String) msg;
-
+					
 					Object detail = body.get("detail");
 					if (detail instanceof String) debugMessage = (String) detail;
 				}

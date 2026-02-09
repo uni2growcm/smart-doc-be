@@ -23,8 +23,6 @@ paths:
     $ref: paths/documents.yaml
   /documents/{id}:
     $ref: paths/documents_{id}.yaml
-  /documents/{id}/download:
-    $ref: paths/documents_{id}_download.yaml
   /persons:
     $ref: paths/persons.yaml
   /persons/{id}:

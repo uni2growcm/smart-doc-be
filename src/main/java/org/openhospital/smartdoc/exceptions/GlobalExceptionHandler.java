@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
@@ -167,6 +168,24 @@ public class GlobalExceptionHandler {
 		log.error("Exception {} occurred", exception.getClass(), exception);
 
 		CustomException customEx = CustomException.badRequest("errors.validation.missing-request-part");
+		customEx.setDebugMessage(exception.getLocalizedMessage());
+		return buildResponse(customEx);
+	}
+
+	@ExceptionHandler({MissingServletRequestParameterException.class})
+	ResponseEntity<Problem> handle(MissingServletRequestParameterException exception) {
+		log.error("Exception {} occurred", exception.getClass(), exception);
+
+		CustomException customEx = CustomException.badRequest("errors.validation.missing-request-parameter");
+		customEx.setDebugMessage(exception.getLocalizedMessage());
+		return buildResponse(customEx);
+	}
+
+	@ExceptionHandler({IllegalStateException.class})
+	ResponseEntity<Problem> handle(IllegalStateException exception) {
+		log.error("Exception {} occurred", exception.getClass(), exception);
+
+		CustomException customEx = CustomException.badRequest("errors.validation.illegal-state");
 		customEx.setDebugMessage(exception.getLocalizedMessage());
 		return buildResponse(customEx);
 	}

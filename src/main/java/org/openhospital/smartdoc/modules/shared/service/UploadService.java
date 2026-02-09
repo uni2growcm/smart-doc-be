@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.*;
+import java.util.Objects;
 
 /**
  * Service implementation for file upload and storage operations.
@@ -23,9 +23,6 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class UploadService implements IUploadService {
-
-	// Allowed file extensions for security
-	private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList("pdf", "doc", "docx", "txt", "rtf", "odt", "jpg", "jpeg", "png", "gif", "bmp", "tiff", "mp4", "avi", "mov", "wmv", "flv", "webm");
 
 	private final IStorageService storageService;
 
@@ -71,7 +68,7 @@ public class UploadService implements IUploadService {
 
 			// Build response headers
 			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+			headers.setContentType(MediaType.parseMediaType(Files.probeContentType(filePathObj)));
 			headers.setContentLength(fileSize);
 			headers.setETag(eTag);
 			headers.setLastModified(lastModifiedTimestamp);
@@ -112,9 +109,6 @@ public class UploadService implements IUploadService {
 		}
 
 		String extension = storageService.getFileExtension(filename).toLowerCase();
-		if (!ALLOWED_EXTENSIONS.contains(extension)) {
-			throw CustomException.badRequest("uploads.errors.file-type-not-allowed", new Object[]{extension});
-		}
 	}
 
 	@Override

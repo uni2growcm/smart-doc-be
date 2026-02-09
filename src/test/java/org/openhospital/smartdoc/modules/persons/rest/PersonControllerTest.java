@@ -82,14 +82,14 @@ public class PersonControllerTest {
 		public void shouldCreatePersonSuccessfully() {
 			var request = new CreatePersonRequest()
 				.name("New Person")
-				.pid("NEW001")
+				.pid("15")
 				.email("new.person@email.com")
 				.phoneNumber("+1-555-0123")
 				.gender(Gender.MALE);
 			var result = service.createPerson(request);
 			assertNotNull(result);
 			assertEquals("New Person", result.getName());
-			assertEquals("NEW001", result.getPid());
+			assertEquals("15", result.getPid());
 		}
 
 		@Test
@@ -97,7 +97,7 @@ public class PersonControllerTest {
 		public void shouldThrowExceptionForDuplicatePid() {
 			var request = new CreatePersonRequest()
 				.name("Duplicate PID")
-				.pid("PID001")
+				.pid("1")
 				.email("duplicate@email.com")
 				.phoneNumber("+1-555-0124")
 				.gender(Gender.FEMALE);
@@ -373,7 +373,7 @@ public class PersonControllerTest {
 		@Test
 		@DisplayName("Should return empty for person without documents")
 		public void shouldReturnEmptyForPersonWithoutDocuments() {
-			var id = UUID.fromString("660e8400-e29b-41d4-a716-446655440009"); // Jack Anderson (no docs in test data)
+			var id = UUID.fromString("660e8400-e29b-41d4-a716-446655440003");
 			var result = service.findPersonDocuments(id, null, null, null, 0, 20);
 			assertNotNull(result);
 			assertEquals(0, result.getData().size());
@@ -382,9 +382,8 @@ public class PersonControllerTest {
 		@Test
 		@DisplayName("Should filter documents by type")
 		public void shouldFilterDocumentsByType() {
-			var id = UUID.fromString("660e8400-e29b-41d4-a716-446655440000"); // Alice
-			var typeId = UUID.fromString("550e8400-e29b-41d4-a716-446655440000"); // ID card type
-			var result = service.findPersonDocuments(id, typeId, null, null, 0, 20);
+			var id = UUID.fromString("660e8400-e29b-41d4-a716-446655440000");
+			var result = service.findPersonDocuments(id, "ID_CARD", null, null, 0, 20);
 			assertNotNull(result);
 			assertEquals(1, result.getData().size());
 		}
@@ -393,8 +392,8 @@ public class PersonControllerTest {
 		@DisplayName("Should filter documents by date range")
 		public void shouldFilterDocumentsByDateRange() {
 			var id = UUID.fromString("660e8400-e29b-41d4-a716-446655440000"); // Alice
-			var fromDate = java.time.LocalDate.of(2024, 1, 1);
-			var toDate = java.time.LocalDate.of(2024, 12, 31);
+			var fromDate = java.time.LocalDate.of(2026, 1, 1);
+			var toDate = java.time.LocalDate.of(2026, 12, 31);
 			var result = service.findPersonDocuments(id, null, DateUtils.toInstant(fromDate), DateUtils.toInstant(toDate), 0, 20);
 			assertNotNull(result);
 			assertEquals(1, result.getData().size());
@@ -413,7 +412,7 @@ public class PersonControllerTest {
 		@Test
 		@DisplayName("Should throw exception for documents of non-existent person")
 		public void shouldThrowExceptionForDocumentsOfNonExistentPerson() {
-			var id = UUID.randomUUID();
+			var id = UUID.fromString("660e8400-e29b-41d4-a716-446655440142");
 			var exception = assertThrows(CustomException.class, () -> service.findPersonDocuments(id, null, null, null, 0, 20));
 			assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
 		}

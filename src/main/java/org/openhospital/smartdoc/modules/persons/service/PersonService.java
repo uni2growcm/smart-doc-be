@@ -1,15 +1,16 @@
 package org.openhospital.smartdoc.modules.persons.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openhospital.smartdoc.exceptions.CustomException;
 import org.openhospital.smartdoc.modules.documents.port.IDocumentService;
+import org.openhospital.smartdoc.modules.documents.service.DocumentService;
 import org.openhospital.smartdoc.modules.persons.mapper.PersonMapper;
 import org.openhospital.smartdoc.modules.persons.model.Person;
 import org.openhospital.smartdoc.modules.persons.port.IPersonService;
 import org.openhospital.smartdoc.modules.persons.repository.PersonRepository;
 import org.openhospital.smartdoc.openapi.*;
 import org.openhospital.smartdoc.types.Page;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,6 @@ import java.util.UUID;
  */
 @Slf4j
 @Service(PersonService.NAME)
-@RequiredArgsConstructor
 public class PersonService implements IPersonService {
 
 	public static final String NAME = "PersonService";
@@ -34,6 +34,12 @@ public class PersonService implements IPersonService {
 	private final PersonRepository repository;
 	private final PersonMapper mapper;
 	private final IDocumentService documentService;
+
+	PersonService(PersonRepository repository, PersonMapper mapper, @Qualifier(DocumentService.NAME) IDocumentService documentService) {
+		this.repository = repository;
+		this.mapper = mapper;
+		this.documentService = documentService;
+	}
 
 	private Person findById(UUID id) {
 		return repository.findById(id).orElseThrow(() -> CustomException.notFound("persons.errors.not-found", new Object[]{id}));
@@ -195,13 +201,11 @@ public class PersonService implements IPersonService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Page<DocumentResponse> findPersonDocuments(int id, String type, Instant fromDate, Instant toDate, int page, int size) {
-		log.debug("Finding documents for person ID: {}, type: {}, date range: {} to {}, page: {}, size: {}", id, type, fromDate, toDate, page, size);
+	public Page<DocumentResponse> findPersonDocuments(UUID id, String type, Instant fromDate, Instant toDate, int page, int size) {
+		var person = findById(id);
+		log.debug("Finding documents for person ID: {}, type: {}, date range: {} to {}, page: {}, size: {}", person.getPid(), type, fromDate, toDate, page, size);
 
-		// Verify person exists and is active
-		validatePersonReference(id);
-
-		return documentService.findDocuments(id, type, fromDate, toDate, page, size);
+		return documentService.findDocuments(person.getPid(), type, fromDate, toDate, page, size);
 	}
 
 	/**
