@@ -18,8 +18,11 @@ public interface IDocumentService {
 	@GetExchange
 	Page<DocumentResponse> findDocuments(@RequestParam int personId, @RequestParam(required = false) String type, @RequestParam(required = false) Instant fromDate, @RequestParam(required = false) Instant toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
 
-	@GetExchange(value = "/{id}")
+	@GetExchange(value = "/{id}/download")
 	ResponseEntity<ByteArrayResource> downloadDocument(@PathVariable String id, @RequestParam int personId, @RequestParam String type, @RequestParam(defaultValue = "false") boolean attachment);
+
+	@GetExchange(value = "/{id}")
+	DocumentResponse findDocumentById(@PathVariable String id, @RequestParam int personId, @RequestParam String type);
 
 	@PostExchange
 	DocumentResponse uploadDocument(@RequestPart MultipartFile document, @RequestParam int personId, @RequestParam String type, @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date);

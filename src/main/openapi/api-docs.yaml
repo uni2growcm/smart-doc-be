@@ -87,6 +87,29 @@ paths:
     get:
       tags:
         - Documents
+      summary: Get document details
+      operationId: findDocumentById
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/PersonId'
+        - $ref: '#/components/parameters/DocumentType'
+      responses:
+        '200':
+          description: Document details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '404':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /documents/{id}/download:
+    get:
+      tags:
+        - Documents
       summary: Download a document file
       operationId: downloadDocument
       parameters:
@@ -687,19 +710,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Problem'
-  /actuator/health:
-    get:
-      tags:
-        - System
-      summary: Get application health status.
-      operationId: getHealth
-      responses:
-        '200':
-          description: Application is healthy.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Health'
 components:
   securitySchemes:
     Basic:
@@ -1122,32 +1132,3 @@ components:
         description:
           type: string
           description: A description of the document type.
-    HealthStatus:
-      type: string
-      enum:
-        - UP
-        - DOWN
-        - OUT_OF_SERVICE
-        - UNKNOWN
-      description: Health status values.
-    HealthComponent:
-      type: object
-      description: Health details for a specific component.
-      properties:
-        status:
-          $ref: '#/components/schemas/HealthStatus'
-        details:
-          type: object
-          additionalProperties: true
-          description: Additional details about the component health.
-    Health:
-      type: object
-      description: Health status of the application.
-      properties:
-        status:
-          $ref: '#/components/schemas/HealthStatus'
-        components:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/HealthComponent'
-          description: Health details for individual components.

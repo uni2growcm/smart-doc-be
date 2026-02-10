@@ -129,15 +129,46 @@ public class DocumentControllerTest {
 
 		@Nested
 		@DisplayName("GET /documents/{id}")
+		class FindDocumentById {
+			@Test
+			@DisplayName("Should find document by ID successfully")
+			public void shouldFindDocumentByIdSuccessfully() {
+				var id = "20260208_my-id-card.avif";
+				var result = service.findDocumentById(id, 1, "ID_CARD");
+				assertNotNull(result);
+				assertEquals(id, result.getId());
+				assertEquals(1, result.getPersonId());
+				assertEquals("ID_CARD", result.getType());
+			}
+
+			@Test
+			@DisplayName("Should throw exception for non-existent document")
+			public void shouldThrowExceptionForNonExistentDocument() {
+				var id = "nonexistent.doc";
+				var exception = assertThrows(CustomException.class, () -> service.findDocumentById(id, 1, "ID_CARD"));
+				assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+			}
+
+			@Test
+			@DisplayName("Should throw exception for non-existent person")
+			public void shouldThrowExceptionForNonExistentPerson() {
+				var id = "20260208_my-id-card.avif";
+				var exception = assertThrows(CustomException.class, () -> service.findDocumentById(id, 144, "ID_CARD"));
+				assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+			}
+		}
+
+		@Nested
+		@DisplayName("GET /documents/{id}/download")
 		class DownloadDocument {
 			@Test
 			@DisplayName("Should download document successfully")
 			public void shouldDownloadDocumentSuccessfully() {
-				var id = "20260208_my-id-card.avif?personId=1&type=ID_CARD";
+				var id = "20260208_my-id-card.avif";
 				var client = TestHelpers.buildRestClient();
 				var result = client
 					.get()
-					.uri("/documents/%s".formatted(id))
+					.uri("/documents/%s/download?personId=1&type=ID_CARD".formatted(id))
 					.accept(MediaType.ALL)
 					.retrieve()
 					.toBodilessEntity();
@@ -150,7 +181,7 @@ public class DocumentControllerTest {
 			@DisplayName("Should throw exception for download non-existent")
 			public void shouldThrowExceptionForDownloadNonExistent() {
 				var id = "nonexistent.doc";
-				var exception = assertThrows(CustomException.class, () -> service.downloadDocument(id, 128, "DOC", false));
+				var exception = assertThrows(CustomException.class, () -> service.downloadDocument(id, 1, "ID_CARD", false));
 				assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
 			}
 		}

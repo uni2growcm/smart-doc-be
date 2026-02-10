@@ -19,7 +19,6 @@ import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -98,8 +97,8 @@ public class DocumentService implements IDocumentService {
 			int end = Math.min(start + size, totalElements);
 			List<DocumentResponse> pageData = allDocuments.subList(start, end);
 
-			org.springframework.data.domain.Page<DocumentResponse> springPage = new PageImpl<>(pageData, pageable, totalElements);
-			Page<DocumentResponse> result = Page.from(springPage, Function.identity());
+			org.springframework.data.domain.Page<DocumentResponse> documentsPage = new PageImpl<>(pageData, pageable, totalElements);
+			Page<DocumentResponse> result = Page.from(documentsPage, Function.identity());
 
 			log.info("Found {} documents (page {}/{}, total: {})", result.getData().size(), page, result.getMetadata().getTotalPages(), result.getMetadata().getTotalElements());
 			return result;
@@ -111,7 +110,7 @@ public class DocumentService implements IDocumentService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntity<ByteArrayResource> downloadDocument(String id, @RequestParam int personId, @RequestParam String type, boolean attachment) {
+	public ResponseEntity<ByteArrayResource> downloadDocument(String id, int personId, String type, boolean attachment) {
 		log.debug("Downloading document by ID: {}, attachment: {}", id, attachment);
 
 		ensurePersonExists(personId);
@@ -120,12 +119,29 @@ public class DocumentService implements IDocumentService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public DocumentResponse findDocumentById(String id, int personId, String type) {
+		log.debug("Finding document by ID: {}", id);
+
+		ensurePersonExists(personId);
+
+		String baseDir = storageProperties.paths().baseDir();
+		Path filePath = Paths.get(baseDir, resolveDocumentPath(id, personId, type));
+
+		if (!Files.exists(filePath)) {
+			throw CustomException.notFound("documents.errors.not-found", new Object[]{id});
+		}
+
+		return mapper.toDto(filePath, baseDir);
+	}
+
+	@Override
 	@Transactional
 	public DocumentResponse uploadDocument(MultipartFile document, int personId, String type, LocalDate date) {
 		log.info("Uploading document for client: {}, type: {}", personId, type);
 
 		// Validate references exist
-		validateClientReference(personId);
+		validatePersonReference(personId);
 		DocumentType documentType = validateDocumentTypeReference(type);
 
 		try {
@@ -165,7 +181,7 @@ public class DocumentService implements IDocumentService {
 	/**
 	 * Validates client reference for operations.
 	 */
-	private void validateClientReference(int personId) {
+	private void validatePersonReference(int personId) {
 		if (!personRepository.existsByPidAndStatusNot(personId, Status.DELETED)) {
 			throw CustomException.notFound("persons.errors.not-found", new Object[]{personId});
 		}
@@ -185,7 +201,7 @@ public class DocumentService implements IDocumentService {
 	private void ensurePersonExists(int personId) {
 		if (!personRepository.existsByPidAndStatusNot(personId, Status.DELETED)) {
 			log.warn("Person with ID {} not found or deleted", personId);
-			throw CustomException.notFound("persons.errors.not-found", new Object[]{personId});
+			throw CustomException.badRequest("persons.errors.not-found", new Object[]{personId});
 		}
 	}
 }

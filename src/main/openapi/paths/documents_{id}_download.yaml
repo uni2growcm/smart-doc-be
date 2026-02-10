@@ -1,19 +1,21 @@
 get:
   tags:
     - Documents
-  summary: Get document details
-  operationId: findDocumentById
+  summary: Download a document file
+  operationId: downloadDocument
   parameters:
     - $ref: ../components/parameters/Id.yaml
     - $ref: ../components/parameters/PersonId.yaml
     - $ref: ../components/parameters/DocumentType.yaml
+    - $ref: ../components/parameters/Attachment.yaml
   responses:
     '200':
-      description: Document details
+      description: Document file download
       content:
-        application/json:
+        application/octet-stream:
           schema:
-            $ref: ../components/schemas/Document.yaml
+            type: string
+            format: binary
     '404':
       description: Document not found
       content:

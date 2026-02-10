@@ -23,6 +23,8 @@ paths:
     $ref: paths/documents.yaml
   /documents/{id}:
     $ref: paths/documents_{id}.yaml
+  /documents/{id}/download:
+    $ref: paths/documents_{id}_download.yaml
   /persons:
     $ref: paths/persons.yaml
   /persons/{id}:
@@ -45,8 +47,6 @@ paths:
     $ref: paths/document-types_{id}_activate.yaml
   /document-types/{id}/deactivate:
     $ref: paths/document-types_{id}_deactivate.yaml
-  /actuator/health:
-    $ref: paths/health.yaml
 components:
   securitySchemes:
     Basic:

@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.service.annotation.GetExchange;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -28,9 +27,15 @@ public class DocumentController implements IDocumentService {
 	}
 
 	@Override
-	@GetExchange("/{id}")
+	@GetMapping("/{id}/download")
 	public ResponseEntity<ByteArrayResource> downloadDocument(@PathVariable String id, @RequestParam int personId, @RequestParam String type, @RequestParam(defaultValue = "false") boolean attachment) {
 		return service.downloadDocument(id, personId, type, attachment);
+	}
+
+	@Override
+	@GetMapping("/{id}")
+	public DocumentResponse findDocumentById(@PathVariable String id, @RequestParam int personId, @RequestParam String type) {
+		return service.findDocumentById(id, personId, type);
 	}
 
 	@Override
