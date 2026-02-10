@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -194,7 +194,7 @@ public class PersonService implements IPersonService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Page<DocumentResponse> findPersonDocuments(UUID id, String type, Instant fromDate, Instant toDate, int page, int size) {
+	public Page<DocumentResponse> findPersonDocuments(UUID id, String type, LocalDate fromDate, LocalDate toDate, int page, int size) {
 		var person = findById(id);
 		log.debug("Finding documents for person ID: {}, type: {}, date range: {} to {}, page: {}, size: {}", person.getPid(), type, fromDate, toDate, page, size);
 

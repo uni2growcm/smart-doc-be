@@ -1,0 +1,24 @@
+meta {
+  name: Partially update a document type.
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/document-types/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+body:json {
+  {
+    "version": 0,
+    "code": "",
+    "name": "",
+    "description": ""
+  }
+}

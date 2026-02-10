@@ -23,7 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.*;
-import java.time.*;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
@@ -48,7 +48,7 @@ public class DocumentService implements IDocumentService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Page<DocumentResponse> findDocuments(int personId, String type, Instant fromDate, Instant toDate, int page, int size) {
+	public Page<DocumentResponse> findDocuments(int personId, String type, LocalDate fromDate, LocalDate toDate, int page, int size) {
 		log.debug("Finding documents with filters - personId: {}, type: {}, date range: {} to {}, page: {}, size: {}", personId, type, fromDate, toDate, page, size);
 
 		ensurePersonExists(personId);
@@ -81,7 +81,7 @@ public class DocumentService implements IDocumentService {
 					.filter(doc -> {
 						if (fromDate == null && toDate == null) return true;
 						assert doc.getId() != null;
-						Instant docDate = parseDateFromId(doc.getId());
+						LocalDate docDate = parseDateFromId(doc.getId());
 						if (fromDate != null && docDate.isBefore(fromDate)) return false;
 						return toDate == null || !docDate.isAfter(toDate);
 					})
@@ -168,14 +168,13 @@ public class DocumentService implements IDocumentService {
 	/**
 	 * Parses the date from a document ID (relative path).
 	 */
-	private Instant parseDateFromId(String id) {
+	private LocalDate parseDateFromId(String id) {
 		int underscoreIndex = id.indexOf('_');
 		if (underscoreIndex == -1) {
 			throw new IllegalArgumentException("Invalid filename in ID: " + id);
 		}
 		String dateStr = id.substring(0, underscoreIndex);
-		LocalDate date = LocalDate.parse(dateStr, DateTimeFormatter.BASIC_ISO_DATE);
-		return date.atStartOfDay().toInstant(ZoneOffset.UTC);
+		return LocalDate.parse(dateStr, DateTimeFormatter.BASIC_ISO_DATE);
 	}
 
 	/**

@@ -1,0 +1,26 @@
+meta {
+  name: Update a person.
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/persons/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+body:json {
+  {
+    "version": 0,
+    "name": "",
+    "pid": "",
+    "email": "",
+    "phoneNumber": "",
+    "gender": ""
+  }
+}

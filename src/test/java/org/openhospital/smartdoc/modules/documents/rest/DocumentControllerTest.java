@@ -3,7 +3,6 @@ package org.openhospital.smartdoc.modules.documents.rest;
 import org.junit.jupiter.api.*;
 import org.openhospital.smartdoc.annotations.WithTestDatabase;
 import org.openhospital.smartdoc.exceptions.CustomException;
-import org.openhospital.smartdoc.helpers.DateUtils;
 import org.openhospital.smartdoc.helpers.TestHelpers;
 import org.openhospital.smartdoc.modules.documents.port.IDocumentService;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -79,8 +78,8 @@ public class DocumentControllerTest {
 		@Test
 		@DisplayName("Should filter documents by date range")
 		public void shouldFilterDocumentsByDateRange() {
-			var fromDate = DateUtils.toInstant(LocalDate.of(2026, 1, 1));
-			var toDate = DateUtils.toInstant(LocalDate.of(2026, 12, 31));
+			var fromDate = LocalDate.of(2026, 1, 1);
+			var toDate = LocalDate.of(2026, 12, 31);
 			var result = service.findDocuments(1, null, fromDate, toDate, 0, 20);
 			assertNotNull(result);
 			assertEquals(1, result.getData().size());

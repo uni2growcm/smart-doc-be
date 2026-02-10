@@ -1,0 +1,15 @@
+meta {
+  name: Activate an inactive document type.
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/document-types/:id/activate
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 
+}

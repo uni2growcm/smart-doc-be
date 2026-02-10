@@ -1,0 +1,23 @@
+meta {
+  name: Retrieve a paginated and filtered list of documents for a specific person.
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/persons/:id/documents
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~type: 
+  ~fromDate: 
+  ~toDate: 
+  ~page: 
+  ~size: 
+}
+
+params:path {
+  id: 
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Partially update a person.
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseUrl}}/persons/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+body:json {
+  {
+    "version": 0,
+    "name": "",
+    "pid": "",
+    "email": "",
+    "phoneNumber": "",
+    "gender": ""
+  }
+}

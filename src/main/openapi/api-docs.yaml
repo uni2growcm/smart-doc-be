@@ -9,7 +9,7 @@ info:
 servers:
   - url: http://localhost:8080/api
 security:
-  - Bearer: [ ]
+  - Bearer: []
 tags:
   - name: Documents
     description: Operations related to document upload, retrieval, and deletion.
@@ -743,7 +743,7 @@ components:
       required: false
       schema:
         type: string
-        format: date-time
+        format: date
       description: Filter documents starting from this clinical date (YYYY-MM-DD), parsed from the filename.
     FilterToDate:
       name: toDate
@@ -751,7 +751,7 @@ components:
       required: false
       schema:
         type: string
-        format: date-time
+        format: date
       description: Filter documents up to this clinical date (YYYY-MM-DD), parsed from the filename.
     Page:
       name: page

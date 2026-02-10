@@ -1,0 +1,15 @@
+meta {
+  name: Get supported document types.
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/document-types
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~includeInactive: 
+}

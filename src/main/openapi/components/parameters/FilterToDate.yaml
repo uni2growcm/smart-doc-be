@@ -3,7 +3,7 @@ in: query
 required: false
 schema:
   type: string
-  format: date-time
+  format: date
 description: >-
   Filter documents up to this clinical date (YYYY-MM-DD), parsed from the
   filename.

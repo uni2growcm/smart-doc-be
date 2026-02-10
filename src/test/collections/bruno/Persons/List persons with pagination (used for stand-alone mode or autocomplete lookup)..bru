@@ -1,0 +1,18 @@
+meta {
+  name: List persons with pagination (used for stand-alone mode or autocomplete lookup).
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/persons
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~name: 
+  ~includeInactive: 
+  ~page: 
+  ~size: 
+}

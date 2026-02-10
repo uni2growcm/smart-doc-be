@@ -1,0 +1,21 @@
+meta {
+  name: Upload a new document file for a person.
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/documents
+  body: multipartForm
+  auth: inherit
+}
+
+params:query {
+  personId: 
+  ~type: 
+  ~date: 
+}
+
+body:multipart-form {
+  document: 
+}

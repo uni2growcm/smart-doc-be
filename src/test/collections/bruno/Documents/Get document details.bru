@@ -1,0 +1,20 @@
+meta {
+  name: Get document details
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/documents/:id
+  body: none
+  auth: inherit
+}
+
+params:query {
+  personId: 
+  ~type: 
+}
+
+params:path {
+  id: 
+}

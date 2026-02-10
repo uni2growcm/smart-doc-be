@@ -1,0 +1,15 @@
+meta {
+  name: Retrieve a document type by ID.
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/document-types/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 
+}

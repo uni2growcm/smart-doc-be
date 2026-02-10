@@ -1,0 +1,21 @@
+meta {
+  name: Create a new person.
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/persons
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "",
+    "pid": "",
+    "email": "",
+    "phoneNumber": "",
+    "gender": ""
+  }
+}

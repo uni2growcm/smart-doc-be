@@ -3,7 +3,6 @@ package org.openhospital.smartdoc.modules.persons.rest;
 import org.junit.jupiter.api.*;
 import org.openhospital.smartdoc.annotations.WithTestDatabase;
 import org.openhospital.smartdoc.exceptions.CustomException;
-import org.openhospital.smartdoc.helpers.DateUtils;
 import org.openhospital.smartdoc.helpers.TestHelpers;
 import org.openhospital.smartdoc.modules.persons.port.IPersonService;
 import org.openhospital.smartdoc.openapi.*;
@@ -394,7 +393,7 @@ public class PersonControllerTest {
 			var id = UUID.fromString("660e8400-e29b-41d4-a716-446655440000"); // Alice
 			var fromDate = java.time.LocalDate.of(2026, 1, 1);
 			var toDate = java.time.LocalDate.of(2026, 12, 31);
-			var result = service.findPersonDocuments(id, null, DateUtils.toInstant(fromDate), DateUtils.toInstant(toDate), 0, 20);
+			var result = service.findPersonDocuments(id, null, fromDate, toDate, 0, 20);
 			assertNotNull(result);
 			assertEquals(1, result.getData().size());
 		}
