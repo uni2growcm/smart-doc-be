@@ -11,7 +11,6 @@ import org.openhospital.smartdoc.modules.persons.repository.PersonRepository;
 import org.openhospital.smartdoc.openapi.*;
 import org.openhospital.smartdoc.types.Page;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -136,16 +135,10 @@ public class PersonService implements IPersonService {
 
 		Person person = findNotDeletedById(id);
 
-		try {
-			// Try hard delete first
-			repository.deleteById(id);
-			log.info("Person {} hard DELETED successfully", id);
-		} catch (DataIntegrityViolationException e) {
-			// Foreign key constraint violation - person has associated documents
-			log.warn("Hard delete failed for person {} due to existing documents, falling back to soft delete", id, e);
-			person.setStatus(Status.DELETED);
-			repository.save(person);
-		}
+		person.setStatus(Status.DELETED);
+		repository.save(person);
+
+		log.info("Person {} soft deleted successfully", id);
 	}
 
 	@Override
