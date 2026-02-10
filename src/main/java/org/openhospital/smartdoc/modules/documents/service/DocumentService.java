@@ -138,7 +138,7 @@ public class DocumentService implements IDocumentService {
 	@Override
 	@Transactional
 	public DocumentResponse uploadDocument(MultipartFile document, int personId, String type, LocalDate date) {
-		log.info("Uploading document for client: {}, type: {}", personId, type);
+		log.info("Uploading document for person: {}, type: {}", personId, type);
 
 		// Validate references exist
 		validatePersonReference(personId);
@@ -154,10 +154,10 @@ public class DocumentService implements IDocumentService {
 			Path filePath = Paths.get(storageProperties.paths().baseDir(), storedPath);
 			DocumentResponse result = mapper.toDto(filePath, storageProperties.paths().baseDir());
 
-			log.info("Document uploaded successfully with ID: {} for client: {}", result.getId(), personId);
+			log.info("Document uploaded successfully with ID: {} for person: {}", result.getId(), personId);
 			return result;
 		} catch (IOException e) {
-			log.error("File upload failed for client: {}", personId, e);
+			log.error("File upload failed for person: {}", personId, e);
 			throw CustomException.internal("documents.errors.upload-failed");
 		} catch (Exception e) {
 			log.error("Document upload failed", e);
@@ -166,7 +166,7 @@ public class DocumentService implements IDocumentService {
 	}
 
 	/**
-	 * Parses the date from a document ID (relative path).
+	 * Parses the date from a document ID.
 	 */
 	private LocalDate parseDateFromId(String id) {
 		int underscoreIndex = id.indexOf('_');
@@ -178,7 +178,7 @@ public class DocumentService implements IDocumentService {
 	}
 
 	/**
-	 * Validates client reference for operations.
+	 * Validates person reference for operations.
 	 */
 	private void validatePersonReference(int personId) {
 		if (!personRepository.existsByPidAndStatusNot(personId, Status.DELETED)) {
