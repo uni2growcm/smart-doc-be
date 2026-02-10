@@ -8,9 +8,6 @@ import org.openhospital.smartdoc.models.BaseEntity;
 import org.openhospital.smartdoc.openapi.Gender;
 import org.openhospital.smartdoc.openapi.Status;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Data
 @Entity
 @Table(name = "persons")

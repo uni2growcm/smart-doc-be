@@ -20,4 +20,4 @@ allOf:
         $ref: ./Gender.yaml
       status:
         $ref: ./Status.yaml
-    required: [name, pid, status]
+    required: [ name, pid, status ]

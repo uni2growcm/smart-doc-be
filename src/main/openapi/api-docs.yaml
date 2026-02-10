@@ -9,7 +9,7 @@ info:
 servers:
   - url: http://localhost:8080/api
 security:
-  - Bearer: []
+  - Bearer: [ ]
 tags:
   - name: Documents
     description: Operations related to document upload, retrieval, and deletion.
@@ -91,6 +91,8 @@ paths:
       operationId: downloadDocument
       parameters:
         - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/PersonId'
+        - $ref: '#/components/parameters/DocumentType'
         - $ref: '#/components/parameters/Attachment'
       responses:
         '200':
@@ -808,7 +810,7 @@ components:
         id:
           type: string
           description: The document id.
-        clientId:
+        personId:
           $ref: '#/components/schemas/PersonId'
         type:
           type: string

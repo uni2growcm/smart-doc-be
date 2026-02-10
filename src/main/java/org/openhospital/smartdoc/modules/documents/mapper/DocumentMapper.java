@@ -48,18 +48,19 @@ public class DocumentMapper {
 			throw new IllegalArgumentException("Invalid document path structure: " + relativePath);
 		}
 
-		// Parse clientId from xx/xx/xx
+		// Parse personId from xx/xx/xx
 		String clientPath = parts[0] + parts[1] + parts[2];
-		int clientId = Integer.parseInt(clientPath);
+		int personId = Integer.parseInt(clientPath);
 
 		String type = parts[3];
+		String id = parts[4];
 
 		// Parse filename: YYYYMMDD_filename.ext
 		LocalDate date = getLocalDate(parts);
 
 		return new DocumentResponse()
-			.id(relativePath)
-			.clientId(clientId)
+			.id(id)
+			.personId(personId)
 			.type(type)
 			.date(date);
 	}

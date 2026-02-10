@@ -19,8 +19,8 @@ public interface IDocumentService {
 	Page<DocumentResponse> findDocuments(@RequestParam int personId, @RequestParam(required = false) String type, @RequestParam(required = false) Instant fromDate, @RequestParam(required = false) Instant toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
 
 	@GetExchange(value = "/{id}")
-	ResponseEntity<ByteArrayResource> downloadDocument(@PathVariable String id, @RequestParam(defaultValue = "false") boolean attachment);
+	ResponseEntity<ByteArrayResource> downloadDocument(@PathVariable String id, @RequestParam int personId, @RequestParam String type, @RequestParam(defaultValue = "false") boolean attachment);
 
 	@PostExchange
-	DocumentResponse uploadDocument(@RequestPart MultipartFile document, @RequestParam int clientId, @RequestParam String type, @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date);
+	DocumentResponse uploadDocument(@RequestPart MultipartFile document, @RequestParam int personId, @RequestParam String type, @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date);
 }

@@ -19,6 +19,7 @@ import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -51,10 +52,8 @@ public class DocumentService implements IDocumentService {
 	public Page<DocumentResponse> findDocuments(int personId, String type, Instant fromDate, Instant toDate, int page, int size) {
 		log.debug("Finding documents with filters - personId: {}, type: {}, date range: {} to {}, page: {}, size: {}", personId, type, fromDate, toDate, page, size);
 
-		if (!personRepository.existsByPidAndStatusNot(personId, Status.DELETED)) {
-			log.warn("Person with ID {} not found or deleted", personId);
-			throw CustomException.notFound("persons.errors.not-found", new Object[]{personId});
-		}
+		ensurePersonExists(personId);
+
 		try {
 			String personPath = NumberUtils.toSixDigitPath(personId);
 			String baseDir = storageProperties.paths().baseDir();
@@ -112,35 +111,37 @@ public class DocumentService implements IDocumentService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntity<ByteArrayResource> downloadDocument(String id, boolean attachment) {
+	public ResponseEntity<ByteArrayResource> downloadDocument(String id, @RequestParam int personId, @RequestParam String type, boolean attachment) {
 		log.debug("Downloading document by ID: {}, attachment: {}", id, attachment);
 
-		return uploadService.downloadFile(id, attachment);
+		ensurePersonExists(personId);
+
+		return uploadService.downloadFile(resolveDocumentPath(id, personId, type), attachment);
 	}
 
 	@Override
 	@Transactional
-	public DocumentResponse uploadDocument(MultipartFile document, int clientId, String type, LocalDate date) {
-		log.info("Uploading document for client: {}, type: {}", clientId, type);
+	public DocumentResponse uploadDocument(MultipartFile document, int personId, String type, LocalDate date) {
+		log.info("Uploading document for client: {}, type: {}", personId, type);
 
 		// Validate references exist
-		validateClientReference(clientId);
+		validateClientReference(personId);
 		DocumentType documentType = validateDocumentTypeReference(type);
 
 		try {
 			// Validate file
 			uploadService.validateFile(document);
 
-			String subDir = NumberUtils.toSixDigitPath(clientId) + "/" + documentType.getCode();
+			String subDir = NumberUtils.toSixDigitPath(personId) + "/" + documentType.getCode();
 			String storedPath = uploadService.uploadFile(document, subDir, date);
 
 			Path filePath = Paths.get(storageProperties.paths().baseDir(), storedPath);
 			DocumentResponse result = mapper.toDto(filePath, storageProperties.paths().baseDir());
 
-			log.info("Document uploaded successfully with ID: {} for client: {}", result.getId(), clientId);
+			log.info("Document uploaded successfully with ID: {} for client: {}", result.getId(), personId);
 			return result;
 		} catch (IOException e) {
-			log.error("File upload failed for client: {}", clientId, e);
+			log.error("File upload failed for client: {}", personId, e);
 			throw CustomException.internal("documents.errors.upload-failed");
 		} catch (Exception e) {
 			log.error("Document upload failed", e);
@@ -152,16 +153,11 @@ public class DocumentService implements IDocumentService {
 	 * Parses the date from a document ID (relative path).
 	 */
 	private Instant parseDateFromId(String id) {
-		String[] parts = id.split("/");
-		if (parts.length != 5) {
-			throw new IllegalArgumentException("Invalid document ID: " + id);
-		}
-		String filename = parts[4];
-		int underscoreIndex = filename.indexOf('_');
+		int underscoreIndex = id.indexOf('_');
 		if (underscoreIndex == -1) {
-			throw new IllegalArgumentException("Invalid filename in ID: " + filename);
+			throw new IllegalArgumentException("Invalid filename in ID: " + id);
 		}
-		String dateStr = filename.substring(0, underscoreIndex);
+		String dateStr = id.substring(0, underscoreIndex);
 		LocalDate date = LocalDate.parse(dateStr, DateTimeFormatter.BASIC_ISO_DATE);
 		return date.atStartOfDay().toInstant(ZoneOffset.UTC);
 	}
@@ -169,9 +165,9 @@ public class DocumentService implements IDocumentService {
 	/**
 	 * Validates client reference for operations.
 	 */
-	private void validateClientReference(int clientId) {
-		if (!personRepository.existsByPidAndStatusNot(clientId, Status.DELETED)) {
-			throw CustomException.notFound("persons.errors.not-found", new Object[]{clientId});
+	private void validateClientReference(int personId) {
+		if (!personRepository.existsByPidAndStatusNot(personId, Status.DELETED)) {
+			throw CustomException.notFound("persons.errors.not-found", new Object[]{personId});
 		}
 	}
 
@@ -180,5 +176,16 @@ public class DocumentService implements IDocumentService {
 	 */
 	private DocumentType validateDocumentTypeReference(String typeId) {
 		return documentTypeRepository.findByCode(typeId).orElseThrow(() -> CustomException.notFound("documents.errors.type-not-found", new Object[]{typeId}));
+	}
+
+	private String resolveDocumentPath(String id, int personId, String type) {
+		return "%s/%s/%s".formatted(NumberUtils.toSixDigitPath(personId), type, id);
+	}
+
+	private void ensurePersonExists(int personId) {
+		if (!personRepository.existsByPidAndStatusNot(personId, Status.DELETED)) {
+			log.warn("Person with ID {} not found or deleted", personId);
+			throw CustomException.notFound("persons.errors.not-found", new Object[]{personId});
+		}
 	}
 }

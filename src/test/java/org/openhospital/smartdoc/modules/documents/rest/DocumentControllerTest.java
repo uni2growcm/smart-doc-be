@@ -43,9 +43,9 @@ public class DocumentControllerTest {
 			var result = service.findDocuments(1, null, null, null, 0, 20);
 			assertNotNull(result);
 			assertEquals(1, result.getData().size());
-			assertEquals("00/00/01/ID_CARD/20260208_my-id-card.avif", result.getData().get(0).getId());
-			assertEquals(1, result.getData().get(0).getClientId());
-			assertEquals("ID_CARD", result.getData().get(0).getType());
+			assertEquals("20260208_my-id-card.avif", result.getData().getFirst().getId());
+			assertEquals(1, result.getData().getFirst().getPersonId());
+			assertEquals("ID_CARD", result.getData().getFirst().getType());
 		}
 
 		@Test
@@ -63,7 +63,7 @@ public class DocumentControllerTest {
 			var result = service.findDocuments(personId, null, null, null, 0, 20);
 			assertNotNull(result);
 			assertEquals(1, result.getData().size());
-			assertEquals(1, result.getData().get(0).getClientId());
+			assertEquals(1, result.getData().getFirst().getPersonId());
 		}
 
 		@Test
@@ -73,7 +73,7 @@ public class DocumentControllerTest {
 			var result = service.findDocuments(1, type, null, null, 0, 20);
 			assertNotNull(result);
 			assertEquals(1, result.getData().size());
-			assertEquals("ID_CARD", result.getData().get(0).getType());
+			assertEquals("ID_CARD", result.getData().getFirst().getType());
 		}
 
 		@Test
@@ -100,10 +100,10 @@ public class DocumentControllerTest {
 			try (InputStream is = resource.getInputStream()) {
 				byte[] fileContent = is.readAllBytes();
 				MultipartFile file = new MockMultipartFile("document", "my-id-card.avif", "image/avif", fileContent);
-				var result = service.uploadDocument(file, 2, "ID_CARD", LocalDate.now());
+				var result = service.uploadDocument(file, 2, "ID_CARD", LocalDate.of(2026, 2, 8));
 				assertNotNull(result);
 				assert result.getId() != null;
-				assertTrue(result.getId().startsWith("00/00/02/ID_CARD/"));
+				assertTrue(result.getId().startsWith("20260208_"));
 			} catch (Exception e) {
 				fail();
 			}
@@ -112,7 +112,7 @@ public class DocumentControllerTest {
 
 		@Test
 		@DisplayName("Should throw exception when invalid client ID")
-		public void shouldThrowExceptionWhenInvalidClientId() {
+		public void shouldThrowExceptionWhenInvalidPersonId() {
 			ClassPathResource resource = new ClassPathResource(
 				"static/00/00/01/ID_CARD/20260208_my-id-card.avif"
 			);
@@ -133,7 +133,7 @@ public class DocumentControllerTest {
 			@Test
 			@DisplayName("Should download document successfully")
 			public void shouldDownloadDocumentSuccessfully() {
-				var id = "00/00/01/ID_CARD/20260208_my-id-card.avif";
+				var id = "20260208_my-id-card.avif?personId=1&type=ID_CARD";
 				var client = TestHelpers.buildRestClient();
 				var result = client
 					.get()
@@ -149,8 +149,8 @@ public class DocumentControllerTest {
 			@Test
 			@DisplayName("Should throw exception for download non-existent")
 			public void shouldThrowExceptionForDownloadNonExistent() {
-				var id = "nonexistent";
-				var exception = assertThrows(CustomException.class, () -> service.downloadDocument(id, false));
+				var id = "nonexistent.doc";
+				var exception = assertThrows(CustomException.class, () -> service.downloadDocument(id, 128, "DOC", false));
 				assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
 			}
 		}

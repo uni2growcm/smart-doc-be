@@ -28,14 +28,14 @@ public class DocumentController implements IDocumentService {
 	}
 
 	@Override
-	@GetExchange("/{*id}")
-	public ResponseEntity<ByteArrayResource> downloadDocument(@PathVariable String id, @RequestParam(defaultValue = "false") boolean attachment) {
-		return service.downloadDocument(id, attachment);
+	@GetExchange("/{id}")
+	public ResponseEntity<ByteArrayResource> downloadDocument(@PathVariable String id, @RequestParam int personId, @RequestParam String type, @RequestParam(defaultValue = "false") boolean attachment) {
+		return service.downloadDocument(id, personId, type, attachment);
 	}
 
 	@Override
 	@ResponseStatus(HttpStatus.CREATED)
-	public DocumentResponse uploadDocument(@RequestPart MultipartFile document, @RequestParam int clientId, @RequestParam String type, @RequestParam(required = false) LocalDate date) {
-		return service.uploadDocument(document, clientId, type, date);
+	public DocumentResponse uploadDocument(@RequestPart MultipartFile document, @RequestParam int personId, @RequestParam String type, @RequestParam(required = false) LocalDate date) {
+		return service.uploadDocument(document, personId, type, date);
 	}
 }

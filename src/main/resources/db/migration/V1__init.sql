@@ -28,7 +28,7 @@ CREATE TABLE persons
     last_modified_date TIMESTAMP,
     version            INTEGER      NOT NULL,
     name               VARCHAR(255) NOT NULL,
-    pid                INT NOT NULL,
+    pid                INT          NOT NULL,
     email              VARCHAR(255),
     phone_number       VARCHAR(255),
     gender             VARCHAR(255),
