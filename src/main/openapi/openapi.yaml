@@ -23,18 +23,30 @@ paths:
     $ref: paths/documents.yaml
   /documents/{id}:
     $ref: paths/documents_{id}.yaml
+  /documents/{id}/download:
+    $ref: paths/documents_{id}_download.yaml
   /persons:
     $ref: paths/persons.yaml
   /persons/{id}:
     $ref: paths/persons_{id}.yaml
   /persons/{id}/documents:
     $ref: paths/persons_{id}_documents.yaml
+  /persons/{id}/restore:
+    $ref: paths/persons_{id}_restore.yaml
+  /persons/{id}/activate:
+    $ref: paths/persons_{id}_activate.yaml
+  /persons/{id}/deactivate:
+    $ref: paths/persons_{id}_deactivate.yaml
   /document-types:
     $ref: paths/document-types.yaml
   /document-types/{id}:
     $ref: paths/document-types_{id}.yaml
-  /actuator/health:
-    $ref: paths/health.yaml
+  /document-types/{id}/restore:
+    $ref: paths/document-types_{id}_restore.yaml
+  /document-types/{id}/activate:
+    $ref: paths/document-types_{id}_activate.yaml
+  /document-types/{id}/deactivate:
+    $ref: paths/document-types_{id}_deactivate.yaml
 components:
   securitySchemes:
     Basic:

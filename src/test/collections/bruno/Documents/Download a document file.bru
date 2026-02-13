@@ -1,0 +1,21 @@
+meta {
+  name: Download a document file
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/documents/:id/download
+  body: none
+  auth: inherit
+}
+
+params:query {
+  personId: 
+  ~type: 
+  ~attachment: 
+}
+
+params:path {
+  id: 
+}

@@ -4,7 +4,7 @@ get:
   summary: Retrieve a paginated and filtered list of documents for a specific person.
   operationId: findPersonDocuments
   parameters:
-    - $ref: ../components/parameters/Id.yaml
+    - $ref: ../components/parameters/Pid.yaml
     - $ref: ../components/parameters/DocumentType.yaml
     - $ref: ../components/parameters/FilterFromDate.yaml
     - $ref: ../components/parameters/FilterToDate.yaml

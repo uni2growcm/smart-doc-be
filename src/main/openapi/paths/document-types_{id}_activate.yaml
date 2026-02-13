@@ -1,0 +1,32 @@
+post:
+  tags:
+    - Documents
+  summary: Activate an inactive document type.
+  operationId: activateDocumentType
+  parameters:
+    - $ref: ../components/parameters/Id.yaml
+  responses:
+    '200':
+      description: Document type activated.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/DocumentType.yaml
+    '400':
+      description: Document type not deleted.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '404':
+      description: Document type not found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '403':
+      description: Forbidden (insufficient permissions).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml

@@ -34,6 +34,15 @@ post:
       multipart/form-data:
         schema:
           $ref: ../components/schemas/UploadDocumentRequest.yaml
+  parameters:
+    - $ref: ../components/parameters/PersonId.yaml
+    - $ref: ../components/parameters/DocumentType.yaml
+    - name: date
+      in: query
+      schema:
+        type: string
+        format: date
+      description: The document date (YYYY-MM-DD)
   responses:
     '201':
       description: Document successfully uploaded and stored.

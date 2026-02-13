@@ -1,0 +1,6 @@
+name: attachment
+in: query
+schema:
+  type: boolean
+  default: true
+description: If true, sets Content-Disposition to attachment for download

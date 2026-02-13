@@ -1,6 +1,6 @@
 type: object
 description: Pagination information.
-required: [page, size, totalElements, totalPages]
+required: [ page, size, totalElements, totalPages ]
 properties:
   page:
     type: integer

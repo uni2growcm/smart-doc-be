@@ -34,9 +34,9 @@ put:
   requestBody:
     required: true
     content:
-       application/json:
-         schema:
-           $ref: ../components/schemas/UpdatePersonRequest.yaml
+      application/json:
+        schema:
+          $ref: ../components/schemas/UpdatePersonRequest.yaml
   responses:
     '200':
       description: Person updated.
@@ -122,3 +122,5 @@ delete:
         application/json:
           schema:
             $ref: ../components/schemas/Problem.yaml
+
+

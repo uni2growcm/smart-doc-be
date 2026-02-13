@@ -1,47 +1,44 @@
 package org.openhospital.smartdoc.modules.persons.port;
 
+import org.openhospital.smartdoc.openapi.*;
+import org.openhospital.smartdoc.types.Page;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.service.annotation.*;
+
 import java.time.LocalDate;
 import java.util.UUID;
-import org.openhospital.smartdoc.openapi.CreatePersonRequestDTO;
-import org.openhospital.smartdoc.openapi.PaginatedDocumentDTO;
-import org.openhospital.smartdoc.openapi.PaginatedPersonDTO;
-import org.openhospital.smartdoc.openapi.PatchPersonRequestDTO;
-import org.openhospital.smartdoc.openapi.PersonDTO;
-import org.openhospital.smartdoc.openapi.UpdatePersonRequestDTO;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.service.annotation.DeleteExchange;
-import org.springframework.web.service.annotation.GetExchange;
-import org.springframework.web.service.annotation.HttpExchange;
-import org.springframework.web.service.annotation.PatchExchange;
-import org.springframework.web.service.annotation.PostExchange;
-import org.springframework.web.service.annotation.PutExchange;
 
 @HttpExchange("/persons")
 public interface IPersonService {
 
-    @GetExchange
-    PaginatedPersonDTO findPersons(@RequestParam(required = false) String name,
-        @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
+	@GetExchange
+	Page<PersonResponse> findPersons(@RequestParam(required = false) String name, @RequestParam(defaultValue = "false") boolean includeInactive, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
 
-    @PostExchange
-    PersonDTO createPerson(@RequestBody CreatePersonRequestDTO payload);
+	@PostExchange
+	PersonResponse createPerson(@RequestBody CreatePersonRequest payload);
 
-    @GetExchange("/{id}")
-    PersonDTO findPersonById(@PathVariable UUID id);
+	@GetExchange("/{id}")
+	PersonResponse findPersonById(@PathVariable UUID id);
 
-    @PutExchange("/{id}")
-    PersonDTO updatePerson(@PathVariable UUID id, @RequestBody UpdatePersonRequestDTO payload);
+	@PutExchange("/{id}")
+	PersonResponse updatePerson(@PathVariable UUID id, @RequestBody UpdatePersonRequest payload);
 
-    @PatchExchange("/{id}")
-    PersonDTO patchPerson(@PathVariable UUID id, @RequestBody PatchPersonRequestDTO payload);
+	@PatchExchange("/{id}")
+	PersonResponse patchPerson(@PathVariable UUID id, @RequestBody PatchPersonRequest payload);
 
-    @DeleteExchange("/{id}")
-    void deletePerson(@PathVariable UUID id);
+	@DeleteExchange("/{id}")
+	void deletePerson(@PathVariable UUID id);
 
-    @GetExchange("/{id}/documents")
-    PaginatedDocumentDTO findPersonDocuments(@PathVariable UUID id, @RequestParam(required = false) UUID type,
-        @RequestParam(required = false) LocalDate fromDate, @RequestParam(required = false) LocalDate toDate,
-        @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
+	@PutExchange("/{id}/activate")
+	PersonResponse activatePerson(@PathVariable UUID id);
+
+	@PutExchange("/{id}/deactivate")
+	PersonResponse deactivatePerson(@PathVariable UUID id);
+
+	@PostExchange("/{id}/restore")
+	PersonResponse restorePerson(@PathVariable UUID id);
+
+	@GetExchange("/{id}/documents")
+	Page<DocumentResponse> findPersonDocuments(@PathVariable UUID id, @RequestParam(required = false) String type, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(required = false) LocalDate fromDate, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(required = false) LocalDate toDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
 }

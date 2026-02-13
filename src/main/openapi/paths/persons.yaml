@@ -5,6 +5,7 @@ get:
   operationId: findPersons
   parameters:
     - $ref: ../components/parameters/PersonNamePartial.yaml
+    - $ref: ../components/parameters/IncludeInactive.yaml
     - $ref: ../components/parameters/Page.yaml
     - $ref: ../components/parameters/Size.yaml
   responses:
@@ -29,8 +30,8 @@ post:
     required: true
     content:
       application/json:
-         schema:
-           $ref: ../components/schemas/CreatePersonRequest.yaml
+        schema:
+          $ref: ../components/schemas/CreatePersonRequest.yaml
   responses:
     '201':
       description: Person created.

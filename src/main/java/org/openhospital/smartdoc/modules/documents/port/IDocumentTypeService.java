@@ -1,38 +1,39 @@
 package org.openhospital.smartdoc.modules.documents.port;
 
+import org.openhospital.smartdoc.openapi.*;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.service.annotation.*;
+
 import java.util.List;
 import java.util.UUID;
-import org.openhospital.smartdoc.openapi.CreateDocumentTypeRequestDTO;
-import org.openhospital.smartdoc.openapi.DocumentTypeDTO;
-import org.openhospital.smartdoc.openapi.PatchDocumentTypeRequestDTO;
-import org.openhospital.smartdoc.openapi.UpdateDocumentTypeRequestDTO;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.service.annotation.DeleteExchange;
-import org.springframework.web.service.annotation.GetExchange;
-import org.springframework.web.service.annotation.HttpExchange;
-import org.springframework.web.service.annotation.PatchExchange;
-import org.springframework.web.service.annotation.PostExchange;
-import org.springframework.web.service.annotation.PutExchange;
 
 @HttpExchange("/document-types")
 public interface IDocumentTypeService {
 
-    @GetExchange
-    List<DocumentTypeDTO> getDocumentTypes();
+	@GetExchange
+	List<DocumentTypeResponse> findDocumentTypes(@RequestParam(defaultValue = "false") boolean includeInactive);
 
-    @PostExchange
-    DocumentTypeDTO createDocumentType(@RequestBody CreateDocumentTypeRequestDTO payload);
+	@PostExchange
+	DocumentTypeResponse createDocumentType(@RequestBody CreateDocumentTypeRequest payload);
 
-    @GetExchange("/{id}")
-    DocumentTypeDTO findDocumentTypeById(@PathVariable UUID id);
+	@GetExchange("/{id}")
+	DocumentTypeResponse findDocumentTypeById(@PathVariable UUID id);
 
-    @PutExchange("/{id}")
-    DocumentTypeDTO updateDocumentType(@PathVariable UUID id, @RequestBody UpdateDocumentTypeRequestDTO payload);
+	@PutExchange("/{id}")
+	DocumentTypeResponse updateDocumentType(@PathVariable UUID id, @RequestBody UpdateDocumentTypeRequest payload);
 
-    @PatchExchange("/{id}")
-    DocumentTypeDTO patchDocumentType(@PathVariable UUID id, @RequestBody PatchDocumentTypeRequestDTO payload);
+	@PatchExchange("/{id}")
+	DocumentTypeResponse patchDocumentType(@PathVariable UUID id, @RequestBody PatchDocumentTypeRequest payload);
 
-    @DeleteExchange("/{id}")
-    void deleteDocumentType(@PathVariable UUID id);
+	@DeleteExchange("/{id}")
+	void deleteDocumentType(@PathVariable UUID id);
+
+	@PutExchange("/{id}/activate")
+	DocumentTypeResponse activateDocumentType(@PathVariable UUID id);
+
+	@PutExchange("/{id}/deactivate")
+	DocumentTypeResponse deactivateDocumentType(@PathVariable UUID id);
+
+	@PostExchange("/{id}/restore")
+	DocumentTypeResponse restoreDocumentType(@PathVariable UUID id);
 }

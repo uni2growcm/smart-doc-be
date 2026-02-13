@@ -2,7 +2,9 @@ get:
   tags:
     - System
   summary: Get supported document types.
-  operationId: getDocumentTypes
+  operationId: findDocumentTypes
+  parameters:
+    - $ref: ../components/parameters/IncludeInactive.yaml
   responses:
     '200':
       description: List of supported types.
@@ -19,8 +21,8 @@ post:
     required: true
     content:
       application/json:
-         schema:
-           $ref: ../components/schemas/CreateDocumentTypeRequest.yaml
+        schema:
+          $ref: ../components/schemas/CreateDocumentTypeRequest.yaml
   responses:
     '201':
       description: Document type created.

@@ -1,0 +1,4 @@
+{{url}}/documents?personId=1&type=ID_CARD
+
+###
+GET {{url}}/documents/00/00/01/ID_CARD/20260208_my-id-card.avif

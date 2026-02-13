@@ -1,0 +1,19 @@
+meta {
+  name: Create a new document type.
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/document-types
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "code": "",
+    "name": "",
+    "description": ""
+  }
+}

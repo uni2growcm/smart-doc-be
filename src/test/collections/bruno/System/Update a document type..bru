@@ -1,0 +1,24 @@
+meta {
+  name: Update a document type.
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/document-types/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+body:json {
+  {
+    "version": 0,
+    "code": "",
+    "name": "",
+    "description": ""
+  }
+}

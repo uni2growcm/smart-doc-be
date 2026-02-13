@@ -1,0 +1,15 @@
+meta {
+  name: Activate an inactive person.
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/persons/:id/activate
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 
+}

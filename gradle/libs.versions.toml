@@ -23,6 +23,7 @@ mysql-connector = { module = "com.mysql:mysql-connector-j" }
 flyway-mysql = { module = "org.flywaydb:flyway-mysql" }
 jackson-databind-nullable = { module = "org.openapitools:jackson-databind-nullable", version.ref = "jackson-nullable" }
 mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
+mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
 lombok = { module = "org.projectlombok:lombok" }
 swagger-annotations = { module = "io.swagger.core.v3:swagger-annotations", version.ref = "swagger-annotations" }
 
@@ -36,10 +37,10 @@ openapi-generator = { module = "org.openapitools:openapi-generator-maven-plugin"
 
 [bundles]
 spring-boot = ["spring-boot-starter-webmvc", "spring-boot-starter-actuator", "spring-boot-starter-security",
-    "spring-boot-starter-validation", "spring-boot-starter-data-jpa", "spring-boot-starter-flyway"]
-extra-libs = ["jackson-databind-nullable", "swagger-annotations", "flyway-mysql"]
+	"spring-boot-starter-validation", "spring-boot-starter-data-jpa", "spring-boot-starter-flyway"]
+extra-libs = ["jackson-databind-nullable", "swagger-annotations", "flyway-mysql", "mapstruct"]
 runtime = ["h2", "mysql-connector"]
-annotation-processors = ["mapstruct", "lombok"]
+annotation-processors = ["mapstruct-processor", "lombok"]
 compile = ["lombok"]
 test-runtime = ["junit-platform-launcher"]
 test = ["spring-boot-starter-test", "spring-boot-starter-data-jpa-test", "wiremock-spring-boot"]

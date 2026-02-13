@@ -1,0 +1,15 @@
+meta {
+  name: Restore a deleted person.
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/persons/:id/restore
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 
+}

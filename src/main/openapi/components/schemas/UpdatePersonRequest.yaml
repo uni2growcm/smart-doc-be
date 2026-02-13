@@ -1,8 +1,7 @@
 type: object
 properties:
   version:
-    type: integer
-    description: "The lock field for the object."
+    $ref: ./Version.yaml
   name:
     type: string
     description: Person's name (available when integrated with OH).
@@ -18,4 +17,4 @@ properties:
     description: Primary phone number.
   gender:
     $ref: ./Gender.yaml
-required: [version, name, pid]
+required: [ version, name, pid ]

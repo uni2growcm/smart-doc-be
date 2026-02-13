@@ -1,8 +1,7 @@
 type: object
 properties:
   version:
-    type: integer
-    description: "The lock field for the object."
+    $ref: ./Version.yaml
   code:
     type: string
     description: "The unique code for the document type."
@@ -12,4 +11,4 @@ properties:
   description:
     type: string
     description: "A description of the document type."
-required: [version, code, name, description]
+required: [ version, code, name, description ]

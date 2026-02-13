@@ -1,0 +1,15 @@
+meta {
+  name: Delete a document type.
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/document-types/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 
+}

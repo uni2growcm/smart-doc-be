@@ -1,6 +1,6 @@
 get:
   tags:
-    - System
+    - Documents
   summary: Retrieve a document type by ID.
   operationId: findDocumentTypeById
   parameters:
@@ -34,9 +34,9 @@ put:
   requestBody:
     required: true
     content:
-       application/json:
-         schema:
-           $ref: ../components/schemas/UpdateDocumentTypeRequest.yaml
+      application/json:
+        schema:
+          $ref: ../components/schemas/UpdateDocumentTypeRequest.yaml
   responses:
     '200':
       description: Document type updated.
@@ -122,3 +122,4 @@ delete:
         application/json:
           schema:
             $ref: ../components/schemas/Problem.yaml
+

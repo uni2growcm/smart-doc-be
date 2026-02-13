@@ -1,0 +1,15 @@
+meta {
+  name: Deactivate an active person.
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/persons/:id/deactivate
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 
+}

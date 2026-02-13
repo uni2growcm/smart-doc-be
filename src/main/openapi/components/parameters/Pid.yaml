@@ -1,0 +1,8 @@
+name: id
+in: path
+required: true
+schema:
+  type: integer
+  minimum: 1
+  maximum: 999999
+description: Numeric identifier of the person (up to 6 digits).

@@ -1,0 +1,15 @@
+meta {
+  name: Restore a deleted document type.
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/document-types/:id/restore
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 
+}

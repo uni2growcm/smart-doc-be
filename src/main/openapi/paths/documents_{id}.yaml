@@ -1,79 +1,21 @@
 get:
   tags:
     - Documents
-  summary: Retrieve a document file (download/preview).
+  summary: Get document details
   operationId: findDocumentById
   parameters:
     - $ref: ../components/parameters/Id.yaml
+    - $ref: ../components/parameters/PersonId.yaml
+    - $ref: ../components/parameters/DocumentType.yaml
   responses:
     '200':
-      description: Document file stream.
-      content:
-        image/jpeg:
-          schema:
-            $ref: ../components/schemas/BinaryFile.yaml
-    '400':
-      description: Invalid documentId format.
-      content:
-        application/json:
-          schema:
-            $ref: ../components/schemas/Problem.yaml
-    '404':
-      description: Document not found at the specified path.
-      content:
-        application/json:
-          schema:
-            $ref: ../components/schemas/Problem.yaml
-put:
-  tags:
-    - Documents
-  summary: Update document metadata or replace the file.
-  operationId: updateDocument
-  parameters:
-    - $ref: ../components/parameters/Id.yaml
-  requestBody:
-    required: true
-    content:
-      multipart/form-data:
-        schema:
-          $ref: ../components/schemas/UploadDocumentRequest.yaml
-  responses:
-    '200':
-      description: Document successfully updated.
+      description: Document details
       content:
         application/json:
           schema:
             $ref: ../components/schemas/Document.yaml
-    '400':
-      description: Invalid request, file format/size, or missing required fields.
-      content:
-        application/json:
-          schema:
-            $ref: ../components/schemas/Problem.yaml
-    '500':
-      description: Internal server error (file system write error).
-      content:
-        application/json:
-          schema:
-            $ref: ../components/schemas/Problem.yaml
-delete:
-  tags:
-    - Documents
-  summary: Permanently delete a document file from the file system.
-  operationId: deleteDocument
-  parameters:
-    - $ref: ../components/parameters/Id.yaml
-  responses:
-    '204':
-      description: Document successfully deleted.
     '404':
-      description: Document not found.
-      content:
-        application/json:
-          schema:
-            $ref: ../components/schemas/Problem.yaml
-    '500':
-      description: File system deletion error.
+      description: Document not found
       content:
         application/json:
           schema:

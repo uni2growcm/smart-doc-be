@@ -1,0 +1,32 @@
+post:
+  tags:
+    - Persons
+  summary: Restore a deleted person.
+  operationId: restorePerson
+  parameters:
+    - $ref: ../components/parameters/Id.yaml
+  responses:
+    '200':
+      description: Person restored.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Person.yaml
+    '400':
+      description: Person not deleted.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '404':
+      description: Person not found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml
+    '403':
+      description: Forbidden (insufficient permissions).
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Problem.yaml

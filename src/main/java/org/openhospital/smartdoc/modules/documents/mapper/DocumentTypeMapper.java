@@ -1,24 +1,60 @@
 package org.openhospital.smartdoc.modules.documents.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
-import org.openhospital.smartdoc.config.MapperConfig;
 import org.openhospital.smartdoc.modules.documents.model.DocumentType;
-import org.openhospital.smartdoc.openapi.CreateDocumentTypeRequestDTO;
-import org.openhospital.smartdoc.openapi.DocumentTypeDTO;
-import org.openhospital.smartdoc.openapi.PatchDocumentTypeRequestDTO;
-import org.openhospital.smartdoc.openapi.UpdateDocumentTypeRequestDTO;
+import org.openhospital.smartdoc.openapi.*;
+import org.springframework.stereotype.Component;
 
-@Mapper(config = MapperConfig.class)
-public interface DocumentTypeMapper {
+import java.util.List;
 
-    DocumentTypeDTO toDto(DocumentType type);
+@Component
+public class DocumentTypeMapper {
 
-    DocumentType toModel(DocumentTypeDTO typeDTO);
+	public DocumentTypeResponse toDto(DocumentType type) {
+		return new DocumentTypeResponse()
+			.id(type.getId())
+			.createdDate(type.getCreatedDate())
+			.lastModifiedDate(type.getLastModifiedDate())
+			.version(type.getVersion())
+			.code(type.getCode())
+			.name(type.getName())
+			.description(type.getDescription())
+			.status(type.getStatus());
+	}
 
-    DocumentType toModel(CreateDocumentTypeRequestDTO req);
+	public DocumentType toModel(CreateDocumentTypeRequest req) {
+		return DocumentType.builder()
+		                   .code(req.getCode())
+		                   .name(req.getName())
+		                   .description(req.getDescription())
+		                   .build();
+	}
 
-    void updateModel(UpdateDocumentTypeRequestDTO req, @MappingTarget DocumentType entity);
+	public void updateModel(UpdateDocumentTypeRequest req, DocumentType entity) {
+		entity
+			.setCode(req.getCode())
+			.setName(req.getName())
+			.setDescription(req.getDescription());
+		if (req.getVersion() != null) {
+			entity.setVersion(req.getVersion());
+		}
+	}
 
-    void patchModel(PatchDocumentTypeRequestDTO req, @MappingTarget DocumentType entity);
+	public void patchModel(PatchDocumentTypeRequest req, DocumentType entity) {
+		if (req.getVersion() != null) {
+			entity.setVersion(req.getVersion());
+		}
+		if (req.getCode() != null) {
+			entity.setCode(req.getCode());
+		}
+		if (req.getName() != null) {
+			entity.setName(req.getName());
+		}
+		if (req.getDescription() != null) {
+			entity.setDescription(req.getDescription());
+		}
+	}
+
+	public List<DocumentTypeResponse> toDtos(List<DocumentType> types) {
+		return types.stream().map(this::toDto).toList();
+	}
 }

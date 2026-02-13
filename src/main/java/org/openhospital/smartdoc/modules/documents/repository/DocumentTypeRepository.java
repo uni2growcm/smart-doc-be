@@ -1,12 +1,22 @@
 package org.openhospital.smartdoc.modules.documents.repository;
 
-import java.util.Optional;
 import org.openhospital.smartdoc.modules.documents.model.DocumentType;
+import org.openhospital.smartdoc.openapi.Status;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 
-public interface DocumentTypeRepository extends CrudRepository<DocumentType, String> {
+import java.util.*;
 
-    @Query("SELECT dt FROM DocumentType dt WHERE dt.code = ?1")
-    Optional<DocumentType> findByCode(String code);
+public interface DocumentTypeRepository extends JpaRepository<DocumentType, UUID> {
+
+	@Query("SELECT dt FROM DocumentType dt WHERE dt.code = ?1")
+	Optional<DocumentType> findByCode(String code);
+
+	Page<DocumentType> findByStatusIn(List<Status> statuses, Pageable pageable);
+
+	boolean existsByCodeAndStatusNot(String code, Status status);
+
+	Optional<DocumentType> findByIdAndStatusNot(UUID id, Status status);
 }
