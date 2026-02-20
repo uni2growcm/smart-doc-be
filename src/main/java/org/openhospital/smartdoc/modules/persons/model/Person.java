@@ -30,6 +30,5 @@ public class Person extends BaseEntity {
 	private String phoneNumber;
 
 	@Builder.Default
-	@Enumerated(EnumType.STRING)
 	private Status status = Status.ACTIVE;
 }
