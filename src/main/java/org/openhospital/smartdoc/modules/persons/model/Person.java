@@ -24,7 +24,6 @@ public class Person extends BaseEntity {
 
 	private String email;
 
-	@Enumerated(EnumType.STRING)
 	private Gender gender;
 
 	@Column(name = "phone_number")
