@@ -41,7 +41,7 @@ dependencies {
 openApiGenerate {
     generatorName = "spring"
     packageName.set("org.openhospital.smartdoc.openapi")
-    inputSpec = "$projectDir/src/main/openapi/api-docs.yaml"
+    inputSpec = file("$projectDir/src/main/openapi/api-docs.yaml").toPath().toString()
     globalProperties.set(mapOf("models" to ""))
     modelNameMappings.set(listOf("Document", "DocumentType", "Person").associateWith { "${it}Response" })
 

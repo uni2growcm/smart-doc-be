@@ -6,7 +6,7 @@
 
 CREATE TABLE document_types
 (
-    id                 VARCHAR(36)  NOT NULL PRIMARY KEY,
+    id                 BINARY(16)  NOT NULL PRIMARY KEY,
     created_by         VARCHAR(255),
     created_date       TIMESTAMP,
     last_modified_by   VARCHAR(255),
@@ -21,7 +21,7 @@ CREATE TABLE document_types
 
 CREATE TABLE persons
 (
-    id                 VARCHAR(36)  NOT NULL PRIMARY KEY,
+    id                 BINARY(16)  NOT NULL PRIMARY KEY,
     created_by         VARCHAR(255),
     created_date       TIMESTAMP,
     last_modified_by   VARCHAR(255),
