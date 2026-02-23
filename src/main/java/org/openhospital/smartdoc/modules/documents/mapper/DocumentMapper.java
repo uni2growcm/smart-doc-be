@@ -2,6 +2,7 @@ package org.openhospital.smartdoc.modules.documents.mapper;
 
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
+import org.openhospital.smartdoc.helpers.FilesUtils;
 import org.openhospital.smartdoc.openapi.DocumentResponse;
 import org.springframework.stereotype.Component;
 
@@ -42,7 +43,7 @@ public class DocumentMapper {
 	 */
 	public DocumentResponse toDto(Path filePath, String baseDir) {
 		String relativePath = Paths.get(baseDir).relativize(filePath).toString();
-		String[] parts = relativePath.split("/");
+		String[] parts = FilesUtils.normalizeToSlash(relativePath).split("/");
 
 		if (parts.length != 5) {
 			throw new IllegalArgumentException("Invalid document path structure: " + relativePath);
