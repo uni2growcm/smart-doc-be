@@ -1,5 +1,6 @@
 package org.openhospital.smartdoc.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -12,11 +13,23 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+	@Value("${spring.web.cors.allowed-origins}")
+	private String allowedOrigins;
+
+	@Value("${spring.web.cors.allowed-methods}")
+	private String allowedMethods;
+
+	@Value("${spring.web.cors.allowed-headers}")
+	private String allowedHeaders;
+
+	@Value("${spring.web.cors.allow-credentials}")
+	private boolean allowCredentials;
 
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -38,10 +51,10 @@ public class SecurityConfig {
 	public CorsConfigurationSource corsConfigurationSource() {
 
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(List.of("http://localhost:5173"));
-		configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
-		configuration.setAllowedHeaders(List.of("*"));
-		configuration.setAllowCredentials(true);
+		configuration.setAllowedOrigins(Arrays.stream(allowedOrigins.split(",")).toList());
+		configuration.setAllowedMethods(Arrays.stream(allowedMethods.split(",")).toList());
+		configuration.setAllowedHeaders(Arrays.stream(allowedHeaders.split(",")).toList());
+		configuration.setAllowCredentials(allowCredentials);
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
