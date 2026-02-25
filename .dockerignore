@@ -1,0 +1,30 @@
+# Gradle caches and wrapper binaries
+.gradle/
+build/
+bin/
+
+# Gradle wrapper JARs (downloaded at build time)
+gradle/wrapper/gradle-wrapper.jar
+
+# Compiled class files
+**/*.class
+
+# Test artefacts
+src/test/
+wiremock/
+
+# IDE / editor metadata
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Git history (already cloned with --depth 1 in Dockerfile)
+.git/
